@@ -31,44 +31,54 @@ class Entity(Resource):
 
     @api.doc(parser=create_parser_delete())
     def delete(self,table,id):
-        create_parser_delete().parse_args()
-        context=g.context
-        fetch=build_fetchxml_by_alias(context,table,id)
-        builder=factory.create_command('delete', fetch_xml=fetch)
-        rs=DatabaseServices.exec(builder,context, fetch_mode=0)
-        result={"rows_affected": rs.get_cursor().rowcount}
-        rs.close()
-        return result
+        try:
+            create_parser_delete().parse_args()
+            context=g.context
+            fetch=build_fetchxml_by_alias(context,table,id)
+            builder=factory.create_command('delete', fetch_xml=fetch)
+            rs=DatabaseServices.exec(builder,context, fetch_mode=0)
+            result={"rows_affected": rs.get_cursor().rowcount}
+            rs.close()
+            return result
+        except NameError as err:
+            abort(400, f"{err}")
+
 
     @api.doc(parser=create_parser_put())
     def put(self,table,id):
-        create_parser_put().parse_args()
-        context=g.context
+        try:
+            create_parser_put().parse_args()
+            context=g.context
 
-        if request.json==None:
-            abort(400, "cannot extract json data in body %s %s" % (table,id))
+            if request.json==None:
+                abort(400, "cannot extract json data in body %s %s" % (table,id))
 
-        fetch=build_fetchxml_by_alias(context, table, id, request.json)
-        builder=factory.create_command('update', fetch_xml=fetch)
-        rs=DatabaseServices.exec(builder,context, fetch_mode=0)
-        result={"rows_affected": rs.get_cursor().rowcount}
-        rs.close()
-        return result
+            fetch=build_fetchxml_by_alias(context, table, id, request.json)
+            builder=factory.create_command('update', fetch_xml=fetch)
+            rs=DatabaseServices.exec(builder,context, fetch_mode=0)
+            result={"rows_affected": rs.get_cursor().rowcount}
+            rs.close()
+            return result
+        except NameError as err:
+            abort(400, f"{err}")
 
     @api.doc(parser=create_parser_get())
     def get(self,table,id):
-        create_parser_get().parse_args()
-        context=g.context
+        try:
+            create_parser_get().parse_args()
+            context=g.context
 
-        fetch=build_fetchxml_by_alias(context, table, id)
+            fetch=build_fetchxml_by_alias(context, table, id)
 
-        builder=factory.create_command('select',fetch_xml=fetch)
-        rs=DatabaseServices.exec(builder,context, fetch_mode=0)
+            builder=factory.create_command('select',fetch_xml=fetch)
+            rs=DatabaseServices.exec(builder,context, fetch_mode=1)
 
-        if rs.get_result()==None:
-            abort(400, "Item not found => %s" % id)
+            if rs.get_result()==None:
+                abort(400, "Item not found => %s" % id)
 
-        return rs.get_result()
+            return rs.get_result()
+        except NameError as err:
+            abort(400, f"{err}")
 
 def get_endpoint():
     return Entity

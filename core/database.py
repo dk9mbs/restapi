@@ -76,7 +76,14 @@ class CommandBuilder:
         return self._sql_parameter
 
     def check_permission(self, context):
-        return Permission().validate(context, "read", "guest", "dummy1")
+        return self._check_permission(context,"read")
+
+    def _check_permission(self, context, mode):
+        for table in self._fetch_xml_parser.get_tables():
+            if not Permission().validate(context, mode, context.get_username(), table):
+                raise NameError (f"no permission ({mode}) for {context.get_username()} on {table}")
+                
+        return True
 
     """
     0 or 1

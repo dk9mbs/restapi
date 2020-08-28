@@ -19,6 +19,8 @@ class FetchXmlParser:
         self._sql_parameters_where=[]
         self._sql_parameters_fields=[]
 
+    def get_tables(self):
+        return self._tables
 
     def get_select(self):
         params=[]

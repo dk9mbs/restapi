@@ -10,6 +10,14 @@ class Context:
     def __del__(self):
         pass
 
+    def get_username(self):
+        if self.__userinfo==None:
+            raise NameError('there is no userinfo object in this context!')
+        if not 'username' in self.__userinfo:
+            raise NameError('missing attribute username in userinfo in this context')
+
+        return self.__userinfo['username']
+
     def get_connection(self, database_id=0):
         return self.__connection
 

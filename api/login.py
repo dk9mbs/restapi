@@ -27,7 +27,7 @@ class Login(Resource):
         session_id=AppInfo.login(username, password)
 
         if session_id==None:
-            abort(400,'Wrong username or password')
+            abort(400,'wrong username or password')
         else:
             session['session_id']=session_id
             g.context=AppInfo.create_context(session_id)

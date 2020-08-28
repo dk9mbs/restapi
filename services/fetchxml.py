@@ -17,7 +17,7 @@ def read_dataview_meta(context, alias):
     """
 
     builder=SelectCommandBuilder(dict(fetch_xml=fetch))
-    rs=DatabaseServices.exec(builder, context,fetch_mode=1)
+    rs=DatabaseServices.exec(builder, context, run_as_system=True,  fetch_mode=1)
     return rs
 
 """
