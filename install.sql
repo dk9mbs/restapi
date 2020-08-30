@@ -22,6 +22,19 @@ CREATE TABLE IF NOT EXISTS api_table (
 INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
     VALUES (1,'dummy','dummy','id','Int','name');
 
+INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
+    VALUES (2,'api_user','api_user','id','Int','username');
+
+INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
+    VALUES (3,'api_group','api_group','id','Int','groupname');
+
+INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
+    VALUES (4,'api_user_group','api_user_group','id','Int','user_id');
+
+INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
+    VALUES (5,'api_group_permission','api_group_permission','id','Int','group_id');
+
+
 
 CREATE TABLE IF NOT EXISTS api_user (
     id int NOT NULL AUTO_INCREMENT,

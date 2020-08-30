@@ -13,6 +13,8 @@ class DatabaseServices:
 
         paras=command_builder.get_sql_parameter()
         sql=command_builder.get_sql()
+        print(sql)
+        print(paras)
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
 

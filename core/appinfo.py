@@ -96,8 +96,9 @@ class AppInfo:
     """
     @classmethod
     def save_context(cls, context, close_context=True):
+        
         sql=f"""
-        UPDATE api_session set session_values=%s WHERE id=%s
+        UPDATE api_session set session_values=%s,last_access_on=now() WHERE id=%s
         """
 
         connection=cls.create_connection()

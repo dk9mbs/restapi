@@ -24,18 +24,15 @@ class EntityList(Resource):
     api=AppInfo.get_api()
     @api.doc(parser=create_parser())
     def get(self, table):
-        parser=create_parser().parse_args()
-        context=g.context
-
-        if request.json==None:
-            abort(400, "No cannot extract json data in body %s %s" % (table,id))
-
-        query=build_fetchxml_by_alias(context,table,id, request.json)
-        builder=factory.create_command('select', query=query)
-        rs=DatabaseServices.exec(builder,context,fetch_mode=0)
-        result={"rows_affected": rs.get_cursor().rowcount}
-
-        return result
+        try:
+            parser=create_parser().parse_args()
+            context=g.context
+            fetch=build_fetchxml_by_alias(context,table,None, None)
+            builder=factory.create_command('select', fetch_xml=fetch)
+            rs=DatabaseServices.exec(builder,context,fetch_mode=0)
+            return rs.get_result()
+        except NameError as err:
+            abort(400, f"{err}")
 
 
 

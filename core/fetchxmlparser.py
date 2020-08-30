@@ -18,6 +18,7 @@ class FetchXmlParser:
         self._sql_select="*"
         self._sql_parameters_where=[]
         self._sql_parameters_fields=[]
+        self._sql_comment=""
 
     def get_tables(self):
         return self._tables
@@ -31,22 +32,23 @@ class FetchXmlParser:
             sql.append(f" WHERE {self._sql_where}")
             params=self._sql_parameters_where
 
+        sql.append(f"{self._sql_comment}")
         return (''.join(sql),params)
 
     def get_insert(self):
-        sql=f"INSERT INTO {self._sql_table} ({self._sql_fields_insert}) VALUES ({self._sql_values_insert})"
+        sql=f"INSERT INTO {self._sql_table} ({self._sql_fields_insert}) VALUES ({self._sql_values_insert}{self._sql_comment})"
         return (sql,self._sql_parameters_fields)
 
     def get_update(self):
-        sql="UPDATE %s SET %s WHERE %s" % (self._sql_table,self._sql_fields, self._sql_where)
+        sql=f"UPDATE {self._sql_table} SET {self._sql_fields} WHERE {self._sql_where}{self._sql_comment}"
         return (sql,self._sql_parameters_fields+self._sql_parameters_where)
 
     def get_delete(self):
-        sql="DELETE FROM %s WHERE %s" % (self._sql_table, self._sql_where)
+        sql=f"DELETE FROM {self._sql_table} WHERE {self._sql_where}{self._sql_comment}"
         return (sql, self._sql_parameters_where)
 
     def parse(self):
-        print("xml to parse: {xml}".format(xml=self._fetch_xml))
+        #print("xml to parse: {xml}".format(xml=self._fetch_xml))
         tree=ET.fromstring(self._fetch_xml)
         for node in tree:
             if node.tag == "filter":
@@ -59,7 +61,8 @@ class FetchXmlParser:
                 self._build_select(node)
             elif node.tag == "joins":
                 self._build_join(node)
-
+            elif node.tag == "comment":
+                self.build_comment(node)
 
     def _escape_string(self, input, scope="somewhere"):
         not_allowed=[";","--","\0","\b","\n","\t","\r"]
@@ -72,6 +75,10 @@ class FetchXmlParser:
 
         return input
 
+
+    def build_comment(self, node):
+        if 'text' in node.attrib:
+            self._sql_comment= f" /* {self._escape_string(node.attrib['text'])} */"
 
     """
     <joins>
@@ -153,8 +160,13 @@ class FetchXmlParser:
 
     def _build_where(self, node):
         sql=""
+        op=" AND "
+        if 'type' in node.attrib:
+            op=node.attrib['type']
+
         for item in node:
             if item.tag=="filter":
+                # in case of sub filter condition
                 if 'type' in item.attrib:
                     op=self._escape_string(item.attrib['type'],"operator")
                 else:
@@ -164,7 +176,8 @@ class FetchXmlParser:
                     sql=sql+(" %s " % op)
                 sql=sql+self._build_where(item)
             else:
-                op=" AND "
+                #op=" AND "
+                operator="="
                 field=self._escape_string(item.attrib['field'],"fieldname")
                 # do niot escape values here. This will be done by execute
                 value=item.attrib['value']
@@ -175,9 +188,13 @@ class FetchXmlParser:
                 if 'alias' in item.attrib:
                     field="%s.%s" % ( self._escape_string(item.attrib['alias'],"alias"), field)
 
+                if 'operator' in item.attrib:
+                    operator=item.attrib['operator']
+
                 if not sql=="":
                     sql=sql+(" %s " % op)
 
-                sql=sql+field+"=%s"
+                sql=sql+field+" "+operator+" %s"
                 self._sql_parameters_where.append(value)
+        #print(sql)
         return "("+sql+")"

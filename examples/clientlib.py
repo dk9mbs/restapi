@@ -46,14 +46,14 @@ class RestApiClient:
         headers={"Content-Type":"application/json"}
         r=requests.post(url, headers=headers, json=data, cookies=self.__cookies)
         if r.status_code!=200:
-            raise NameError("Username or password wrong")
+            raise NameError(f"{r.status_code} {r.text}")
         return r.text
 
     def read(self, table, id):
         url=f"{self.__root}/data/{table}/{id}"
         r=requests.get(url, cookies=self.__cookies)
         if r.status_code!=200:
-            raise NameError("Username or password wrong")
+            raise NameError(f"{r.status_code} {r.text}")
         return r.text
 
     def update(self,table,id, data):
@@ -61,20 +61,51 @@ class RestApiClient:
         headers={"Content-Type":"application/json"}
         r=requests.put(url, headers=headers, json=data, cookies=self.__cookies)
         if r.status_code!=200:
-            raise NameError("Username or password wrong")
+            raise NameError(f"{r.status_code} {r.text}")
+        return r.text
+
+    def read_multible(self, table, fetchxml=None):
+        if fetchxml==None:
+            url=f"{self.__root}/data/{table}"
+            r=requests.get(url, cookies=self.__cookies)
+        else:
+            url=f"{self.__root}/data"
+            headers={"Content-Type":"application/xml"}
+            r=requests.post(url, cookies=self.__cookies, data=fetchxml, headers=headers)
+
+        if r.status_code!=200:
+            raise NameError(f"{r.status_code} {r.text}")
         return r.text
 
 
 if __name__=='__main__':
     client=RestApiClient()
-    #client.login("IoTSrv", "password")
-    client.login("guest", "password")
+    print(client.login("guest", "password"))
+
     print(client.delete("dummy",99))
+    print(client.delete("dummy",100))
     print(client.add("dummy", {'id':99,'name':'IC735', 'port':3306}))
+    print(client.add("dummy", {'id':100,'name':'TEST', 'port':3306}))
     print(client.read("dummy", 99))
     print(client.update("dummy", 99, {'id':99,'name':'GD77', 'port':3307}))
     print(client.read("dummy", 99))
-    client.logoff()
+    print(client.read_multible("dummy"))
+
+
+    fetch="""
+    <restapi>
+        <table name="dummy"/>
+        <comment text="from admin.py"/>
+        <filter type="OR">
+            <condition field="name" value="GD77" operator="="/>
+            <condition field="name" value="TEST" operator="="/>
+        </filter>
+    </restapi>
+    """
+    print(client.read_multible("dummy", fetch))
+
+
+    print(client.logoff())
 
 
 

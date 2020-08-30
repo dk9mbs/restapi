@@ -11,10 +11,11 @@ AppInfo.init(__name__, CONFIG['default'])
 
 # Core api endpoints
 # do not import before AppInfo.init() !!!
-import api.entity
-import api.entitylist
-import api.entityadd
-import api.login
+import api.data.entity
+import api.data.entitylist
+import api.data.entitylistfilter
+import api.data.entityadd
+import api.core.login
 
 app=AppInfo.get_app()
 
@@ -24,15 +25,19 @@ def before_request():
 
     if request.endpoint!='login':
         if 'session_id' in session:
-            g.context=AppInfo.create_context(session['session_id'])
+            try:
+                g.context=AppInfo.create_context(session['session_id'])
+            except NameError as err:
+                abort(400, f"{err}")
         else:
             abort(400, 'No session_id in session!!!' )
 
-AppInfo.get_api().add_resource(api.login.Login ,"/api/v1.0/core/login")
-AppInfo.get_api().add_resource(api.login.Logoff ,"/api/v1.0/core/logoff")
-AppInfo.get_api().add_resource(api.entity.get_endpoint(),"/api/v1.0/data/<table>/<id>")
-AppInfo.get_api().add_resource(api.entitylist.get_endpoint(),"/api/v1.0/data/<table>")
-AppInfo.get_api().add_resource(api.entityadd.get_endpoint(),"/api/v1.0/data/<table>")
+AppInfo.get_api().add_resource(api.core.login.Login ,"/api/v1.0/core/login")
+AppInfo.get_api().add_resource(api.core.login.Logoff ,"/api/v1.0/core/logoff")
+AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/api/v1.0/data/<table>/<id>")
+AppInfo.get_api().add_resource(api.data.entitylist.get_endpoint(),"/api/v1.0/data/<table>")
+AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/api/v1.0/data")
+AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/api/v1.0/data/<table>")
 
 @app.teardown_request
 def teardown_request(error=None):

@@ -10,6 +10,7 @@ def read_dataview_meta(context, alias):
     fetch=f"""
     <restapi>
         <table name="api_table"/>
+        <comment text="{context.get_username()} system"/>
         <filter type="and">
             <condition field="alias" value="{alias}" operator="="/>
         </filter>

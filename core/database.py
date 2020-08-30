@@ -27,7 +27,10 @@ class Recordset:
             raise NameError(f"wrong fetch_mode: {fetch_mode}")
 
     def get_result(self):
-        return self._result
+        if(self._result==()):
+            return []
+        else:
+            return self._result
 
     def get_cursor(self):
         return self._cursor
