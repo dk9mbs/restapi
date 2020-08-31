@@ -19,6 +19,8 @@ class FetchXmlParser:
         self._sql_parameters_where=[]
         self._sql_parameters_fields=[]
         self._sql_comment=""
+        self._sql_order=""
+        self._sql_paramaters_order=[]
 
     def get_tables(self):
         return self._tables
@@ -31,6 +33,10 @@ class FetchXmlParser:
         if self._sql_where != "":
             sql.append(f" WHERE {self._sql_where}")
             params=self._sql_parameters_where
+
+        if self._sql_order != "":
+            sql.append(f" ORDER BY {self._sql_order}")
+            params=params+self._sql_paramaters_order
 
         sql.append(f"{self._sql_comment}")
         return (''.join(sql),params)
@@ -63,6 +69,8 @@ class FetchXmlParser:
                 self._build_join(node)
             elif node.tag == "comment":
                 self.build_comment(node)
+            elif node.tag == "orderby":
+                self.build_order(node)
 
     def _escape_string(self, input, scope="somewhere"):
         not_allowed=[";","--","\0","\b","\n","\t","\r"]
@@ -75,6 +83,27 @@ class FetchXmlParser:
 
         return input
 
+    """
+    <orderby>
+        <field name="tablename" alias="t" sort="ASC"/>
+    </orderby>
+    """
+    def build_order(self, node):
+        sql=[]
+        for item in node:
+            name=item.attrib['name']
+            alias=""
+            sort="ASC"
+            if 'alias' in item.attrib:
+                alias = item.attrib['alias']+"."
+            if 'sort' in item.attrib:
+                sort=item.attrib['sort']
+            
+            if sql!=[]:
+                sql.append(",")
+
+            sql.append(f"{alias}{name} {sort}")
+        self._sql_order=''.join(sql)
 
     def build_comment(self, node):
         if 'text' in node.attrib:

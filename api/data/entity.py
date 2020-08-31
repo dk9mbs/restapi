@@ -59,8 +59,11 @@ class Entity(Resource):
             result={"rows_affected": rs.get_cursor().rowcount}
             rs.close()
             return result
-        except NameError as err:
+        except NameError  as err:
             abort(400, f"{err}")
+        #except pymysql.err.IntegrityError as err:
+        #    abort(400, f"{err}")
+
 
     @api.doc(parser=create_parser_get())
     def get(self,table,id):
