@@ -257,6 +257,7 @@ def list_permissions(rest, username, groupname, tablename):
             <condition field="username" alias="u" value="{username}%" operator="like"/>
             <condition field="groupname" alias="g" value="{groupname}%" operator="like"/>
             <condition field="table_name" alias="t" value="{tablename}%" operator="like"/>
+            <condition field="disabled" alias="u" value="0" operator="="/>
         </filter>
         <orderby>
             <field name="username" alias="u" sort="ASC"/>
@@ -309,4 +310,5 @@ elif command == 'permissions':
     list_permissions(rest, args.username, args.groupname, args.tablename)
 else:
     print("use -h switch")
+
 rest.logoff()
