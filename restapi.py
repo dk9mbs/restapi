@@ -48,4 +48,4 @@ def teardown_request(error=None):
         print(str(error))
 
 if __name__ == '__main__':
-    AppInfo.get_app().run(debug=True)
+    AppInfo.get_app().run(debug=False, host="0.0.0.0")
