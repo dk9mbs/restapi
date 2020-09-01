@@ -34,10 +34,13 @@ class EntityAdd(Resource):
             rs=DatabaseServices.exec(builder,context,fetch_mode=0)
             return json.dumps(rs.get_result())
         except NameError as err:
+            print(err)
             abort(400, f"{err}")
         except ValueError as err:
+            print(err)
             abort(400, f"{err}")
         except TypeError as err:
+            print(err)
             abort(400, f"{err}")
 
     @api.doc(parser=create_parser())
