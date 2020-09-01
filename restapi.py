@@ -12,7 +12,6 @@ AppInfo.init(__name__, CONFIG['default'])
 # Core api endpoints
 # do not import before AppInfo.init() !!!
 import api.data.entity
-import api.data.entitylist
 import api.data.entitylistfilter
 import api.data.entityadd
 import api.core.login
@@ -22,6 +21,7 @@ app=AppInfo.get_app()
 @app.before_request
 def before_request():
     g.context=None
+    
 
     if request.endpoint!='login':
         if 'session_id' in session:
@@ -31,11 +31,11 @@ def before_request():
                 abort(400, f"{err}")
         else:
             abort(400, 'No session_id in session!!!' )
-
+            pass
+        
 AppInfo.get_api().add_resource(api.core.login.Login ,"/api/v1.0/core/login")
 AppInfo.get_api().add_resource(api.core.login.Logoff ,"/api/v1.0/core/logoff")
 AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/api/v1.0/data/<table>/<id>")
-AppInfo.get_api().add_resource(api.data.entitylist.get_endpoint(),"/api/v1.0/data/<table>")
 AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/api/v1.0/data")
 AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/api/v1.0/data/<table>")
 
@@ -48,4 +48,4 @@ def teardown_request(error=None):
         print(str(error))
 
 if __name__ == '__main__':
-    AppInfo.get_app().run(debug=False, host="0.0.0.0")
+    AppInfo.get_app().run(debug=True, host="0.0.0.0")

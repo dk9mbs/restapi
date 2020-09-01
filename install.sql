@@ -34,7 +34,8 @@ INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_fiel
 INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
     VALUES (5,'api_group_permission','api_group_permission','id','Int','group_id');
 
-
+INSERT INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name)
+    VALUES (7,'api_session', 'api_session','id','Int','Iser_id');
 
 CREATE TABLE IF NOT EXISTS api_user (
     id int NOT NULL AUTO_INCREMENT,
