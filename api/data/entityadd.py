@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import json
 from flask import Flask,request,abort, g, session
 from flask import Blueprint
 from flask_restplus import Resource, Api, reqparse
@@ -22,6 +22,26 @@ def create_parser():
 
 class EntityAdd(Resource):
     api=AppInfo.get_api()
+
+    api=AppInfo.get_api()
+    @api.doc(parser=create_parser())
+    def get(self, table):
+        try:
+            parser=create_parser().parse_args()
+            context=g.context
+            fetch=build_fetchxml_by_alias(context,table,None, None)
+            builder=factory.create_command('select', fetch_xml=fetch)
+            rs=DatabaseServices.exec(builder,context,fetch_mode=0)
+            return json.dumps(rs.get_result())
+        except NameError as err:
+            print(err)
+            abort(400, f"{err}")
+        except ValueError as err:
+            print(err)
+            abort(400, f"{err}")
+        except TypeError as err:
+            print(err)
+            abort(400, f"{err}")
 
     @api.doc(parser=create_parser())
     def post(self, table):

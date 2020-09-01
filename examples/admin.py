@@ -287,6 +287,34 @@ def list_permissions(rest, username, groupname, tablename):
 
     print(line)
 
+def list_sessions(rest):
+    fetch=f"""
+    <restapi>
+        <table name="api_session"/>
+        <orderby>
+            <field name="last_access_on" sort="ASC"/>
+        </orderby>
+    </restapi>
+    """
+    sessions=json.loads(rest.read_multible("api_session", fetch))
+    fields=[
+        {"description":"SessionID","field":"id","ljust":"25"},
+        {"description":"UserID","field":"user_id","ljust":"10"},
+        {"description":"Created on","field":"created_on","ljust":"25"},
+        {"description":"Last Access","field":"last_access_on","ljust":"25"},
+    ]
+
+    headline, line=format_headline(fields)
+    print(line)
+    print(headline)
+    print(line)
+
+    #for session in sessions:
+    #    print(format_dataline(session, fields))
+
+    print(line)
+
+
 
 if command=='listusers':
     list_users(rest, args.query)
@@ -308,6 +336,8 @@ elif command == 'rmfromgroup':
     remove_user_to_group(rest, args.username, args.groupname)
 elif command == 'permissions':
     list_permissions(rest, args.username, args.groupname, args.tablename)
+elif command == 'listsessions':
+    list_sessions(rest)
 else:
     print("use -h switch")
 
