@@ -297,8 +297,9 @@ def list_sessions(rest):
     </restapi>
     """
     sessions=json.loads(rest.read_multible("api_session", fetch))
+
     fields=[
-        {"description":"SessionID","field":"id","ljust":"25"},
+        {"description":"SessionID","field":"id","ljust":"40"},
         {"description":"UserID","field":"user_id","ljust":"10"},
         {"description":"Created on","field":"created_on","ljust":"25"},
         {"description":"Last Access","field":"last_access_on","ljust":"25"},
@@ -309,8 +310,9 @@ def list_sessions(rest):
     print(headline)
     print(line)
 
-    #for session in sessions:
-    #    print(format_dataline(session, fields))
+    for session in json.loads(sessions):
+        print(format_dataline(session, fields))
+        pass
 
     print(line)
 

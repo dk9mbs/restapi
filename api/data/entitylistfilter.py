@@ -1,9 +1,10 @@
 #!/usr/bin/python3
-
+import json
 from flask import Flask,request,abort,g ,session
 from flask import Blueprint
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
+from datetime import date, datetime
 
 from core.appinfo import AppInfo
 from core.database import CommandBuilderFactory as factory
@@ -13,6 +14,13 @@ from services.database import DatabaseServices
 def create_parser():
     parser=reqparse.RequestParser()
     return parser
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError ("Type %s not serializable" % type(obj))
 
 
 class EntityListFilter(Resource):
@@ -27,7 +35,7 @@ class EntityListFilter(Resource):
             builder=factory.create_command('select', fetch_xml=fetch)
             rs=DatabaseServices.exec(builder,context,fetch_mode=0)
             #print(rs.get_result())
-            return rs.get_result()
+            return json.dumps(rs.get_result(), default=json_serial)
         except NameError as err:
             abort(400, f"{err}")
 
