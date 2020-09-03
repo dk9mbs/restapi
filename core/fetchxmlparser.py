@@ -22,8 +22,17 @@ class FetchXmlParser:
         self._sql_order=""
         self._sql_paramaters_order=[]
 
+    """
+    Returns all joined tables
+    """
     def get_tables(self):
         return self._tables
+
+    """
+    returns the tablename from the table node
+    """
+    def get_main_table(self):
+        return self._sql_table
 
     def get_select(self):
         params=[]

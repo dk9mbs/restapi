@@ -79,14 +79,26 @@ class CommandBuilder:
         return self._sql_parameter
 
     def check_permission(self, context):
-        return self._check_permission(context,"read")
+        raise NameError("permission validator not implemented in class")
 
     def _check_permission(self, context, mode):
         for table in self._fetch_xml_parser.get_tables():
             if not Permission().validate(context, mode, context.get_username(), table):
                 raise NameError (f"no permission ({mode}) for {context.get_username()} on {table}")
-                
+
         return True
+
+    """
+    
+    """
+    def get_tables(self):
+        return self._fetch_xml_parser.get_tables()
+
+    """
+    Returns the tablename from the table node
+    """
+    def get_main_table(self):
+        return self._fetch_xml_parser.get_main_table()
 
     """
     0 or 1
@@ -112,6 +124,9 @@ class UpdateCommandBuilder(CommandBuilder):
         self._sql_parameter=params
         self._sql=sql
 
+    def check_permission(self, context):
+        return self._check_permission(context,"update")
+
 """
 Build an Insert Command
 """
@@ -124,6 +139,8 @@ class InsertCommandBuilder(CommandBuilder):
         self._sql_parameter=params
         self._sql=sql
 
+    def check_permission(self, context):
+        return self._check_permission(context,"insert")
 
 """
 Build an Delete Command
@@ -137,6 +154,8 @@ class DeleteCommandBuilder(CommandBuilder):
         self._sql_parameter=params
         self._sql=sql
 
+    def check_permission(self, context):
+        return self._check_permission(context,"delete")
 
 
 """
@@ -151,6 +170,8 @@ class SelectCommandBuilder(CommandBuilder):
         self._sql_parameter=params
         self._sql=sql
 
+    def check_permission(self, context):
+        return self._check_permission(context,"read")
 
 """
 SQL Command Builder Factory

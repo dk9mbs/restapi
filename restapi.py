@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import importlib
 
 from flask import Flask, g, session, request, abort
 from flask import Blueprint
@@ -21,7 +22,6 @@ app=AppInfo.get_app()
 @app.before_request
 def before_request():
     g.context=None
-    
 
     if request.endpoint!='login':
         if 'session_id' in session:
@@ -31,13 +31,18 @@ def before_request():
                 abort(400, f"{err}")
         else:
             abort(400, 'No session_id in session!!!' )
-            pass
-        
+
 AppInfo.get_api().add_resource(api.core.login.Login ,"/api/v1.0/core/login")
 AppInfo.get_api().add_resource(api.core.login.Logoff ,"/api/v1.0/core/logoff")
 AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/api/v1.0/data/<table>/<id>")
 AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/api/v1.0/data")
 AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/api/v1.0/data/<table>")
+#
+# load the customer plugins
+#
+with app.app_context():
+    print(importlib.import_module("tuxlog").register())
+
 
 @app.teardown_request
 def teardown_request(error=None):
