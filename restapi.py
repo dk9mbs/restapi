@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#import logging
 import importlib
 
 from flask import Flask, g, session, request, abort
@@ -7,6 +8,7 @@ from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from config import CONFIG
 from core.appinfo import AppInfo
+from core import log
 
 AppInfo.init(__name__, CONFIG['default'])
 
@@ -16,6 +18,8 @@ import api.data.entity
 import api.data.entitylistfilter
 import api.data.entityadd
 import api.core.login
+
+logger=log.create_logger(__name__)
 
 app=AppInfo.get_app()
 
@@ -40,8 +44,8 @@ AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/api/v1.0/data
 #
 # load the customer plugins
 #
-with app.app_context():
-    print(importlib.import_module("tuxlog").register())
+#with app.app_context():
+#    print(importlib.import_module("tuxlog").register())
 
 
 @app.teardown_request
@@ -53,4 +57,6 @@ def teardown_request(error=None):
         print(str(error))
 
 if __name__ == '__main__':
-    AppInfo.get_app().run(debug=True, host="0.0.0.0")
+    logger.info(f"Port {AppInfo.get_server_port()}")
+    logger.info(f"Host {AppInfo.get_server_host()}")
+    AppInfo.get_app().run(debug=True, host=AppInfo.get_server_host(), port=AppInfo.get_server_port())

@@ -24,6 +24,15 @@ class AppInfo:
         cls._app.config['MYSQL_DATABASE_DB'] = config['mysql']['database']
         cls._app.config['MYSQL_DATABASE_HOST'] = config['mysql']['host']
         cls._app.config['MYSQL_DATABASE_PORT'] = 3306
+        cls._app.config['RESTAPI_PORT']=5000
+        cls._app.config['RESTAPI_HOST']="127.0.0.1"
+
+        if 'server' in config:
+            if 'port' in config['server']:
+                cls._app.config['RESTAPI_PORT'] = config['server']['port']
+            if 'host' in config['server']:
+                cls._app.config['RESTAPI_HOST'] = config['server']['host']
+
         cls._app.secret_key = "MySecretKey1234"
         cls._api=Api(cls._app)
         cls._mysql=MySQL(cls._app ,cursorclass=DictCursor)
@@ -40,6 +49,14 @@ class AppInfo:
                         db=cls._app.config['MYSQL_DATABASE_DB'],
                         charset='utf8mb4',cursorclass=pymysql.cursors.DictCursor)
 
+
+    @classmethod
+    def get_server_port(cls):
+        return int(cls._app.config['RESTAPI_PORT'])
+
+    @classmethod
+    def get_server_host(cls):
+        return cls._app.config['RESTAPI_HOST']
 
     @classmethod
     def get_app(cls):
