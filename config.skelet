@@ -2,6 +2,6 @@ CONFIG={
     "default": {
         "mysql": {"user":"username", "password":"password", "host":"localhost", "database":"databasename"},
         "server": {"port":5000, "host":"127.0.0.1"},
-        "plugins": {"root":"/tmp"}
+        "plugin": {"root":"/tmp"}
     }
 }

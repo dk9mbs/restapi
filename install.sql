@@ -1,3 +1,7 @@
+DROP TABLE IF EXISTS api_plugin;
+DROP TABLE IF EXISTS api_plugin_trigger;
+DROP TABLE IF EXISTS api_plugin_type;
+DROP TABLE IF EXISTS api_plugin_type;
 DROP TABLE IF EXISTS api_group_permission;
 DROP TABLE IF EXISTS api_user_group;
 DROP TABLE IF EXISTS api_session;
@@ -101,5 +105,30 @@ CREATE TABLE IF NOT EXISTS api_session (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+CREATE TABLE IF NOT EXISTS api_plugin_type(
+    id varchar(50) NOT NULL,
+    name varchar(50) NOT NULL,
+    PRIMARY KEY(id),
+    UNIQUE KEY (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO api_plugin_type (id, name) VALUES ('before','On before');
+INSERT INTO api_plugin_type (id, name) VALUES ('after','On after');
 
+CREATE TABLE IF NOT EXISTS api_event_handler (
+    id int NOT NULL AUTO_INCREMENT,
+    plugin_module_name varchar(500) NOT NULL COMMENT 'Namespace to the register function',
+    publisher varchar(500) NOT NULL COMMENT 'Tablename or publisher of the event',
+    event varchar(500) NOT NULL COMMENT 'name of trigger like insert or update',
+    type varchar(50) NOT NULL,
+    sorting int NOT NULL DEFAULT '100' COMMENT 'Sorting',
+    PRIMARY KEY(id),
+    FOREIGN KEY(type) REFERENCES api_plugin_type(id),
+    INDEX (publisher, event),
+    INDEX (publisher, event, type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','insert','before');
+INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','insert','after');
+INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','update','before');
+INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','update','after');

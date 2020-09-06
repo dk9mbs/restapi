@@ -31,11 +31,10 @@ class EntityListFilter(Resource):
             parser=create_parser().parse_args()
             context=g.context
             fetch=request.data
-            #print(fetch)
             builder=factory.create_command('select', fetch_xml=fetch)
             rs=DatabaseServices.exec(builder,context,fetch_mode=0)
-            #print(rs.get_result())
-            return json.dumps(rs.get_result(), default=json_serial)
+            test= json.dumps(rs.get_result(), default=json_serial)
+            return json.loads(test)
         except NameError as err:
             abort(400, f"{err}")
 

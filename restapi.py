@@ -57,6 +57,7 @@ def teardown_request(error=None):
         print(str(error))
 
 if __name__ == '__main__':
-    logger.info(f"Port {AppInfo.get_server_port()}")
-    logger.info(f"Host {AppInfo.get_server_host()}")
+    logger.info(f"Port.......: {AppInfo.get_server_port()}")
+    logger.info(f"Host.......: {AppInfo.get_server_host()}")
+    logger.info(f"Pluginroot.: {AppInfo.get_plugin_root()}")
     AppInfo.get_app().run(debug=True, host=AppInfo.get_server_host(), port=AppInfo.get_server_port())

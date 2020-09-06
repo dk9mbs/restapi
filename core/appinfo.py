@@ -26,7 +26,7 @@ class AppInfo:
         cls._app.config['MYSQL_DATABASE_PORT'] = 3306
         cls._app.config['RESTAPI_PORT']=5000
         cls._app.config['RESTAPI_HOST']="127.0.0.1"
-
+        cls._app.config['RESTAPI_PLUGIN_ROOT']=config['plugin']['root']
         if 'server' in config:
             if 'port' in config['server']:
                 cls._app.config['RESTAPI_PORT'] = config['server']['port']
@@ -57,6 +57,10 @@ class AppInfo:
     @classmethod
     def get_server_host(cls):
         return cls._app.config['RESTAPI_HOST']
+
+    @classmethod
+    def get_plugin_root(cls):
+        return cls._app.config['RESTAPI_PLUGIN_ROOT']
 
     @classmethod
     def get_app(cls):

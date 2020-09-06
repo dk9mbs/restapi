@@ -336,7 +336,7 @@ elif command == 'addtogroup':
     add_user_to_group(rest, args.username, args.groupname)
 elif command == 'rmfromgroup':
     remove_user_to_group(rest, args.username, args.groupname)
-elif command == 'permissions':
+elif command == 'listpermissions':
     list_permissions(rest, args.username, args.groupname, args.tablename)
 elif command == 'listsessions':
     list_sessions(rest)

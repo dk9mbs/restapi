@@ -3,6 +3,9 @@ from core.fetchxmlparser import FetchXmlParser
 import pymysql.cursors
 from config import CONFIG
 from core.permission import Permission
+from core import log
+
+logger=log.create_logger(__name__)
 
 class Recordset:
     def __init__(self, cursor):
@@ -65,9 +68,9 @@ class CommandBuilder:
 
         self._fetch_xml_parser=FetchXmlParser(self._fetch_xml)
         self._fetch_xml_parser.parse()
-
         self.build()
-        pass
+
+    def get_sql_type(self): return "undefined"
 
     def build(self):
         pass
@@ -119,13 +122,15 @@ class UpdateCommandBuilder(CommandBuilder):
     def __init__(self, kwargs):
         super().__init__(kwargs)
 
+    def get_sql_type(self): return "update"
+
     def build(self):
         (sql,params)= self._fetch_xml_parser.get_update()
         self._sql_parameter=params
         self._sql=sql
 
     def check_permission(self, context):
-        return self._check_permission(context,"update")
+        return self._check_permission(context,self.get_sql_type())
 
 """
 Build an Insert Command
@@ -134,13 +139,15 @@ class InsertCommandBuilder(CommandBuilder):
     def __init__(self, kwargs):
         super().__init__(kwargs)
 
+    def get_sql_type(self): return "insert"
+
     def build(self):
         (sql,params)= self._fetch_xml_parser.get_insert()
         self._sql_parameter=params
         self._sql=sql
 
     def check_permission(self, context):
-        return self._check_permission(context,"insert")
+        return self._check_permission(context,self.get_sql_type())
 
 """
 Build an Delete Command
@@ -149,13 +156,15 @@ class DeleteCommandBuilder(CommandBuilder):
     def __init__(self, kwargs):
         super().__init__(kwargs)
 
+    def get_sql_type(self): return "delete"
+
     def build(self):
         (sql,params)= self._fetch_xml_parser.get_delete()
         self._sql_parameter=params
         self._sql=sql
 
     def check_permission(self, context):
-        return self._check_permission(context,"delete")
+        return self._check_permission(context,self.get_sql_type())
 
 
 """
@@ -165,13 +174,15 @@ class SelectCommandBuilder(CommandBuilder):
     def __init__(self, kwargs):
         super().__init__(kwargs)
 
+    def get_sql_type(self): return "read"
+
     def build(self):
         (sql,params)= self._fetch_xml_parser.get_select()
         self._sql_parameter=params
         self._sql=sql
 
     def check_permission(self, context):
-        return self._check_permission(context,"read")
+        return self._check_permission(context,self.get_sql_type())
 
 """
 SQL Command Builder Factory
