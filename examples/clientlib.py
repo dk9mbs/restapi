@@ -1,4 +1,5 @@
 import requests
+import logging
 
 class RestApiClient:
     def __init__(self, root_url="http://localhost:5000/api"):
@@ -42,6 +43,10 @@ class RestApiClient:
         return r.text
 
     def add(self, table,data):
+        logging.warning("Method add ist deprecated! Pse use create")
+        return self.create(table,data)
+
+    def create(self, table,data):
         url=f"{self.__root}/data/{table}"
         headers={"Content-Type":"application/json"}
         r=requests.post(url, headers=headers, json=data, cookies=self.__cookies)

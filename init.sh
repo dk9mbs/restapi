@@ -23,6 +23,6 @@ else
     echo "venv environment not found ($VENV)"
 fi
 
-export PYTHONPATH=/usr/local/restapi_plugins:~/.restapi/plugins:../:/tmp:$BASEDIR
+export PYTHONPATH=/usr/local/restapi_plugins:~/.restapi/plugins:../:/tmp:$BASEDIR:$BASEDIR/examples
 
 

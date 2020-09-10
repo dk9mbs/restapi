@@ -41,9 +41,9 @@ class FetchXmlParser:
         self._json_fields={}
         self._tables=[]
         self._sql_parameters_where=[]
-       
 
-    def get_sql_fields(self): 
+
+    def get_sql_fields(self):
         return self._json_fields
 
     def get_sql_type(self): return self._sql_type
@@ -190,7 +190,7 @@ class FetchXmlParser:
                 alias = item.attrib['alias']+"."
             if 'sort' in item.attrib:
                 sort=item.attrib['sort']
-            
+
             if sql!=[]:
                 sql.append(",")
 
@@ -292,7 +292,9 @@ class FetchXmlParser:
                 operator="="
                 field=self._escape_string(item.attrib['field'],"fieldname")
                 # do niot escape values here. This will be done by execute
-                value=item.attrib['value']
+                value=""
+                if 'value' in item.attrib:
+                    value=item.attrib['value']
 
                 if 'type' in item.attrib:
                     op=self._escape_string(item.attrib['type'],"operator")
@@ -306,7 +308,18 @@ class FetchXmlParser:
                 if not sql=="":
                     sql=sql+(" %s " % op)
 
-                sql=sql+field+" "+operator+" %s"
-                self._sql_parameters_where.append(value)
+                if operator=="eq":
+                    operator="="
+                elif operator=="neq":
+                    operator="<>"
+
+                if operator == "null":
+                    sql=sql+field+" IS NULL"
+                elif operator == "notnull":
+                    sql=sql+field+" IS NOT NULL"
+                else:
+                    sql=sql+field+" "+operator+" %s"
+                    self._sql_parameters_where.append(value)
+
         #print(sql)
         return "("+sql+")"
