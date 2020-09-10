@@ -5,6 +5,10 @@ from config import CONFIG
 from core.database import Recordset
 from core import log
 from core.plugin import Plugin
+from core.permission import Permission
+from core import log
+
+logger=log.create_logger(__name__)
 
 class DatabaseServices:
     @staticmethod
@@ -13,18 +17,21 @@ class DatabaseServices:
         # Validate the permission
         # in case of no permission the check_permission function triggers an errror
         #
+        
         if not run_as_system:
-            command_builder.check_permission(context)
+            for table in command_builder.get_tables():
+                if not Permission().validate(context, command_builder.get_sql_type(), context.get_username(), table):
+                    raise NameError (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
 
-        params={}
+        #print(command_builder)
+        params={"data": command_builder.get_sql_fields()}
         handler=Plugin(context, command_builder.get_main_table(),command_builder.get_sql_type())
         handler.execute('before', params)
 
-        paras=command_builder.get_sql_parameter()
-        sql=command_builder.get_sql()
+        sql, paras =command_builder.get_sql()
 
-        log.create_logger(__name__).info(sql)
-        log.create_logger(__name__).info(paras)
+        logger.info(sql)
+        logger.info(paras)
 
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
@@ -32,7 +39,7 @@ class DatabaseServices:
 
         handler.execute('after', params)
 
-        if command_builder.get_auto_commit()==1:
+        if command_builder.get_auto_commit()==1 or command_builder.get_auto_commit()==True:
             context.get_connection().commit()
 
         rs=Recordset(cursor)

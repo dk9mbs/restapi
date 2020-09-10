@@ -1,7 +1,16 @@
 #/bin/bash
 
+BASEDIR=$(realpath $0)
+BASEDIR=$(dirname $BASEDIR)
+echo "====================="
+echo "$BASEDIR"
+echo "====================="
+
 mkdir -p ~/.restapi/plugins
-export PYTHONPATH=~/.restapi/plugins:../:/tmp
+#mkdir -p /usr/local/restapi_plugins
+
+
 . ~/venv/lab/bin/activate
-#python restapi.py
+export PYTHONPATH=/usr/local/restapi_plugins:~/.restapi/plugins:../:/tmp
+
 

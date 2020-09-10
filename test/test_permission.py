@@ -7,20 +7,17 @@ from core.appinfo import AppInfo
 from core.permission import Permission
 
 class TestBand(unittest.TestCase):
-    def test_band(self):
-        #band=frequency_to_band(14.074)
-        #print('Frequency => %s Band => %s' % (14.074, band.name))
-        #self.assertEqual(band.name, '20m')
-
+    def setUp(self):
         AppInfo.init(__name__, CONFIG['default'])
         session_id=AppInfo.login("root","password")
-        context=AppInfo.create_context(session_id)
+        self.context=AppInfo.create_context(session_id)
 
-        print("Read permission")
-        self.assertEqual(Permission().validate(context, "read", "guest", "dummy"), True)
+    def test_band(self):
+        self.assertEqual(Permission().validate(self.context, "read", "guest", "dummy"), True)
 
-        AppInfo.save_context(context, True)
-        AppInfo.logoff(context)
+    def tearDown(self):
+        AppInfo.save_context(self.context, True)
+        AppInfo.logoff(self.context)
 
 
 if __name__ == '__main__':

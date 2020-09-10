@@ -7,24 +7,23 @@ from core.appinfo import AppInfo
 from core.plugin import Plugin
 
 class TestPluginExecution(unittest.TestCase):
-    def test_execution(self):
-
+    def setUp(self):
         AppInfo.init(__name__, CONFIG['default'])
         session_id=AppInfo.login("root","password")
-        context=AppInfo.create_context(session_id)
+        self.context=AppInfo.create_context(session_id)
 
-
+    def test_execution(self):
         params={"name":"IC735"}
-        plugin=Plugin(context, 'dummy','update')
-        print(f"\nBefore Execute: {params}")
+        plugin=Plugin(self.context, 'dummy','update')
+        #print(f"\nBefore Execute: {params}")
         plugin.execute('before', params)
         plugin.execute('after', params)
-        print(f"After execute {params}")
+        #print(f"After execute {params}")
         self.assertEqual(params['name'], "GD77")
 
-        AppInfo.save_context(context, True)
-        AppInfo.logoff(context)
-
+    def tearDown(self):
+        AppInfo.save_context(self.context, True)
+        AppInfo.logoff(self.context)
 
 if __name__ == '__main__':
     unittest.main()

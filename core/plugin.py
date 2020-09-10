@@ -31,4 +31,4 @@ class Plugin:
                 plugin_context={"publisher":self._publisher, "trigger":self._trigger, "type":f"{type}","cancel":False }
                 mod=importlib.import_module(p['plugin_module_name'])
                 mod.execute(self._context,plugin_context, params)
-                #cancel=bool(plugin_context['cancel'])
+                #cancel=bool(plugin_context['cancel'])  

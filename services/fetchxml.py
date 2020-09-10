@@ -1,5 +1,6 @@
-from core.database import SelectCommandBuilder
+#from core.database import SelectCommandBuilder
 from services.database import DatabaseServices
+from core.fetchxmlparser import FetchXmlParser
 
 """
 Execute the SQL Command from a valid Cammand Builder Object
@@ -8,7 +9,7 @@ Execute the SQL Command from a valid Cammand Builder Object
 def read_dataview_meta(context, alias):
     connection=context.get_connection()
     fetch=f"""
-    <restapi>
+    <restapi type="select">
         <table name="api_table"/>
         <comment text="{context.get_username()} system"/>
         <filter type="and">
@@ -16,22 +17,21 @@ def read_dataview_meta(context, alias):
         </filter>
     </restapi>
     """
-
-    builder=SelectCommandBuilder(dict(fetch_xml=fetch))
-    rs=DatabaseServices.exec(builder, context, run_as_system=True,  fetch_mode=1)
+    fetchparser=FetchXmlParser(fetch)
+    rs=DatabaseServices.exec(fetchparser, context, run_as_system=True,  fetch_mode=1)
     return rs
 
 """
 data: in case of insert or update the uploadet data as an json object
 """
-def build_fetchxml_by_alias(context,alias,id=None,data=None,auto_commit=0, **kwargs):
+def build_fetchxml_by_alias(context,alias,id=None,data=None,auto_commit=0, type="select", **kwargs):
     rs=read_dataview_meta(context,alias)
     meta=rs.get_result()
     if meta==None:
-        raise ValueError("Cannot found alias %s %s" %  (alias,id))
+        raise NameError("%s not exists in api_table (%s)" %  (alias,id))
 
     tmp=[]
-    tmp.append("<restapi>\n")
+    tmp.append(f"<restapi type=\"{type}\">\n")
     tmp.append(f"<table name=\"{meta['table_name']}\"/>\n")
 
     if id!=None:

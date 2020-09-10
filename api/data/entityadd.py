@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import sys
 import json
 from flask import Flask,request,abort, g, session
 from flask import Blueprint
@@ -7,9 +8,9 @@ from flaskext.mysql import MySQL
 from datetime import date, datetime
 
 from core.appinfo import AppInfo
-from core.database import CommandBuilderFactory as factory
 from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
+from core.fetchxmlparser import FetchXmlParser
 
 def create_parser():
     parser=reqparse.RequestParser()
@@ -36,36 +37,37 @@ class EntityAdd(Resource):
     @api.doc(parser=create_parser())
     def get(self, table):
         try:
-            parser=create_parser().parse_args()
+            create_parser().parse_args()
             context=g.context
-            fetch=build_fetchxml_by_alias(context,table,None, None)
-            builder=factory.create_command('select', fetch_xml=fetch)
-            rs=DatabaseServices.exec(builder,context,fetch_mode=0)
+            fetch=build_fetchxml_by_alias(context,table,None, None,type="select")
+            fetchparser=FetchXmlParser(fetch)
+            rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             test= json.dumps(rs.get_result(), default=json_serial)
             return json.loads(test)
         except NameError as err:
             print(err)
             abort(400, f"{err}")
-        except ValueError as err:
-            print(err)
-            abort(400, f"{err}")
-        except TypeError as err:
-            print(err)
-            abort(400, f"{err}")
+        except Exception as err:
+            abort(500,f"{err}")
 
     @api.doc(parser=create_parser())
     def post(self, table):
-        context=g.context
+        try:
+            context=g.context
 
-        if request.json==None:
-            abort(400, "cannot extract json data in http request for insert %s" % (table))
+            if request.json==None:
+                abort(400, "cannot extract json data in http request for insert %s" % (table))
 
-        fetch=build_fetchxml_by_alias(context,table,None, request.json)
-        builder=factory.create_command('insert', fetch_xml=fetch)
-        rs=DatabaseServices.exec(builder,context, fetch_mode=0)
-        result={"rows_affected": rs.get_cursor().rowcount}
+            fetch=build_fetchxml_by_alias(context,table,None, request.json, type="insert")
+            fetchparser=FetchXmlParser(fetch)
+            rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
+            result={"rows_affected": rs.get_cursor().rowcount}
 
-        return result
+            return result
+        except NameError as err:
+            abort(400,f"{err}")
+        except Exception as err:
+            abort(500,f"{err}")
 
 def get_endpoint():
     return EntityAdd

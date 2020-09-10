@@ -8,6 +8,9 @@ class Permission:
         SELECT * FROM api_user WHERE username=%s AND disabled=%s AND is_admin=%s
         """
 
+        if mode=="insert": mode="create"
+        if mode=="select": mode="read"
+
         connection=context.get_connection()
         cursor=connection.cursor()
         cursor.execute(sql,[username,0,-1])

@@ -2,8 +2,6 @@
 
 . ../init.sh
 
-export PYTHONPATH=$PYTHONPATH:/tmp
-
 echo "PYTHONPATH: $PYTHONPATH"
 
 cat << EOF > /tmp/plugin_test.py
@@ -20,4 +18,4 @@ EOF
 
 
 
-python -m unittest discover
+python -m unittest discover -v
