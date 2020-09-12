@@ -11,6 +11,7 @@ from core.appinfo import AppInfo
 from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
+from core.jsontools import json_serial
 
 def create_parser():
     parser=reqparse.RequestParser()
@@ -22,13 +23,6 @@ def create_parser():
     return parser
 
 
-
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
-
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    raise TypeError ("Type %s not serializable" % type(obj))
 
 class EntityAdd(Resource):
     api=AppInfo.get_api()
@@ -42,8 +36,7 @@ class EntityAdd(Resource):
             fetch=build_fetchxml_by_alias(context,table,None, None,type="select")
             fetchparser=FetchXmlParser(fetch)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
-            test= json.dumps(rs.get_result(), default=json_serial)
-            return json.loads(test)
+            return rs.get_result()
         except NameError as err:
             print(err)
             abort(400, f"{err}")

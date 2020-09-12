@@ -1,5 +1,9 @@
 import requests
 import logging
+import json
+from datetime import datetime
+from datetime import date
+from datetime import time
 
 class RestApiClient:
     def __init__(self, root_url="http://localhost:5000/api"):
@@ -49,6 +53,8 @@ class RestApiClient:
     def create(self, table,data):
         url=f"{self.__root}/data/{table}"
         headers={"Content-Type":"application/json"}
+        data=json.dumps(data,default=self.__json_serial)
+        data=json.loads(data)
         r=requests.post(url, headers=headers, json=data, cookies=self.__cookies)
         if r.status_code!=200:
             raise NameError(f"{r.status_code} {r.text}")
@@ -64,6 +70,8 @@ class RestApiClient:
     def update(self,table,id, data):
         url=f"{self.__root}/data/{table}/{id}"
         headers={"Content-Type":"application/json"}
+        data=json.dumps(data,default=self.__json_serial)
+        data=json.loads(data)
         r=requests.put(url, headers=headers, json=data, cookies=self.__cookies)
         if r.status_code!=200:
             raise NameError(f"{r.status_code} {r.text}")
@@ -81,6 +89,12 @@ class RestApiClient:
         if r.status_code!=200:
             raise NameError(f"{r.status_code} {r.text}")
         return r.text
+
+    def __json_serial(self, obj):
+        """JSON serializer for objects not serializable by default json code"""
+        if isinstance(obj, (datetime, date, time)):
+            return obj.isoformat()
+        raise TypeError ("Type %s not serializable" % type(obj))
 
 
 if __name__=='__main__':

@@ -35,6 +35,7 @@ def before_request():
                 abort(400, f"{err}")
         else:
             abort(400, 'No session_id in session!!!' )
+            pass
 
 AppInfo.get_api().add_resource(api.core.login.Login ,"/api/v1.0/core/login")
 AppInfo.get_api().add_resource(api.core.login.Logoff ,"/api/v1.0/core/logoff")

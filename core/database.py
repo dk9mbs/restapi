@@ -1,9 +1,12 @@
+import json
 from flaskext.mysql import MySQL
-from core.fetchxmlparser import FetchXmlParser
 import pymysql.cursors
+
 from config import CONFIG
+from core.fetchxmlparser import FetchXmlParser
 from core.permission import Permission
 from core import log
+from core.jsontools import json_serial
 
 logger=log.create_logger(__name__)
 
@@ -33,7 +36,8 @@ class Recordset:
         if(self._result==()):
             return []
         else:
-            return self._result
+            tmp=json.dumps(self._result, default=json_serial)
+            return json.loads(tmp)
 
     def get_cursor(self):
         return self._cursor

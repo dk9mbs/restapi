@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sys
+import json
 from flask import Flask, g, session
 from flask import abort
 from flask import Blueprint
@@ -12,6 +13,7 @@ from core.appinfo import AppInfo
 from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
+from core.jsontools import json_serial
 
 def create_parser_get():
     parser=reqparse.RequestParser()
@@ -75,14 +77,12 @@ class Entity(Resource):
 
             fetch=build_fetchxml_by_alias(context, table, id, type="select")
             fetchparser=FetchXmlParser(fetch)
-            print(fetchparser.get_sql())
-            print("TYPE GET_TYPE"+fetchparser.get_sql_type())
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
-
             if rs.get_result()==None:
                 abort(400, "Item not found => %s" % id)
 
             return rs.get_result()
+
         except NameError as err:
             abort(400, f"{err}")
         except Exception as err:

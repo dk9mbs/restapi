@@ -1,5 +1,5 @@
-import json
-import xml.etree.ElementTree as ET
+import json 
+import xml.etree.ElementTree as ET 
 from core import log
 
 logger=log.create_logger(__name__)
@@ -312,7 +312,10 @@ class FetchXmlParser:
                     operator="="
                 elif operator=="neq":
                     operator="<>"
-
+                elif operator=="geq":
+                    operator=">="
+                elif operator=="leq":
+                    operator="<="
                 if operator == "null":
                     sql=sql+field+" IS NULL"
                 elif operator == "notnull":
