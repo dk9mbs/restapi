@@ -120,6 +120,7 @@ CREATE TABLE IF NOT EXISTS api_session (
     session_values text NOT NULL,
     created_on datetime NOT NULL DEFAULT current_timestamp,
     last_access_on datetime NOT NULL DEFAULT current_timestamp,
+    disabled smallint NOT NULL DEFAULT '0',
     PRIMARY KEY(id),
     FOREIGN KEY(user_id) REFERENCES api_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

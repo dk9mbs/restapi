@@ -18,6 +18,7 @@ import api.data.entity
 import api.data.entitylistfilter
 import api.data.entityadd
 import api.core.login
+import api.action
 
 logger=log.create_logger(__name__)
 
@@ -33,29 +34,33 @@ def before_request():
                 g.context=AppInfo.create_context(session['session_id'])
             except NameError as err:
                 abort(400, f"{err}")
+                pass
         else:
-            abort(400, 'No session_id in session!!!' )
-            pass
+            #do not set session['session_id'] because the
+            #guest session will be automaticly deactivated.
+            guest=AppInfo.guest_credentials()
+            session_id=AppInfo.login(guest['username'],guest['password'])
+            g.context=AppInfo.create_context(session_id, auto_logoff=True)
 
 AppInfo.get_api().add_resource(api.core.login.Login ,"/api/v1.0/core/login")
 AppInfo.get_api().add_resource(api.core.login.Logoff ,"/api/v1.0/core/logoff")
 AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/api/v1.0/data/<table>/<id>")
 AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/api/v1.0/data")
 AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/api/v1.0/data/<table>")
-#
-# load the customer plugins
-#
-#with app.app_context():
-#    print(importlib.import_module("tuxlog").register())
-
+AppInfo.get_api().add_resource(api.action.get_endpoint(), "/api/v1.0/action/<action>")
 
 @app.teardown_request
 def teardown_request(error=None):
+
     if not g.context==None:
-        AppInfo.save_context(g.context)
+        if g.context.get_auto_logoff():
+            AppInfo.logoff(g.context)
+        else:
+            AppInfo.save_context(g.context)
 
     if error:
         print(str(error))
+
 
 if __name__ == '__main__':
     logger.info(f"Port.......: {AppInfo.get_server_port()}")

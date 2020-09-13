@@ -8,6 +8,7 @@ from flaskext.mysql import MySQL
 from core.appinfo import AppInfo
 from core.database import CommandBuilderFactory as factory
 from services.database import DatabaseServices
+from core import log
 
 def create_parser():
     parser=reqparse.RequestParser()
@@ -23,7 +24,7 @@ class Login(Resource):
     def post(self):
         username=request.headers.get("username")
         password=request.headers.get("password")
-
+        log.create_logger(__name__).info(f"{username} {password}")
         session_id=AppInfo.login(username, password)
 
         if session_id==None:
