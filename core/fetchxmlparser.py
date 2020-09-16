@@ -1,29 +1,85 @@
-import xml.etree.ElementTree as ET
+import json
+import xml.etree.ElementTree as ET 
+from core import log
+
+logger=log.create_logger(__name__)
 
 """
 
 """
 class FetchXmlParser:
 
-    def __init__(self, fetch_xml):
-        self._tables=[]
+    def __init__(self, fetch_xml, context):
+        self._logger=log.create_logger(__name__)
         self._fetch_xml=fetch_xml
+        self._context=context
+
+        self._sql_type=""
         self._sql_where=""
         self._sql_table=""
         self._sql_table_alias=""
         self._sql_table_join=""
-        self._sql_fields=""
-        self._sql_fields_insert=""
-        self._sql_values_insert=""
         self._sql_select="*"
-        self._sql_parameters_where=[]
-        self._sql_parameters_fields=[]
         self._sql_comment=""
         self._sql_order=""
         self._sql_paramaters_order=[]
+        self._json_fields={}
+        self._tables=[]
+        self._sql_parameters_where=[]
 
+        self.parse()
+
+    def __init_properties(self):
+        self._sql_type=""
+        self._sql_where=""
+        self._sql_table=""
+        self._sql_table_alias=""
+        self._sql_table_join=""
+        self._sql_select="*"
+        self._sql_comment=""
+        self._sql_order=""
+        self._sql_paramaters_order=[]
+        self._json_fields={}
+        self._tables=[]
+        self._sql_parameters_where=[]
+
+
+    def get_sql_fields(self):
+        return self._json_fields
+
+    def get_sql_type(self): return self._sql_type
+
+    def get_auto_commit(self): return False
+
+    """
+    Returns all joined tables
+    """
     def get_tables(self):
         return self._tables
+
+    """
+    returns the tablename from the table node
+    """
+    def get_main_table(self):
+        return self._sql_table
+
+    def get_sql(self):
+
+        if self._sql_type=="insert":
+            return self.get_insert()
+        elif self._sql_type=="create":
+            return self.get_insert()
+        elif self._sql_type=="update":
+            return self.get_update()
+        elif self._sql_type=="select":
+            return self.get_select()
+        elif self._sql_type=="read":
+            return self.get_select()
+        elif self._sql_type=="delete":
+            return self.get_delete()
+        else:
+            logger.warning(self.get_select())
+            raise NameError(f"unknown type in fetchxml: {self._sql_type} {self._fetch_xml}")
 
     def get_select(self):
         params=[]
@@ -42,20 +98,28 @@ class FetchXmlParser:
         return (''.join(sql),params)
 
     def get_insert(self):
-        sql=f"INSERT INTO {self._sql_table} ({self._sql_fields_insert}) VALUES ({self._sql_values_insert}{self._sql_comment})"
-        return (sql,self._sql_parameters_fields)
+        fields,values, params=self._build_insert_fields()
+        sql=f"INSERT INTO {self._sql_table} ({fields}) VALUES ({values}{self._sql_comment})"
+        return (sql,params)
 
     def get_update(self):
-        sql=f"UPDATE {self._sql_table} SET {self._sql_fields} WHERE {self._sql_where}{self._sql_comment}"
-        return (sql,self._sql_parameters_fields+self._sql_parameters_where)
+        fields, params=self._build_update_fields()
+        sql=f"UPDATE {self._sql_table} SET {fields} WHERE {self._sql_where}{self._sql_comment}"
+        return (sql,params+self._sql_parameters_where)
 
     def get_delete(self):
         sql=f"DELETE FROM {self._sql_table} WHERE {self._sql_where}{self._sql_comment}"
         return (sql, self._sql_parameters_where)
 
     def parse(self):
-        #print("xml to parse: {xml}".format(xml=self._fetch_xml))
+        self.__init_properties()
+
         tree=ET.fromstring(self._fetch_xml)
+        if 'type' in tree.attrib:
+            self._sql_type=tree.attrib['type']
+        else:
+            raise NameError(f"No Type in xml {self._fetch_xml}")
+
         for node in tree:
             if node.tag == "filter":
                 self._sql_where=self._build_where(node)
@@ -68,9 +132,10 @@ class FetchXmlParser:
             elif node.tag == "joins":
                 self._build_join(node)
             elif node.tag == "comment":
-                self.build_comment(node)
+                self._build_comment(node)
             elif node.tag == "orderby":
-                self.build_order(node)
+                self._build_order(node)
+
 
     def _escape_string(self, input, scope="somewhere"):
         not_allowed=[";","--","\0","\b","\n","\t","\r"]
@@ -83,12 +148,41 @@ class FetchXmlParser:
 
         return input
 
+    def _build_update_fields(self):
+        sql=[]
+        parameters=[]
+
+        for k,v in self._json_fields.items():
+            if not sql==[]:
+                sql.append(",")
+
+            sql.append(f"{k}=%s")
+            parameters.append(v['value'])
+
+        return (''.join(sql), parameters)
+
+    def _build_insert_fields(self):
+        fields=[]
+        values=[]
+        parameters=[]
+
+        for k,v in self._json_fields.items():
+            if not fields==[]:
+                fields.append(",")
+                values.append(",")
+
+            fields.append(f"{k}")
+            values.append("%s")
+            parameters.append(v['value'])
+
+        return (''.join(fields),''.join(values), parameters)
+
     """
     <orderby>
         <field name="tablename" alias="t" sort="ASC"/>
     </orderby>
     """
-    def build_order(self, node):
+    def _build_order(self, node):
         sql=[]
         for item in node:
             name=item.attrib['name']
@@ -98,14 +192,14 @@ class FetchXmlParser:
                 alias = item.attrib['alias']+"."
             if 'sort' in item.attrib:
                 sort=item.attrib['sort']
-            
+
             if sql!=[]:
                 sql.append(",")
 
             sql.append(f"{alias}{name} {sort}")
         self._sql_order=''.join(sql)
 
-    def build_comment(self, node):
+    def _build_comment(self, node):
         if 'text' in node.attrib:
             self._sql_comment= f" /* {self._escape_string(node.attrib['text'])} */"
 
@@ -161,10 +255,11 @@ class FetchXmlParser:
 
         self._sql_select=''.join(sql)
 
+    """
+    Convert the xml to a json object
+    """
     def _build_fields(self,node):
-        sql=""
-        fields_insert=""
-        values_insert=""
+        fields={}
 
         for field in node:
             # values are replaced by execute
@@ -172,20 +267,10 @@ class FetchXmlParser:
             if 'value' in field.attrib:
                 value=field.attrib['value']
 
-            if not sql=="":
-                sql=sql+","
-                fields_insert=fields_insert+","
-                values_insert=values_insert+","
-
             name=self._escape_string(field.attrib['name'],"fieldname")
-            sql=sql+name+"=%s"
-            fields_insert=fields_insert+name
-            values_insert=values_insert+"%s"
-            self._sql_parameters_fields.append(value)
-
-        self._sql_fields=sql
-        self._sql_fields_insert=fields_insert
-        self._sql_values_insert=values_insert
+            fields[name]={"value": value, "old_value":None}
+            #fields.append({"name": name, "value": value})
+        self._json_fields=fields
 
     def _build_where(self, node):
         sql=""
@@ -209,7 +294,9 @@ class FetchXmlParser:
                 operator="="
                 field=self._escape_string(item.attrib['field'],"fieldname")
                 # do niot escape values here. This will be done by execute
-                value=item.attrib['value']
+                value=""
+                if 'value' in item.attrib:
+                    value=item.attrib['value']
 
                 if 'type' in item.attrib:
                     op=self._escape_string(item.attrib['type'],"operator")
@@ -223,7 +310,21 @@ class FetchXmlParser:
                 if not sql=="":
                     sql=sql+(" %s " % op)
 
-                sql=sql+field+" "+operator+" %s"
-                self._sql_parameters_where.append(value)
+                if operator=="eq":
+                    operator="="
+                elif operator=="neq":
+                    operator="<>"
+                elif operator=="geq":
+                    operator=">="
+                elif operator=="leq":
+                    operator="<="
+                if operator == "null":
+                    sql=sql+field+" IS NULL"
+                elif operator == "notnull":
+                    sql=sql+field+" IS NOT NULL"
+                else:
+                    sql=sql+field+" "+operator+" %s"
+                    self._sql_parameters_where.append(value)
+
         #print(sql)
         return "("+sql+")"

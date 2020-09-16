@@ -6,6 +6,7 @@ class Context:
         self.__connection=None
         self.__userinfo=None
         self.__session_values=None
+        self._auto_logoff=False
 
     def __del__(self):
         pass
@@ -17,6 +18,12 @@ class Context:
             raise NameError('missing attribute username in userinfo in this context')
 
         return self.__userinfo['username']
+
+    def get_auto_logoff(self):
+        return self._auto_logoff
+
+    def set_auto_logoff(self, value):
+        self._auto_logoff=value
 
     def get_connection(self, database_id=0):
         return self.__connection

@@ -14,6 +14,7 @@ class AppInfo:
     _api=None
     _mysql=None
     _current_config={}
+    _guest_user=None
 
     @classmethod
     def init(cls,name,config):
@@ -24,6 +25,15 @@ class AppInfo:
         cls._app.config['MYSQL_DATABASE_DB'] = config['mysql']['database']
         cls._app.config['MYSQL_DATABASE_HOST'] = config['mysql']['host']
         cls._app.config['MYSQL_DATABASE_PORT'] = 3306
+        cls._app.config['RESTAPI_PORT']=5000
+        cls._app.config['RESTAPI_HOST']="127.0.0.1"
+        cls._app.config['RESTAPI_PLUGIN_ROOT']=config['plugin']['root']
+        if 'server' in config:
+            if 'port' in config['server']:
+                cls._app.config['RESTAPI_PORT'] = config['server']['port']
+            if 'host' in config['server']:
+                cls._app.config['RESTAPI_HOST'] = config['server']['host']
+
         cls._app.secret_key = "MySecretKey1234"
         cls._api=Api(cls._app)
         cls._mysql=MySQL(cls._app ,cursorclass=DictCursor)
@@ -42,6 +52,18 @@ class AppInfo:
 
 
     @classmethod
+    def get_server_port(cls):
+        return int(cls._app.config['RESTAPI_PORT'])
+
+    @classmethod
+    def get_server_host(cls):
+        return cls._app.config['RESTAPI_HOST']
+
+    @classmethod
+    def get_plugin_root(cls):
+        return cls._app.config['RESTAPI_PLUGIN_ROOT']
+
+    @classmethod
     def get_app(cls):
         return cls._app
 
@@ -57,11 +79,11 @@ class AppInfo:
     Create a context object after start_session.
     """
     @classmethod
-    def create_context(cls, session_id):
+    def create_context(cls, session_id, auto_logoff=False):
         connection=cls.create_connection()
 
         sql=f"""
-            SELECT * FROM api_session WHERE id=%s
+        SELECT * FROM api_session WHERE id=%s AND disabled=0
         """
         cursor=connection.cursor()
         cursor.execute(sql, [session_id])
@@ -86,6 +108,7 @@ class AppInfo:
         ctx.set_session_values(session_values)
         ctx.set_userinfo({"username": system_user['username']})
         ctx.set_session_id(session_id)
+        ctx.set_auto_logoff(auto_logoff)
 
         connection.commit()
         connection.close()
@@ -96,7 +119,7 @@ class AppInfo:
     """
     @classmethod
     def save_context(cls, context, close_context=True):
-        
+
         sql=f"""
         UPDATE api_session set session_values=%s,last_access_on=now() WHERE id=%s
         """
@@ -110,6 +133,25 @@ class AppInfo:
         if close_context:
             context.close()
 
+    """
+    Return the guest credentials
+    """
+    @classmethod
+    def guest_credentials(cls):
+        if cls._guest_user!=None:
+            return cls._guest_user
+
+        sql=f"""
+        SELECT * FROM api_user WHERE username='guest';
+        """
+        connection=cls.create_connection()
+        cursor=connection.cursor()
+        cursor.execute(sql)
+        guest=cursor.fetchone()
+        cursor.fetchall()
+        connection.close()
+        cls._guest_user=guest
+        return guest
 
     """
     Log useron and create a valid session id
@@ -150,7 +192,7 @@ class AppInfo:
     @classmethod
     def logoff(cls, context):
         sql=f"""
-        DELETE FROM api_session WHERE id=%s
+        UPDATE api_session SET disabled=-1 WHERE id=%s
         """
         connection=cls.create_connection()
         cursor=connection.cursor()

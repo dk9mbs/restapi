@@ -1,8 +1,14 @@
+import json
 from flaskext.mysql import MySQL
-from core.fetchxmlparser import FetchXmlParser
 import pymysql.cursors
+
 from config import CONFIG
+from core.fetchxmlparser import FetchXmlParser
 from core.permission import Permission
+from core import log
+from core.jsontools import json_serial
+
+logger=log.create_logger(__name__)
 
 class Recordset:
     def __init__(self, cursor):
@@ -30,7 +36,8 @@ class Recordset:
         if(self._result==()):
             return []
         else:
-            return self._result
+            tmp=json.dumps(self._result, default=json_serial)
+            return json.loads(tmp)
 
     def get_cursor(self):
         return self._cursor
@@ -65,28 +72,27 @@ class CommandBuilder:
 
         self._fetch_xml_parser=FetchXmlParser(self._fetch_xml)
         self._fetch_xml_parser.parse()
-
         self.build()
-        pass
+
+    def get_sql_type(self): return "undefined"
 
     def build(self):
         pass
 
     def get_sql(self):
-        return self._sql
+        return (self._sql,self._sql_parameter)
 
-    def get_sql_parameter(self):
-        return self._sql_parameter
+    """
+    
+    """
+    def get_tables(self):
+        return self._fetch_xml_parser.get_tables()
 
-    def check_permission(self, context):
-        return self._check_permission(context,"read")
-
-    def _check_permission(self, context, mode):
-        for table in self._fetch_xml_parser.get_tables():
-            if not Permission().validate(context, mode, context.get_username(), table):
-                raise NameError (f"no permission ({mode}) for {context.get_username()} on {table}")
-                
-        return True
+    """
+    Returns the tablename from the table node
+    """
+    def get_main_table(self):
+        return self._fetch_xml_parser.get_main_table()
 
     """
     0 or 1
@@ -107,10 +113,13 @@ class UpdateCommandBuilder(CommandBuilder):
     def __init__(self, kwargs):
         super().__init__(kwargs)
 
+    def get_sql_type(self): return "update"
+
     def build(self):
         (sql,params)= self._fetch_xml_parser.get_update()
         self._sql_parameter=params
         self._sql=sql
+
 
 """
 Build an Insert Command
@@ -118,6 +127,8 @@ Build an Insert Command
 class InsertCommandBuilder(CommandBuilder):
     def __init__(self, kwargs):
         super().__init__(kwargs)
+
+    def get_sql_type(self): return "insert"
 
     def build(self):
         (sql,params)= self._fetch_xml_parser.get_insert()
@@ -132,11 +143,12 @@ class DeleteCommandBuilder(CommandBuilder):
     def __init__(self, kwargs):
         super().__init__(kwargs)
 
+    def get_sql_type(self): return "delete"
+
     def build(self):
         (sql,params)= self._fetch_xml_parser.get_delete()
         self._sql_parameter=params
         self._sql=sql
-
 
 
 """
@@ -145,6 +157,8 @@ Returns an sql select statement
 class SelectCommandBuilder(CommandBuilder):
     def __init__(self, kwargs):
         super().__init__(kwargs)
+
+    def get_sql_type(self): return "read"
 
     def build(self):
         (sql,params)= self._fetch_xml_parser.get_select()

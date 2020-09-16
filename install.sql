@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS api_event_handler;
+DROP TABLE IF EXISTS api_event_type;
 DROP TABLE IF EXISTS api_group_permission;
 DROP TABLE IF EXISTS api_user_group;
 DROP TABLE IF EXISTS api_session;
@@ -5,6 +7,18 @@ DROP TABLE IF EXISTS api_dataview;
 DROP TABLE IF EXISTS api_table;
 DROP TABLE IF EXISTS api_user;
 DROP TABLE IF EXISTS api_group;
+DROP TABLE IF EXISTS api_solution;
+#deprecated
+DROP TABLE IF EXISTS api_plugin_type;
+
+CREATE TABLE IF NOT EXISTS api_solution(
+    id int NOT NULL,
+    name varchar(50)NOT NULL,
+    PRIMARY KEY(id),
+    UNIQUE KEY(name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO api_solution(id,name) VALUES (1,'restapi');
 
 CREATE TABLE IF NOT EXISTS api_table (
     id int NOT NULL AUTO_INCREMENT,
@@ -14,6 +28,8 @@ CREATE TABLE IF NOT EXISTS api_table (
     id_field_type varchar(50) NOT NULL COMMENT 'String,Int',
     desc_field_name varchar(250) NOT NULL COMMENT 'Name of the description field',
     view_sql text NULL,
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
     UNIQUE KEY(alias),
     UNIQUE KEY(table_name)
@@ -43,6 +59,8 @@ CREATE TABLE IF NOT EXISTS api_user (
     password varchar(100) NOT NULL,
     disabled smallint NOT NULL DEFAULT '0',
     is_admin smallint NOT NULL DEFAULT '0',
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
     UNIQUE KEY(username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -55,6 +73,8 @@ CREATE TABLE IF NOT EXISTS api_group (
     id int NOT NULL AUTO_INCREMENT,
     groupname varchar(100) NOT NULL,
     is_admin smallint NOT NULL DEFAULT '0',
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
     UNIQUE KEY(groupname)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -66,6 +86,8 @@ CREATE TABLE IF NOT EXISTS api_user_group (
     id int NOT NULL AUTO_INCREMENT,
     user_id int NOT NULL,
     group_id int NOT NULL,
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
     UNIQUE KEY(user_id,group_id),
     FOREIGN KEY(user_id) REFERENCES api_user(id),
@@ -82,6 +104,8 @@ CREATE TABLE IF NOT EXISTS api_group_permission(
     mode_read smallint NOT NULL DEFAULT '0',
     mode_update smallint NOT NULL DEFAULT '0',
     mode_delete smallint NOT NULL DEFAULT '0',
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
     UNIQUE KEY(group_id, table_id),
     FOREIGN KEY(group_id) REFERENCES api_group(id),
@@ -96,10 +120,40 @@ CREATE TABLE IF NOT EXISTS api_session (
     session_values text NOT NULL,
     created_on datetime NOT NULL DEFAULT current_timestamp,
     last_access_on datetime NOT NULL DEFAULT current_timestamp,
+    disabled smallint NOT NULL DEFAULT '0',
     PRIMARY KEY(id),
     FOREIGN KEY(user_id) REFERENCES api_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+CREATE TABLE IF NOT EXISTS api_event_type(
+    id varchar(50) NOT NULL,
+    name varchar(50) NOT NULL,
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
+    PRIMARY KEY(id),
+    UNIQUE KEY (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO api_event_type (id, name) VALUES ('before','On before');
+INSERT INTO api_event_type (id, name) VALUES ('after','On after');
 
+CREATE TABLE IF NOT EXISTS api_event_handler (
+    id int NOT NULL AUTO_INCREMENT,
+    plugin_module_name varchar(500) NOT NULL COMMENT 'Namespace to the register function',
+    publisher varchar(500) NOT NULL COMMENT 'Tablename or publisher of the event',
+    event varchar(500) NOT NULL COMMENT 'name of trigger like insert or update',
+    type varchar(50) NOT NULL,
+    sorting int NOT NULL DEFAULT '100' COMMENT 'Sorting',
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
+    PRIMARY KEY(id),
+    FOREIGN KEY(type) REFERENCES api_event_type(id),
+    INDEX (publisher, event),
+    INDEX (publisher, event, type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','insert','before');
+INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','insert','after');
+INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','update','before');
+INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','update','after');

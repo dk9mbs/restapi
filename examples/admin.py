@@ -59,7 +59,7 @@ def format_dataline(data, json):
 
 def username_to_id(rest,username):
     fetch=f"""
-        <restapi>
+        <restapi type="select">
             <table name="api_user"/>
             <filter type="and">
                 <condition field="username" value="{username}" operator="="/>
@@ -77,7 +77,7 @@ def username_to_id(rest,username):
 
 def groupname_to_id(rest,groupname):
     fetch=f"""
-        <restapi>
+        <restapi type="select">
             <table name="api_group"/>
             <filter type="and">
                 <condition field="groupname" value="{groupname}" operator="="/>
@@ -99,7 +99,7 @@ def list_groups(rest, query):
         query=""
 
     fetch=f"""
-    <restapi>
+    <restapi type="select">
         <table name="api_group"/>
         <filter type="AND">
         <condition field="groupname" value="{query}%" operator="like"/>
@@ -130,7 +130,7 @@ def list_users(rest, query):
         query=""
 
     fetch=f"""
-    <restapi>
+    <restapi type="select">
         <table name="api_user"/>
         <filter type="AND">
         <condition field="username" value="{query}%" operator="like"/>
@@ -212,7 +212,7 @@ def remove_user_to_group(rest, username, groupname):
     group_id=groupname_to_id(rest, groupname)
 
     fetch=f"""
-    <restapi>
+    <restapi type="select">
         <table name="api_user_group"/>
         <filter type="and">
             <condition field="group_id" value="{group_id}" operator="="/>
@@ -236,7 +236,7 @@ def list_permissions(rest, username, groupname, tablename):
         tablename=""
 
     fetch=f"""
-    <restapi>
+    <restapi type="select">
         <table name="api_group_permission" alias="p"/>
         <joins>
             <join type="inner" table="api_group" alias="g" condition="p.group_id=g.id"/>
@@ -289,16 +289,18 @@ def list_permissions(rest, username, groupname, tablename):
 
 def list_sessions(rest):
     fetch=f"""
-    <restapi>
+    <restapi type="select">
         <table name="api_session"/>
         <orderby>
             <field name="last_access_on" sort="ASC"/>
         </orderby>
     </restapi>
     """
+
     sessions=json.loads(rest.read_multible("api_session", fetch))
+
     fields=[
-        {"description":"SessionID","field":"id","ljust":"25"},
+        {"description":"SessionID","field":"id","ljust":"40"},
         {"description":"UserID","field":"user_id","ljust":"10"},
         {"description":"Created on","field":"created_on","ljust":"25"},
         {"description":"Last Access","field":"last_access_on","ljust":"25"},
@@ -309,8 +311,41 @@ def list_sessions(rest):
     print(headline)
     print(line)
 
-    #for session in sessions:
-    #    print(format_dataline(session, fields))
+    for session in sessions:
+        print(format_dataline(session, fields))
+
+    print(line)
+
+
+def list_event_handler(rest):
+    fetch=f"""
+    <restapi type="select">
+        <table name="api_event_handler"/>
+        <orderby>
+            <field name="solution_id" sort="ASC"/>
+            <field name="publisher" sort="ASC"/>
+        </orderby>
+    </restapi>
+    """
+    sessions=json.loads(rest.read_multible("api_session", fetch))
+
+    fields=[
+        {"description":"id","field":"id","rjust":"8"},
+        {"description":"plugin_module_name","field":"plugin_module_name","ljust":"40"},
+        {"description":"Publisher","field":"publisher","ljust":"25"},
+        {"description":"Event","field":"event","ljust":"10"},
+        {"description":"Type","field":"type","ljust":"10"},
+        {"description":"Solution","field":"solution_id","rjust":"8"},
+    ]
+
+    headline, line=format_headline(fields)
+    print(line)
+    print(headline)
+    print(line)
+
+    for session in sessions:
+        print(format_dataline(session, fields))
+        pass
 
     print(line)
 
@@ -334,10 +369,12 @@ elif command == 'addtogroup':
     add_user_to_group(rest, args.username, args.groupname)
 elif command == 'rmfromgroup':
     remove_user_to_group(rest, args.username, args.groupname)
-elif command == 'permissions':
+elif command == 'listpermissions':
     list_permissions(rest, args.username, args.groupname, args.tablename)
 elif command == 'listsessions':
     list_sessions(rest)
+elif command == 'listeventhandlers':
+    list_event_handler(rest)
 else:
     print("use -h switch")
 
