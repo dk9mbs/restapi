@@ -25,7 +25,7 @@ class TestFetchxmlParser(unittest.TestCase):
             </fields>
         </restapi>
         """
-        parser=FetchXmlParser(xml)
+        parser=FetchXmlParser(xml, self.context)
         parser.parse()
         #print(parser.get_sql())
         #print("END of test_fetchxml")

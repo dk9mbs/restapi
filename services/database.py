@@ -1,12 +1,14 @@
 from flaskext.mysql import MySQL
-from core.fetchxmlparser import FetchXmlParser
 import pymysql.cursors
+
 from config import CONFIG
 from core.database import Recordset
 from core import log
 from core.plugin import Plugin
 from core.permission import Permission
 from core import log
+from core.fetchxmlparser import FetchXmlParser
+from core.meta import read_table_meta
 
 logger=log.create_logger(__name__)
 
@@ -17,13 +19,28 @@ class DatabaseServices:
         # Validate the permission
         # in case of no permission the check_permission function triggers an errror
         #
-        
+
         if not run_as_system:
             for table in command_builder.get_tables():
                 if not Permission().validate(context, command_builder.get_sql_type(), context.get_username(), table):
                     raise NameError (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
 
-        #print(command_builder)
+        if command_builder.get_sql_type().upper()=='UPDATE':
+            sql, paras=command_builder.get_select()
+            cursor=context.get_connection().cursor()
+            cursor.execute(sql, paras)
+            rsold=Recordset(cursor)
+            rsold.read(0)
+            print("==================")
+            print("==================")
+            print("==================")
+            print(rsold.get_result())
+            print(command_builder.get_sql_fields())
+            print("==================")
+            print("==================")
+            print("==================")
+
+
         params={"data": command_builder.get_sql_fields()}
         handler=Plugin(context, command_builder.get_main_table(),command_builder.get_sql_type())
         handler.execute('before', params)

@@ -1,4 +1,4 @@
-import json 
+import json
 import xml.etree.ElementTree as ET 
 from core import log
 
@@ -9,9 +9,10 @@ logger=log.create_logger(__name__)
 """
 class FetchXmlParser:
 
-    def __init__(self, fetch_xml):
+    def __init__(self, fetch_xml, context):
         self._logger=log.create_logger(__name__)
         self._fetch_xml=fetch_xml
+        self._context=context
 
         self._sql_type=""
         self._sql_where=""
@@ -134,6 +135,7 @@ class FetchXmlParser:
                 self._build_comment(node)
             elif node.tag == "orderby":
                 self._build_order(node)
+
 
     def _escape_string(self, input, scope="somewhere"):
         not_allowed=[";","--","\0","\b","\n","\t","\r"]
@@ -266,7 +268,7 @@ class FetchXmlParser:
                 value=field.attrib['value']
 
             name=self._escape_string(field.attrib['name'],"fieldname")
-            fields[name]={"value": value}
+            fields[name]={"value": value, "old_value":None}
             #fields.append({"name": name, "value": value})
         self._json_fields=fields
 

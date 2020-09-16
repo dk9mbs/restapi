@@ -22,7 +22,7 @@ class TestFetchxmlParser(unittest.TestCase):
             </filter>
         </restapi>
         """
-        fetch=FetchXmlParser(xml)
+        fetch=FetchXmlParser(xml,self.context)
         DatabaseServices.exec(fetch,self.context)
 
         xml=f"""
@@ -33,7 +33,7 @@ class TestFetchxmlParser(unittest.TestCase):
             </filter>
         </restapi>
         """
-        fetch=FetchXmlParser(xml)
+        fetch=FetchXmlParser(xml, self.context)
         dummy=DatabaseServices.exec(fetch,self.context, fetch_mode=1)
         self.assertIsNone(dummy.get_result())
 
@@ -50,7 +50,7 @@ class TestFetchxmlParser(unittest.TestCase):
             </fields>
         </restapi>
         """
-        fetch=FetchXmlParser(xml)
+        fetch=FetchXmlParser(xml, self.context)
         DatabaseServices.exec(fetch,self.context)
 
         xml=f"""
@@ -61,7 +61,7 @@ class TestFetchxmlParser(unittest.TestCase):
             </filter>
         </restapi>
         """
-        fetch=FetchXmlParser(xml)
+        fetch=FetchXmlParser(xml, self.context)
         dummy=DatabaseServices.exec(fetch,self.context, fetch_mode=1)
         self.assertIsNotNone (dummy.get_result())
 
@@ -76,7 +76,7 @@ class TestFetchxmlParser(unittest.TestCase):
             </fields>
         </restapi>
         """
-        fetch=FetchXmlParser(xml)
+        fetch=FetchXmlParser(xml, self.context)
         DatabaseServices.exec(fetch,self.context)
 
         xml=f"""
@@ -87,7 +87,7 @@ class TestFetchxmlParser(unittest.TestCase):
             </filter>
         </restapi>
         """
-        fetch=FetchXmlParser(xml)
+        fetch=FetchXmlParser(xml, self.context)
         dummy=DatabaseServices.exec(fetch,self.context, fetch_mode=1)
         self.assertEqual(dummy.get_result()['name'], "UPDATE")
 

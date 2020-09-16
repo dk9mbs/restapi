@@ -27,7 +27,7 @@ class EntityListFilter(Resource):
             parser=create_parser().parse_args()
             context=g.context
             fetch=request.data
-            fetchparser=FetchXmlParser(fetch)
+            fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             return rs.get_result()
         except NameError as err:

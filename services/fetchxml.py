@@ -1,32 +1,23 @@
 #from core.database import SelectCommandBuilder
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
+from core.meta import read_table_meta
 
 """
 Execute the SQL Command from a valid Cammand Builder Object
 """
 
-def read_dataview_meta(context, alias):
-    connection=context.get_connection()
-    fetch=f"""
-    <restapi type="select">
-        <table name="api_table"/>
-        <comment text="{context.get_username()} system"/>
-        <filter type="and">
-            <condition field="alias" value="{alias}" operator="="/>
-        </filter>
-    </restapi>
-    """
-    fetchparser=FetchXmlParser(fetch)
-    rs=DatabaseServices.exec(fetchparser, context, run_as_system=True,  fetch_mode=1)
-    return rs
+def build_fetchxml_by_table_name(context,table_name,id=None,data=None,auto_commit=0, type="select", **kwargs):
+    return __build_fetchxml_by(context,None,table_name,id,data,auto_commit, type)
+
+def build_fetchxml_by_alias(context,alias,id=None,data=None,auto_commit=0, type="select", **kwargs):
+    return __build_fetchxml_by(context,alias,None,id,data,auto_commit, type)
 
 """
 data: in case of insert or update the uploadet data as an json object
 """
-def build_fetchxml_by_alias(context,alias,id=None,data=None,auto_commit=0, type="select", **kwargs):
-    rs=read_dataview_meta(context,alias)
-    meta=rs.get_result()
+def __build_fetchxml_by(context,alias,table_name,id=None,data=None,auto_commit=0, type="select", **kwargs):
+    meta=read_table_meta(context,alias=alias,table_name=table_name)
     if meta==None:
         raise NameError("%s not exists in api_table (%s)" %  (alias,id))
 

@@ -38,7 +38,7 @@ class Entity(Resource):
             create_parser_delete().parse_args()
             context=g.context
             fetch=build_fetchxml_by_alias(context,table,id, type="delete")
-            fetchparser=FetchXmlParser(fetch)
+            fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
             result={"rows_affected": rs.get_cursor().rowcount}
             rs.close()
@@ -58,7 +58,7 @@ class Entity(Resource):
                 abort(400, "cannot extract json data in body %s %s" % (table,id))
 
             fetch=build_fetchxml_by_alias(context, table, id, request.json, type="update")
-            fetchparser=FetchXmlParser(fetch)
+            fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
             result={"rows_affected": rs.get_cursor().rowcount}
             rs.close()
@@ -76,7 +76,7 @@ class Entity(Resource):
             context=g.context
 
             fetch=build_fetchxml_by_alias(context, table, id, type="select")
-            fetchparser=FetchXmlParser(fetch)
+            fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
             if rs.get_result()==None:
                 abort(400, "Item not found => %s" % id)

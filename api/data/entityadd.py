@@ -15,11 +15,11 @@ from core.jsontools import json_serial
 
 def create_parser():
     parser=reqparse.RequestParser()
-    parser.add_argument('where',type=str, help='Valid sql where clause', location='query')
-    parser.add_argument('orderby',type=str, help='Valid sql orderby clause', location='query')
-    parser.add_argument('select',type=str, help='Valid sql select', location='query')
-    parser.add_argument('pagesize', type=int, help='Pagesize of the resultset',default=5000, location='query')
-    parser.add_argument('page', type=int, help='Page',default=1, location='query')
+    #parser.add_argument('where',type=str, help='Valid sql where clause', location='query')
+    #parser.add_argument('orderby',type=str, help='Valid sql orderby clause', location='query')
+    #parser.add_argument('select',type=str, help='Valid sql select', location='query')
+    #parser.add_argument('pagesize', type=int, help='Pagesize of the resultset',default=5000, location='query')
+    #parser.add_argument('page', type=int, help='Page',default=1, location='query')
     return parser
 
 
@@ -34,7 +34,7 @@ class EntityAdd(Resource):
             create_parser().parse_args()
             context=g.context
             fetch=build_fetchxml_by_alias(context,table,None, None,type="select")
-            fetchparser=FetchXmlParser(fetch)
+            fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             return rs.get_result()
         except NameError as err:
@@ -52,7 +52,7 @@ class EntityAdd(Resource):
                 abort(400, "cannot extract json data in http request for insert %s" % (table))
 
             fetch=build_fetchxml_by_alias(context,table,None, request.json, type="insert")
-            fetchparser=FetchXmlParser(fetch)
+            fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
             result={"rows_affected": rs.get_cursor().rowcount}
 
