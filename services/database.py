@@ -31,15 +31,12 @@ class DatabaseServices:
             cursor.execute(sql, paras)
             rsold=Recordset(cursor)
             rsold.read(0)
-            print("==================")
-            print("==================")
-            print("==================")
-            print(rsold.get_result())
-            print(command_builder.get_sql_fields())
-            print("==================")
-            print("==================")
-            print("==================")
-
+            if len(rsold.get_result())>0:
+                rec=rsold.get_result()[0]
+                for k,v in rec.items():
+                    if k in command_builder.get_sql_fields():
+                        command_builder.get_sql_fields()[k]['old_value']=v
+                logger.info(command_builder.get_sql_fields())
 
         params={"data": command_builder.get_sql_fields()}
         handler=Plugin(context, command_builder.get_main_table(),command_builder.get_sql_type())
