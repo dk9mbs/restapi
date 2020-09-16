@@ -31,6 +31,7 @@ class DatabaseServices:
             cursor.execute(sql, paras)
             rsold=Recordset(cursor)
             rsold.read(0)
+            logger.info(rsold.get_result())
             if len(rsold.get_result())>0:
                 rec=rsold.get_result()[0]
                 for k,v in rec.items():
