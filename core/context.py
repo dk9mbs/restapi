@@ -19,6 +19,14 @@ class Context:
 
         return self.__userinfo['username']
 
+    def get_user_id(self):
+        if self.__userinfo==None:
+            raise NameError('there is no userinfo object in this context!')
+        if not 'user_id' in self.__userinfo:
+            raise NameError('missing attribute user_id in userinfo in this context')
+
+        return self.__userinfo['user_id']
+
     def get_auto_logoff(self):
         return self._auto_logoff
 

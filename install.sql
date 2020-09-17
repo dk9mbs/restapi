@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS api_audit_log;
 DROP TABLE IF EXISTS api_event_handler;
 DROP TABLE IF EXISTS api_event_type;
 DROP TABLE IF EXISTS api_group_permission;
@@ -8,6 +9,7 @@ DROP TABLE IF EXISTS api_table;
 DROP TABLE IF EXISTS api_user;
 DROP TABLE IF EXISTS api_group;
 DROP TABLE IF EXISTS api_solution;
+
 #deprecated
 DROP TABLE IF EXISTS api_plugin_type;
 
@@ -27,7 +29,7 @@ CREATE TABLE IF NOT EXISTS api_table (
     id_field_name varchar(250) NOT NULL,
     id_field_type varchar(50) NOT NULL COMMENT 'String,Int',
     desc_field_name varchar(250) NOT NULL COMMENT 'Name of the description field',
-    view_sql text NULL,
+    enable_audit_log smallint NOT NULL DEFAULT '0',
     solution_id int NOT NULL DEFAULT '1',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
@@ -35,23 +37,23 @@ CREATE TABLE IF NOT EXISTS api_table (
     UNIQUE KEY(table_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
-    VALUES (1,'dummy','dummy','id','Int','name');
+INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (1,'dummy','dummy','id','Int','name',-1);
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
-    VALUES (2,'api_user','api_user','id','Int','username');
+INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (2,'api_user','api_user','id','Int','username',-1);
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
-    VALUES (3,'api_group','api_group','id','Int','groupname');
+INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name, enable_audit_log)
+    VALUES (3,'api_group','api_group','id','Int','groupname',-1);
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
-    VALUES (4,'api_user_group','api_user_group','id','Int','user_id');
+INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (4,'api_user_group','api_user_group','id','Int','user_id',-1);
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name)
-    VALUES (5,'api_group_permission','api_group_permission','id','Int','group_id');
+INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (5,'api_group_permission','api_group_permission','id','Int','group_id',-1);
 
-INSERT INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name)
-    VALUES (7,'api_session', 'api_session','id','Int','Iser_id');
+INSERT INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (7,'api_session', 'api_session','id','Int','Iser_id',-1);
 
 CREATE TABLE IF NOT EXISTS api_user (
     id int NOT NULL AUTO_INCREMENT,
@@ -157,3 +159,21 @@ INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('
 INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','insert','after');
 INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','update','before');
 INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','update','after');
+
+
+
+
+CREATE TABLE IF NOT EXISTS api_audit_log(
+    id INT NOT NULL AUTO_INCREMENT,
+    type varchar(50) NOT NULL,
+    record_id varchar(250) NOT NULL,
+    table_name varchar(250) NOT NULL,
+    field_name varchar(250) NOT NULL,
+    old_value text NOT NULL,
+    value text NOT NULL,
+    modified_on datetime NOT NULL,
+    modified_by int NOT NULL,
+    PRIMARY KEY(id),
+    INDEX (table_name,record_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
