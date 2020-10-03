@@ -95,7 +95,7 @@ class AppInfo:
 
 
         sql=f"""
-        SELECT username from api_user WHERE id=%s
+        SELECT id, username from api_user WHERE id=%s
         """
         cursor.execute(sql, [rest_session['user_id']])
         system_user=cursor.fetchone()
@@ -106,7 +106,7 @@ class AppInfo:
         ctx=Context()
         ctx.set_connection(cls.create_connection())
         ctx.set_session_values(session_values)
-        ctx.set_userinfo({"username": system_user['username']})
+        ctx.set_userinfo({"user_id": system_user['id'], "username": system_user['username']})
         ctx.set_session_id(session_id)
         ctx.set_auto_logoff(auto_logoff)
 
