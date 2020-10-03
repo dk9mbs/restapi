@@ -33,12 +33,12 @@ class Action(Resource):
             if request.json==None:
                 abort(400, f"cannot extract json data in body action:{action}")
 
-            params={"data": request.json}
+            params={"input": request.json, "output": None}
             handler=Plugin(context, action, "execute")
             handler.execute('before', params)
 
 
-            return params['data']
+            return params['output']
         except NameError  as err:
             abort(400, f"{err}")
         except Exception as err:
