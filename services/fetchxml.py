@@ -33,7 +33,10 @@ def __build_fetchxml_by(context,alias,table_name,id=None,data=None,auto_commit=0
     if data!=None:
         tmp.append("<fields>\n")
         for k,v in data.items():
-            tmp.append(f"<field name=\"{k}\" value=\"{v}\"/>\n")
+            if v==None:
+                tmp.append(f"""<field name="{k}"/>\n""")
+            else:
+                tmp.append(f"""<field name="{k}" value="{v}"/>\n""")
 
         tmp.append("</fields>\n")
     tmp.append("</restapi>")

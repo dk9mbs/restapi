@@ -263,12 +263,21 @@ class FetchXmlParser:
 
         for field in node:
             # values are replaced by execute
-            value=""
+            # in case of no value attrib in node use None/null per default
+            value=None
+            is_null=False
+
             if 'value' in field.attrib:
                 value=field.attrib['value']
+                if value == "None" or value == "null":
+                    value=None
 
             name=self._escape_string(field.attrib['name'],"fieldname")
-            fields[name]={"value": value, "old_value":None}
+            if not is_null:
+                fields[name]={"value": value, "old_value":None}
+            else:
+                fields[name]={"value": None, "old_value":None}
+
             #fields.append({"name": name, "value": value})
         self._json_fields=fields
 
