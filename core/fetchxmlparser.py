@@ -265,7 +265,6 @@ class FetchXmlParser:
             # values are replaced by execute
             # in case of no value attrib in node use None/null per default
             value=None
-            is_null=False
 
             if 'value' in field.attrib:
                 value=field.attrib['value']
@@ -273,12 +272,9 @@ class FetchXmlParser:
                     value=None
 
             name=self._escape_string(field.attrib['name'],"fieldname")
-            if not is_null:
-                fields[name]={"value": value, "old_value":None}
-            else:
-                fields[name]={"value": None, "old_value":None}
 
-            #fields.append({"name": name, "value": value})
+            fields[name]={"value": value, "old_value":None}
+
         self._json_fields=fields
 
     def _build_where(self, node):
