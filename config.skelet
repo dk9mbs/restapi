@@ -3,7 +3,6 @@ CONFIG={
         "mysql": {"user":"username", "password":"password", "host":"localhost", "database":"databasename"},
         "instance": {"id":"give_me_a_id", "enable_swagger_doc":0},
         "server": {"port":5000, "host":"127.0.0.1"},
-        "security": {"swagger": 0},
         "plugin": {"root":"/tmp"}
     }
 }
