@@ -40,6 +40,16 @@ class AppInfo:
         cls._mysql.connect()
 
     @classmethod
+    def get_current_config(cls, section=None, key=None, default=None):
+        if section==None:
+            return cls._current_config
+        else:
+            if section in cls._current_config:
+                if key in cls._current_config[section]:
+                    return cls._current_config[section][key]
+            return default
+
+    @classmethod
     def create_connection(cls, database_id=1):
         if database_id==0:
             return cls._mysql.connect()

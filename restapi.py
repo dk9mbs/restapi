@@ -28,6 +28,10 @@ app=AppInfo.get_app()
 def before_request():
     g.context=None
 
+    if AppInfo.get_current_config('security','swagger',0)==0:
+        if request.endpoint=='doc':
+            abort(404, "{Not enabled}")
+
     if request.endpoint!='login':
         if 'session_id' in session:
             try:
