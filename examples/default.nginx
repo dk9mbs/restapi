@@ -19,8 +19,8 @@
 # Default server configuration
 #
 server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
+	listen 81 default_server;
+	listen [::]:81 default_server;
 
         #listen 443 ssl;
         #ssl_certificate /path/to/ssl/pem_file;
@@ -50,11 +50,11 @@ server {
 	server_name _;
 
 	location / {
-		include uwsgi_params;
-		uwsgi_pass unix:/tmp/restapi.sock;
+		#include uwsgi_params;
+		#uwsgi_pass unix:/tmp/restapi.prod.sock;
 		# First attempt to serve request as file, then
 		# as directory, then fall back to displaying a 404.
-		#try_files $uri $uri/ =404;
+		try_files $uri $uri/ =404;
 	}
 
 	# pass PHP scripts to FastCGI server
@@ -95,3 +95,21 @@ server {
 #		try_files $uri $uri/ =404;
 #	}
 #}
+
+
+server {
+	listen 81;
+	listen [::]:81;
+
+	server_name restapi.dk9mbs.de;
+
+	root /var/www;
+	index index.html;
+
+	location / {
+		include uwsgi_params;
+		uwsgi_pass unix:/tmp/restapi.prod.sock;
+		#try_files $uri $uri/ =404;
+	}
+}
+
