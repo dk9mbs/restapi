@@ -8,18 +8,14 @@ BASEDIR=$(realpath $SCRIPTNAME)
 BASEDIR=$(dirname $BASEDIR)
 PLUGINPATH=$BASEDIR/plugins
 
-cd $BASEDIR
-
+#cd $BASEDIR
+echo "---"
 echo "=============================================================="
 echo "\$0...............:$0"
 echo "Scriptname.......:$SCRIPTNAME"
 echo "Basedir..........:$BASEDIR"
 echo "venv root........:$VENV"
 echo "Plugindir........:$PLUGINPATH"
-export PYTHONPATH=$BASEDIR:$PLUGINPATH:../:/tmp
-export RESTAPIPATH=$BASEDIR
-
-echo "PYTHONPATH.......:$PYTHONPATH"
 echo "=============================================================="
 
 mkdir -p "$PLUGINPATH"
@@ -39,3 +35,9 @@ else
     fi
 fi
 
+export PYTHONPATH=$BASEDIR:$PLUGINPATH:../:$(python $BASEDIR/cfgreader.py plugin root)
+export RESTAPIPATH=$BASEDIR
+
+echo "=============================================================="
+echo "PYTHONPATH.......:$PYTHONPATH"
+echo "=============================================================="
