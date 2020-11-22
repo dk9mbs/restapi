@@ -30,7 +30,7 @@ def before_request():
 
     if AppInfo.get_current_config('instance','enable_swagger_doc',0)==0:
         if request.endpoint=='doc':
-            abort(404, "{Not enabled}")
+            abort(404, "Not enabled")
 
     if request.endpoint!='login':
         if 'session_id' in session:
@@ -53,6 +53,9 @@ def before_request():
                 password=guest['password']
 
             session_id=AppInfo.login(username,password)
+            if session_id==None:
+                abort(400,'Wrong username or password')
+
             g.context=AppInfo.create_context(session_id, auto_logoff=True)
 
 
