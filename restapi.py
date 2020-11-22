@@ -42,9 +42,19 @@ def before_request():
         else:
             #do not set session['session_id'] because the
             #guest session will be automaticly deactivated.
-            guest=AppInfo.guest_credentials()
-            session_id=AppInfo.login(guest['username'],guest['password'])
+            username=""
+            password=""
+            if 'restapi_username' in request.headers:
+                username=request.headers['restapi_username']
+                password=request.headers['restapi_password']
+            else:
+                guest=AppInfo.guest_credentials()
+                username=guest['username']
+                password=guest['password']
+
+            session_id=AppInfo.login(username,password)
             g.context=AppInfo.create_context(session_id, auto_logoff=True)
+
 
 AppInfo.get_api().add_resource(api.core.login.Login ,"/api/v1.0/core/login")
 AppInfo.get_api().add_resource(api.core.login.Logoff ,"/api/v1.0/core/logoff")
