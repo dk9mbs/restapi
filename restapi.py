@@ -45,8 +45,11 @@ def before_request():
             username=""
             password=""
             if 'restapi_username' in request.headers:
-                username=request.headers['restapi_username']
-                password=request.headers['restapi_password']
+                username=request.headers['restapi-username']
+                password=request.headers['restapi-password']
+            elif 'username' in request.headers:
+                username=request.headers['username']
+                password=request.headers['password']
             else:
                 guest=AppInfo.guest_credentials()
                 username=guest['username']
