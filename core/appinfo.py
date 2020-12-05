@@ -14,7 +14,6 @@ class AppInfo:
     _api=None
     _mysql=None
     _current_config={}
-    _guest_user=None
 
     @classmethod
     def init(cls,name,config):
@@ -148,20 +147,28 @@ class AppInfo:
     """
     @classmethod
     def guest_credentials(cls):
-        if cls._guest_user!=None:
-            return cls._guest_user
+        return cls.__get_user_credentials('guest')
 
+    """
+    Return the system credentials
+    """
+    @classmethod
+    def system_credentials(cls):
+        return cls.__get_user_credentials('system')
+
+
+    @classmethod
+    def __get_user_credentials(cls, username):
         sql=f"""
-        SELECT * FROM api_user WHERE username='guest';
+        SELECT * FROM api_user WHERE username='{username}';
         """
         connection=cls.create_connection()
         cursor=connection.cursor()
         cursor.execute(sql)
-        guest=cursor.fetchone()
+        user=cursor.fetchone()
         cursor.fetchall()
         connection.close()
-        cls._guest_user=guest
-        return guest
+        return user
 
     """
     Log useron and create a valid session id

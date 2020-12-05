@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS api_user (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO api_user (id,username,password,disabled,is_admin) VALUES (1,'root','password',0,-1);
-INSERT INTO api_user (id,username,password,disabled,is_admin) VALUES (99,'system','password',-1,-1);
+INSERT INTO api_user (id,username,password,disabled,is_admin) VALUES (99,'system','password',0,-1);
 INSERT INTO api_user (id,username,password) VALUES (100,'guest','password');
 
 CREATE TABLE IF NOT EXISTS api_group (

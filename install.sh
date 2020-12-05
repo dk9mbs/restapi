@@ -2,24 +2,29 @@
 
 . ./init.sh
 
-INSTANCE_ID=$(python cfgreader.py instance id)
+INSTANCE_ID=$(python $BASEDIR/cfgreader.py instance id)
 echo "$INSTANCE_ID"
+
+mkdir -p $BASEDIR/plugin
+mkdir -p $BASEDIR/3thparty
+
 
 #
 # Create uwsgi.ini
 #
-mkdir -p /etc/restapi
-chown -R www-data:www-data /etc/restapi
+sudo mkdir -p /etc/restapi
+#sudo chown -R www-data:www-data /etc/restapi
 
-cat << EOF > /etc/restapi/uwsgi.$INSTANCE_ID.ini
+echo "... writing uwsgi.ini ..."
+cat << EOF | sudo tee /etc/restapi/uwsgi.$INSTANCE_ID.ini
 # do not change this file here!
-# auto created by init.sh
+# auto created by $BASEDIR/install.sh
 [uwsgi]
 module = restapi:app
 
 pythonpath = $BASEDIR
 pythonpath = $PLUGINPATH
-pythonpath = $(python cfgreader.py plugin root)
+pythonpath = $(python $BASEDIR/cfgreader.py plugin root)
 chdir = $BASEDIR
 home = $VENV
 
@@ -33,13 +38,18 @@ vacuum = true
 uid = www-data
 gid = www-data
 die-on-term = true
+
+spooler=/tmp/spool
+import = task
+
 EOF
 #
 # Create service
 #
-cat << EOF > /etc/systemd/system/restapi.$INSTANCE_ID.service
+echo "... writing restapi.service ..."
+cat << EOF | sudo tee /etc/systemd/system/restapi.$INSTANCE_ID.service
 # do not change this file here!
-# auto created by init.sh
+# auto created by $BASEDIR/install.sh
 [Unit]
 Description=Restapi service
 After=syslog.target
@@ -58,5 +68,7 @@ NotifyAccess=all
 WantedBy=multi-user.target
 EOF
 
+echo "...reloading systemctl ..."
+sudo systemctl daemon-reload
 
-systemctl daemon-reload
+echo "ready!"

@@ -2,3 +2,4 @@ config.py
 *.pyc
 *.pyo
 plugins
+3thparty
