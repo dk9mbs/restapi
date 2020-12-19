@@ -16,7 +16,7 @@ class Session:
 def execute_plugin(publisher, params):
     context=AppInfo.create_context(session.session_id)
     plugin=Plugin(context, publisher, 'execute')
-    plugin.execute('after', params)
+    plugin.execute('after', {'input': params, 'output': {}})
     AppInfo.save_context(context)
 
 
@@ -40,7 +40,6 @@ def every_minute(signum):
     execute_plugin('$timer_every_minute', {})
 
 @timer(3600, target='spooler')
-@lock
 def every_hour(signum):
     create_logger(__name__).info("3600 seconds elapsed in the spooler")
     execute_plugin('$timer_every_hour', {})
