@@ -2,12 +2,21 @@
 
 . ./init.sh
 
+#
+# Read the id of the instance from the local config.py file
+# by example dev, test or prod
+#
 INSTANCE_ID=$(python $BASEDIR/cfgreader.py instance id)
 echo "$INSTANCE_ID"
 
 mkdir -p $BASEDIR/plugin
 mkdir -p $BASEDIR/3thparty
-
+#
+# create the spool directory for the uwsgi task
+# the spool is only needed in case of using uwsgi
+#
+sudo mkdir -p /var/restapi/$INSTANCE_ID/spool
+sudo chown www-data.www-data /var/restapi/$INSTANCE_ID/spool
 
 #
 # Create uwsgi.ini
@@ -39,7 +48,8 @@ uid = www-data
 gid = www-data
 die-on-term = true
 
-spooler=/tmp/spool
+#spooler=/tmp/spool
+spooler=/var/restapi/$INSTANCE_ID/spool
 import = task
 
 EOF
