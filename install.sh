@@ -9,7 +9,7 @@
 INSTANCE_ID=$(python $BASEDIR/cfgreader.py instance id)
 echo "$INSTANCE_ID"
 
-mkdir -p $BASEDIR/plugin
+mkdir -p $BASEDIR/plugins
 mkdir -p $BASEDIR/3thparty
 #
 # create the spool directory for the uwsgi task
