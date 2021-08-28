@@ -19,6 +19,9 @@ import api.data.entitylistfilter
 import api.data.entityadd
 import api.core.login
 import api.action
+# import ui endpoints
+import ui.core.login
+import ui.core.content
 
 logger=log.create_logger(__name__)
 
@@ -37,7 +40,7 @@ def before_request():
             try:
                 g.context=AppInfo.create_context(session['session_id'])
             except NameError as err:
-                abort(400, f"{err}")
+                abort(400, f"Session_id found in session context: error raised: {err}")
                 pass
         else:
             #do not set session['session_id'] because the
@@ -57,6 +60,7 @@ def before_request():
 
             session_id=AppInfo.login(username,password)
             if session_id==None:
+                print(f"try to login with username: {username}")
                 abort(400,'Wrong username or password')
 
             g.context=AppInfo.create_context(session_id, auto_logoff=True)
@@ -68,6 +72,11 @@ AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/api/v1.0/data/<t
 AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/api/v1.0/data")
 AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/api/v1.0/data/<table>")
 AppInfo.get_api().add_resource(api.action.get_endpoint(), "/api/v1.0/action/<action>")
+#
+# UI endpoints
+#
+AppInfo.get_api().add_resource(ui.core.login.get_endpoint(), "/ui/v1.0/core/login")
+AppInfo.get_api().add_resource(ui.core.content.get_endpoint(), "/<path:path>")
 
 @app.teardown_request
 def teardown_request(error=None):
