@@ -26,20 +26,12 @@ class Login(Resource):
     api=AppInfo.get_api()
 
 #    @api.doc(parser=create_parser_get())
-    def get(self):
+    def post(self):
         try:
             create_parser().parse_args()
             context=g.context
 
-            loader=jinja2.FileSystemLoader("/home/dk9mbs/src/restapi/ui/");
-
-            jenv = jinja2.Environment(
-                loader=loader,
-                extensions=['jinja2.ext.autoescape'],
-                autoescape=True)
-
-            template=jenv.get_template('login.htm')
-            return template.render()
+            return 200, "login ok"
             #fetch=build_fetchxml_by_alias(context, table, id, type="select")
             #fetchparser=FetchXmlParser(fetch, context)
             #rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)

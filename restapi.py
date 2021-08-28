@@ -26,6 +26,20 @@ import ui.core.content
 logger=log.create_logger(__name__)
 
 app=AppInfo.get_app()
+#
+# create blueprints
+#
+bp_api=Blueprint('api', __name__)
+bp_ui=Blueprint('ui', __name__)
+bp_content=Blueprint('content',__name__)
+
+ui_mod=Api(bp_ui)
+api_mod=Api(bp_api)
+content_mod=Api(bp_content)
+
+app.register_blueprint(bp_ui, url_prefix='/ui')
+app.register_blueprint(bp_api, url_prefix='/api')
+app.register_blueprint(bp_content)
 
 @app.before_request
 def before_request():
@@ -66,17 +80,22 @@ def before_request():
             g.context=AppInfo.create_context(session_id, auto_logoff=True)
 
 
-AppInfo.get_api().add_resource(api.core.login.Login ,"/api/v1.0/core/login")
-AppInfo.get_api().add_resource(api.core.login.Logoff ,"/api/v1.0/core/logoff")
-AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/api/v1.0/data/<table>/<id>")
-AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/api/v1.0/data")
-AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/api/v1.0/data/<table>")
-AppInfo.get_api().add_resource(api.action.get_endpoint(), "/api/v1.0/action/<action>")
+api_mod.add_resource(api.core.login.Login ,"/v1.0/core/login")
+api_mod.add_resource(api.core.login.Logoff ,"/v1.0/core/logoff")
+api_mod.add_resource(api.data.entity.get_endpoint(),"/v1.0/data/<table>/<id>")
+api_mod.add_resource(api.data.entitylistfilter.get_endpoint(),"/v1.0/data")
+api_mod.add_resource(api.data.entityadd.get_endpoint(),"/v1.0/data/<table>")
+api_mod.add_resource(api.action.get_endpoint(), "/v1.0/action/<action>")
 #
 # UI endpoints
 #
-AppInfo.get_api().add_resource(ui.core.login.get_endpoint(), "/ui/v1.0/core/login")
-AppInfo.get_api().add_resource(ui.core.content.get_endpoint(), "/<path:path>")
+ui_mod.add_resource(ui.core.login.get_endpoint(), "/v1.0/core/login")
+#
+# endpoint for static and dynamics content
+#
+content_mod.add_resource(ui.core.content.get_endpoint(), "/<path:path>")
+
+print(AppInfo.get_app().url_map)
 
 @app.teardown_request
 def teardown_request(error=None):

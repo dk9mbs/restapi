@@ -2,10 +2,13 @@
 
 import sys
 import json
+import jinja2
+import os
 from flask import Flask, g, session
 from flask import abort
 from flask import Blueprint
 from flask import request
+from flask import make_response
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 
@@ -15,7 +18,6 @@ from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 
-import jinja2
 
 def create_parser():
     parser=reqparse.RequestParser()
@@ -28,8 +30,6 @@ class Content(Resource):
 #    @api.doc(parser=create_parser_get())
     def get(self, path):
         try:
-            import os
-            from flask import make_response
 
             create_parser().parse_args()
             context=g.context
@@ -62,7 +62,8 @@ class Content(Resource):
 
             #return rs.get_result()
         except jinja2.exceptions.TemplateNotFound as err:
-            abort(404, f"{err}")
+            print(err)
+            abort(404, f"Template not found: {err}")
         except NameError as err:
             abort(400, f"{err}")
         except Exception as err:

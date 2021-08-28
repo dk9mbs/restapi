@@ -22,11 +22,22 @@ class Login(Resource):
 
     @api.doc(parser=create_parser())
     def post(self):
-        username=request.headers.get("username")
-        password=request.headers.get("password")
+        username=""
+        password=""
+        if 'username' in request.headers:
+            username=request.headers.get("username")
+            password=request.headers.get("password")
+        elif 'username' in request.form:
+            username=request.form.get("username")
+            password=request.form.get("password")
+        elif 'restapi_username' in request.form:
+            username=request.form.get("restapi_username")
+            password=request.form.get("restapi_password")
+
         log.create_logger(__name__).info(f"{username} {password}")
         session_id=AppInfo.login(username, password)
 
+        print(request.accept_mimetypes)
         if session_id==None:
             abort(400,'wrong username or password')
         else:
