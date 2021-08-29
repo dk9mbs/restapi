@@ -4,10 +4,7 @@ import sys
 import json
 import jinja2
 import os
-from flask import Flask, g, session
-from flask import abort
-from flask import Blueprint
-from flask import request
+from flask import Flask, g, session, redirect, abort,request,Blueprint
 from flask import make_response
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
@@ -17,7 +14,10 @@ from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
+from core import log
+from core.exceptions import RestApiNotAllowed
 
+logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
@@ -34,10 +34,22 @@ class Content(Resource):
             create_parser().parse_args()
             context=g.context
 
-
+            #
+            # content class
+            #
             www_root="/home/dk9mbs/src/restapi/ui/"
-            #if not os.path.isfile(www_root+path):
-            #    abort(404,"File not found")
+            #
+            # load the record
+            #
+            if path!='login.htm':
+                fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
+                fetchparser=FetchXmlParser(fetch, context)
+                rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
+                if rs.get_result()==None:
+                    abort(400, "Item not found => %s" % id)
+            #
+            # end load data
+            #
 
             loader=jinja2.FileSystemLoader(www_root);
 
@@ -51,8 +63,11 @@ class Content(Resource):
             response = make_response(template.render())
             response.headers['content-type'] = 'text/html'
 
-            #return  template.render(), 200, {'Content-Type': 'text/html; charset=utf-8'}
             return response
+
+            #
+            # content class
+            #
 
             #fetch=build_fetchxml_by_alias(context, table, id, type="select")
             #fetchparser=FetchXmlParser(fetch, context)
@@ -62,11 +77,14 @@ class Content(Resource):
 
             #return rs.get_result()
         except jinja2.exceptions.TemplateNotFound as err:
-            print(err)
+            logger.info(f"TemplateNotFound:{err}")
             abort(404, f"Template not found: {err}")
-        except NameError as err:
-            abort(400, f"{err}")
+        except (NameError, RestApiNotAllowed) as err:
+            logger.info(f"NameError:{err}")
+            #abort(400, f"{err}")
+            return redirect('/login.htm', code=302)
         except Exception as err:
+            logger.info(f"Exception:{err}")
             abort(500,f"{err}")
 
 def get_endpoint():

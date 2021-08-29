@@ -10,6 +10,7 @@ from core import log
 from core.fetchxmlparser import FetchXmlParser
 from core.meta import read_table_meta
 from core.audit import AuditLog
+from core.exceptions import RestApiNotAllowed
 
 logger=log.create_logger(__name__)
 
@@ -24,8 +25,8 @@ class DatabaseServices:
         if not run_as_system:
             for table in command_builder.get_tables():
                 if not Permission().validate(context, command_builder.get_sql_type(), context.get_username(), table):
-                    raise NameError (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
-
+                    #raise NameError (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
+                    raise RestApiNotAllowed (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
         if command_builder.get_sql_type().upper()=='UPDATE':
             meta=read_table_meta(context, table_name=command_builder.get_main_table())
             if meta['enable_audit_log']!=0:

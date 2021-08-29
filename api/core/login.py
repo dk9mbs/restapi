@@ -45,17 +45,6 @@ class Login(Resource):
             g.context=AppInfo.create_context(session_id)
             return {"session_id": session_id, "status":"logged_on"}
 
-class Logoff(Resource):
-    api=AppInfo.get_api()
-
-    @api.doc(parser=create_parser())
-    def post(self):
-        context=g.context
-        session_id=session['session_id']
-
-        AppInfo.logoff(context)
-        return {"session_id": session_id, "status":"logged_off"}
-
 def get_endpoint():
     return Login
 

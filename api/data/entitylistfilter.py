@@ -12,6 +12,10 @@ from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
+from core.exceptions import RestApiNotAllowed
+from core import log
+
+logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
@@ -30,7 +34,7 @@ class EntityListFilter(Resource):
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             return rs.get_result()
-        except NameError as err:
+        except RestApiNotAllowed as err:
             abort(400, f"{err}")
         except Exception as err:
             abort(500,f"{err}")

@@ -18,9 +18,9 @@ import api.data.entity
 import api.data.entitylistfilter
 import api.data.entityadd
 import api.core.login
+import api.core.logoff
 import api.action
 # import ui endpoints
-import ui.core.login
 import ui.core.content
 
 logger=log.create_logger(__name__)
@@ -80,8 +80,8 @@ def before_request():
             g.context=AppInfo.create_context(session_id, auto_logoff=True)
 
 
-api_mod.add_resource(api.core.login.Login ,"/v1.0/core/login")
-api_mod.add_resource(api.core.login.Logoff ,"/v1.0/core/logoff")
+api_mod.add_resource(api.core.login.get_endpoint() ,"/v1.0/core/login")
+api_mod.add_resource(api.core.logoff.get_endpoint() ,"/v1.0/core/logoff")
 api_mod.add_resource(api.data.entity.get_endpoint(),"/v1.0/data/<table>/<id>")
 api_mod.add_resource(api.data.entitylistfilter.get_endpoint(),"/v1.0/data")
 api_mod.add_resource(api.data.entityadd.get_endpoint(),"/v1.0/data/<table>")
@@ -89,13 +89,13 @@ api_mod.add_resource(api.action.get_endpoint(), "/v1.0/action/<action>")
 #
 # UI endpoints
 #
-ui_mod.add_resource(ui.core.login.get_endpoint(), "/v1.0/core/login")
+#ui_mod.add_resource(ui.core.login.get_endpoint(), "/v1.0/core/login")
 #
 # endpoint for static and dynamics content
 #
 content_mod.add_resource(ui.core.content.get_endpoint(), "/<path:path>")
 
-print(AppInfo.get_app().url_map)
+logger.info(AppInfo.get_app().url_map)
 
 @app.teardown_request
 def teardown_request(error=None):

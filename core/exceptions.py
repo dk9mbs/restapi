@@ -1,0 +1,3 @@
+class RestApiNotAllowed(Exception):
+    pass
+
