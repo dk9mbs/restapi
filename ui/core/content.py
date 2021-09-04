@@ -4,6 +4,7 @@ import sys
 import json
 import jinja2
 import os
+import urllib
 from flask import Flask, g, session, redirect, abort,request,Blueprint
 from flask import make_response
 from flask_restplus import Resource, Api, reqparse
@@ -21,27 +22,27 @@ logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
-    parser.add_argument('select',type=str, help='Valid sql select', location='query')
+    #parser.add_argument('select',type=str, help='Valid sql select', location='query')
     return parser
 
 class Content(Resource):
     api=AppInfo.get_api()
 
-#    @api.doc(parser=create_parser_get())
+    @api.doc(parser=create_parser())
     def get(self, path):
         try:
 
             create_parser().parse_args()
             context=g.context
-
+            path_root=f"/{path}"
             #
             # content class
             #
-            www_root="/home/dk9mbs/src/restapi/ui/"
+            www_root="/home/dk9mbs/src/restapi/wwwroot/"
             #
             # load the record
             #
-            if path!='login.htm':
+            if path_root!='/login.htm':
                 fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
                 fetchparser=FetchXmlParser(fetch, context)
                 rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
@@ -50,6 +51,11 @@ class Content(Resource):
             #
             # end load data
             #
+            next=request.args.get('redirect')
+            if next!=None:
+                next=urllib.parse.quote(next)
+
+            logger.info(f"Redirect : {next}")
 
             loader=jinja2.FileSystemLoader(www_root);
 
@@ -60,31 +66,23 @@ class Content(Resource):
 
             template=jenv.get_template(path)
 
-            response = make_response(template.render())
+            response = make_response(template.render({"redirect": next}))
             response.headers['content-type'] = 'text/html'
 
             return response
 
             #
-            # content class
+            # end of content class
             #
 
-            #fetch=build_fetchxml_by_alias(context, table, id, type="select")
-            #fetchparser=FetchXmlParser(fetch, context)
-            #rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
-            #if rs.get_result()==None:
-            #    abort(400, "Item not found => %s" % id)
-
-            #return rs.get_result()
         except jinja2.exceptions.TemplateNotFound as err:
-            logger.info(f"TemplateNotFound:{err}")
+            logger.info(f"TemplateNotFound: {err}")
             abort(404, f"Template not found: {err}")
-        except (NameError, RestApiNotAllowed) as err:
-            logger.info(f"NameError:{err}")
-            #abort(400, f"{err}")
-            return redirect('/login.htm', code=302)
+        except RestApiNotAllowed as err:
+            logger.info(f"RestApiNotAllowed Exception: {err}")
+            return redirect(f"/login.htm?redirect={path_root}", code=302)
         except Exception as err:
-            logger.info(f"Exception:{err}")
+            logger.info(f"Exception: {err}")
             abort(500,f"{err}")
 
 def get_endpoint():

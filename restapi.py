@@ -2,7 +2,7 @@
 #import logging
 import importlib
 
-from flask import Flask, g, session, request, abort
+from flask import Flask, g, session, request, abort, make_response, redirect
 from flask import Blueprint
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
@@ -49,7 +49,9 @@ def before_request():
         if request.endpoint=='doc':
             abort(404, "Not enabled")
 
-    if request.endpoint!='login':
+    logger.info(f"Endpoint: {request.endpoint}")
+
+    if request.endpoint!='api.login' and request.endpoint!='ui.login':
         if 'session_id' in session:
             try:
                 g.context=AppInfo.create_context(session['session_id'])

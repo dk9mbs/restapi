@@ -1,6 +1,6 @@
 
 import uuid
-from flask import Flask,request,abort, g, session
+from flask import Flask,request,abort, g, session, make_response
 from flask import Blueprint
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
@@ -27,7 +27,10 @@ class Logoff(Resource):
 
         AppInfo.logoff(context)
         session.clear()
-        return {"session_id": session_id, "status":"logged_off"}
+
+        response = make_response({"session_id": session_id, "status":"logged_off"})
+        response.headers['content-type'] = 'text/json'
+        return response
 
 def get_endpoint():
     return Logoff

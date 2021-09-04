@@ -1,7 +1,7 @@
 
 import uuid
-from flask import Flask,request,abort, g, session
-from flask import Blueprint
+import urllib
+from flask import Flask,request,abort, g, session, Blueprint, make_response, redirect
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 
@@ -9,6 +9,7 @@ from core.appinfo import AppInfo
 from core.database import CommandBuilderFactory as factory
 from services.database import DatabaseServices
 from core import log
+from services.httprequest import HTTPRequest
 
 def create_parser():
     parser=reqparse.RequestParser()
@@ -24,6 +25,16 @@ class Login(Resource):
     def post(self):
         username=""
         password=""
+        #next=""
+        next = HTTPRequest.redirect(request)
+        #if 'redirect' in request.args:
+        #    next=request.args.get("redirect")
+
+        #if next==None:
+        #    next=""
+        #else:
+        #    next=urllib.parse.unquote(next)
+
         if 'username' in request.headers:
             username=request.headers.get("username")
             password=request.headers.get("password")
@@ -37,13 +48,21 @@ class Login(Resource):
         log.create_logger(__name__).info(f"{username} {password}")
         session_id=AppInfo.login(username, password)
 
-        print(request.accept_mimetypes)
+        log.create_logger(__name__).info(f"{request.accept_mimetypes}")
+
         if session_id==None:
             abort(400,'wrong username or password')
         else:
             session['session_id']=session_id
             g.context=AppInfo.create_context(session_id)
-            return {"session_id": session_id, "status":"logged_on"}
+
+            if next==None:
+                response = make_response({"session_id": session_id, "status":"logged_on"})
+                response.headers['content-type'] = 'text/json'
+                return response
+            else:
+                return redirect(next, code=302)
+
 
 def get_endpoint():
     return Login
