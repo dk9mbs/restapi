@@ -1,17 +1,17 @@
-DROP TABLE IF EXISTS api_audit_log;
-DROP TABLE IF EXISTS api_event_handler;
-DROP TABLE IF EXISTS api_event_type;
-DROP TABLE IF EXISTS api_group_permission;
-DROP TABLE IF EXISTS api_user_group;
-DROP TABLE IF EXISTS api_session;
-DROP TABLE IF EXISTS api_dataview;
-DROP TABLE IF EXISTS api_table;
-DROP TABLE IF EXISTS api_user;
-DROP TABLE IF EXISTS api_group;
-DROP TABLE IF EXISTS api_solution;
+#DROP TABLE IF EXISTS api_audit_log;
+#DROP TABLE IF EXISTS api_event_handler;
+#DROP TABLE IF EXISTS api_event_type;
+#DROP TABLE IF EXISTS api_group_permission;
+#DROP TABLE IF EXISTS api_user_group;
+#DROP TABLE IF EXISTS api_session;
+#DROP TABLE IF EXISTS api_dataview;
+#DROP TABLE IF EXISTS api_table;
+#DROP TABLE IF EXISTS api_user;
+#DROP TABLE IF EXISTS api_group;
+#DROP TABLE IF EXISTS api_solution;
 
 #deprecated
-DROP TABLE IF EXISTS api_plugin_type;
+#DROP TABLE IF EXISTS api_plugin_type;
 
 CREATE TABLE IF NOT EXISTS api_solution(
     id int NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS api_solution(
     UNIQUE KEY(name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO api_solution(id,name) VALUES (1,'restapi');
+INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
 
 CREATE TABLE IF NOT EXISTS api_table (
     id int NOT NULL AUTO_INCREMENT,
@@ -37,23 +37,26 @@ CREATE TABLE IF NOT EXISTS api_table (
     UNIQUE KEY(table_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (1,'dummy','dummy','id','Int','name',-1);
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (2,'api_user','api_user','id','Int','username',-1);
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name, enable_audit_log)
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name, enable_audit_log)
     VALUES (3,'api_group','api_group','id','Int','groupname',-1);
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (4,'api_user_group','api_user_group','id','Int','user_id',-1);
 
-INSERT INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (5,'api_group_permission','api_group_permission','id','Int','group_id',-1);
 
-INSERT INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (7,'api_session', 'api_session','id','Int','Iser_id',-1);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (8,'api_portal', 'api_portal','id','String','name',-1);
 
 CREATE TABLE IF NOT EXISTS api_user (
     id int NOT NULL AUTO_INCREMENT,
@@ -67,9 +70,9 @@ CREATE TABLE IF NOT EXISTS api_user (
     UNIQUE KEY(username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO api_user (id,username,password,disabled,is_admin) VALUES (1,'root','password',0,-1);
-INSERT INTO api_user (id,username,password,disabled,is_admin) VALUES (99,'system','password',0,-1);
-INSERT INTO api_user (id,username,password) VALUES (100,'guest','password');
+INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (1,'root','password',0,-1);
+INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (99,'system','password',0,-1);
+INSERT IGNORE INTO api_user (id,username,password) VALUES (100,'guest','password');
 
 CREATE TABLE IF NOT EXISTS api_group (
     id int NOT NULL AUTO_INCREMENT,
@@ -81,8 +84,8 @@ CREATE TABLE IF NOT EXISTS api_group (
     UNIQUE KEY(groupname)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO api_group (id,groupname,is_admin) VALUES (1,'sysadmin',-1);
-INSERT INTO api_group (id,groupname,is_admin) VALUES (100,'guest',0);
+INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (1,'sysadmin',-1);
+INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (100,'guest',0);
 
 CREATE TABLE IF NOT EXISTS api_user_group (
     id int NOT NULL AUTO_INCREMENT,
@@ -96,7 +99,7 @@ CREATE TABLE IF NOT EXISTS api_user_group (
     FOREIGN KEY(group_id) REFERENCES api_group(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO api_user_group (user_id,group_id) VALUES (100,100);
+INSERT IGNORE INTO api_user_group (user_id,group_id) VALUES (100,100);
 
 CREATE TABLE IF NOT EXISTS api_group_permission(
     id int NOT NULL AUTO_INCREMENT,
@@ -114,7 +117,8 @@ CREATE TABLE IF NOT EXISTS api_group_permission(
     FOREIGN KEY(table_id) REFERENCES api_table(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO api_group_permission (group_id,table_id, mode_read) VALUES (100,1,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (100,1,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (100,8,-1);
 
 CREATE TABLE IF NOT EXISTS api_session (
     id varchar(100) NOT NULL,
@@ -137,8 +141,8 @@ CREATE TABLE IF NOT EXISTS api_event_type(
     UNIQUE KEY (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO api_event_type (id, name) VALUES ('before','On before');
-INSERT INTO api_event_type (id, name) VALUES ('after','On after');
+INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
+INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
 
 CREATE TABLE IF NOT EXISTS api_event_handler (
     id int NOT NULL AUTO_INCREMENT,
@@ -155,10 +159,10 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
     INDEX (publisher, event, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','insert','before');
-INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','insert','after');
-INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','update','before');
-INSERT INTO api_event_handler(plugin_module_name,publisher,event,type) VALUES ('plugin_test','dummy','update','after');
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (3,'plugin_test','dummy','update','before');
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (4,'plugin_test','dummy','update','after');
 
 
 
@@ -177,3 +181,13 @@ CREATE TABLE IF NOT EXISTS api_audit_log(
     INDEX (table_name,record_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+CREATE TABLE IF NOT EXISTS api_portal(
+    id varchar(50) NOT NULL,
+    name varchar(100) NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_portal(id,name) VALUES ('default', 'default');
+
+ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS name varchar(100);

@@ -22,7 +22,7 @@ logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
-    #parser.add_argument('select',type=str, help='Valid sql select', location='query')
+    parser.add_argument('path',type=str, help='Vilid filename', location='query')
     return parser
 
 class Content(Resource):
@@ -31,6 +31,9 @@ class Content(Resource):
     @api.doc(parser=create_parser())
     def get(self, path):
         try:
+            logger.info(f"Path: {path}")
+            if path=="" or path==None:
+                path="index.htm"
 
             create_parser().parse_args()
             context=g.context
@@ -43,34 +46,37 @@ class Content(Resource):
             # load the record
             #
             if path_root!='/login.htm':
-                fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
+                #fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
+                fetch=build_fetchxml_by_alias(context, "api_portal", "default", type="select")
                 fetchparser=FetchXmlParser(fetch, context)
                 rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
                 if rs.get_result()==None:
                     abort(400, "Item not found => %s" % id)
             #
-            # end load data
+            # render the defined jinja template (in case ofahtm file)
             #
-            next=request.args.get('redirect')
-            if next!=None:
-                next=urllib.parse.quote(next)
+            if path.endswith('.htm'):
+                next=request.args.get('redirect')
+                if next!=None:
+                    next=urllib.parse.quote(next)
 
-            logger.info(f"Redirect : {next}")
+                logger.info(f"Redirect : {next}")
 
-            loader=jinja2.FileSystemLoader(www_root);
+                loader=jinja2.FileSystemLoader(www_root);
 
-            jenv = jinja2.Environment(
-                loader=loader,
-                extensions=['jinja2.ext.autoescape'],
-                autoescape=False)
+                jenv = jinja2.Environment(
+                    loader=loader,
+                    extensions=['jinja2.ext.autoescape'],
+                    autoescape=False)
 
-            template=jenv.get_template(path)
+                template=jenv.get_template(path)
 
-            response = make_response(template.render({"redirect": next}))
-            response.headers['content-type'] = 'text/html'
+                response = make_response(template.render({"redirect": next}))
+                response.headers['content-type'] = 'text/html'
 
-            return response
-
+                return response
+            else:
+                abort(404)
             #
             # end of content class
             #

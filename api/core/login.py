@@ -25,15 +25,8 @@ class Login(Resource):
     def post(self):
         username=""
         password=""
-        #next=""
-        next = HTTPRequest.redirect(request)
-        #if 'redirect' in request.args:
-        #    next=request.args.get("redirect")
 
-        #if next==None:
-        #    next=""
-        #else:
-        #    next=urllib.parse.unquote(next)
+        next = HTTPRequest.redirect(request)
 
         if 'username' in request.headers:
             username=request.headers.get("username")
