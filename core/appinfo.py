@@ -15,12 +15,11 @@ logger=create_logger(__name__)
 class CustomFlask(Flask):
 
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
-        logger.info(f"Rule ---> {rule} {endpoint}")
-
-        if rule=='/' and endpoint.endswith('.root'):
+        if rule=='/' and endpoint.endswith('root'):
             logger.info(f"Rule {rule} for endpoint {endpoint} not accepted!")
             return
 
+        logger.info(f"Add rule {rule} for endpoint {endpoint}")
         return super(CustomFlask, self).add_url_rule(rule, endpoint, view_func, **options)
 
 
@@ -101,12 +100,13 @@ class AppInfo:
         return cls._app
 
     @classmethod
-    def get_api(cls):
-        return cls._api
-
-    @classmethod
-    def get_content_api(cls):
-        return cls._content_api
+    def get_api(cls, name="api"):
+        if name=="api":
+            return cls._api
+        elif name=="content":
+            return cls._content_api
+        else:
+            logger.info(f"{name} is not a valid api name!")
 
     @classmethod
     def get_mysql(cls):

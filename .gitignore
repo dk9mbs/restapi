@@ -3,4 +3,5 @@ config.py
 *.pyo
 plugins
 3thparty
+wwwroot
 wwwroot/index.htm

@@ -21,6 +21,7 @@ import api.core.logoff
 import api.action
 # import ui endpoints
 import ui.core.content
+import ui.core.defaultpage
 
 logger=log.create_logger(__name__)
 
@@ -76,8 +77,8 @@ AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>
 #
 # endpoint for static and dynamics content
 #
-AppInfo.get_content_api().add_resource(ui.core.content.get_endpoint(), "/", defaults={"path": "index.htm"})
-AppInfo.get_content_api().add_resource(ui.core.content.get_endpoint(), "/<path:path>", defaults={"path": "index.htm"})
+AppInfo.get_api("content").add_resource(ui.core.defaultpage.get_endpoint(), "/")
+AppInfo.get_api("content").add_resource(ui.core.content.get_endpoint(), "/<path:path>")
 
 logger.info(AppInfo.get_app().url_map)
 

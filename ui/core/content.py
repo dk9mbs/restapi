@@ -6,13 +6,14 @@ import jinja2
 import os
 import urllib
 from flask import Flask, g, session, redirect, abort,request,Blueprint
-from flask import make_response
+from flask import make_response, send_file
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 
 from core.appinfo import AppInfo
 from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
+from services.httprequest import HTTPRequest
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core import log
@@ -26,14 +27,12 @@ def create_parser():
     return parser
 
 class Content(Resource):
-    api=AppInfo.get_api()
+    api=AppInfo.get_api("content")
 
     @api.doc(parser=create_parser())
     def get(self, path):
         try:
             logger.info(f"Path: {path}")
-            if path=="" or path==None:
-                path="index.htm"
 
             create_parser().parse_args()
             context=g.context
@@ -41,7 +40,9 @@ class Content(Resource):
             #
             # content class
             #
-            www_root="/home/dk9mbs/src/restapi/wwwroot/"
+            www_root="/home/dk9mbs/src/restapi/wwwroot"
+            file_full_name=f"{www_root}{path_root}"
+            logger.info(f"{file_full_name}")
             #
             # load the record
             #
@@ -56,10 +57,7 @@ class Content(Resource):
             # render the defined jinja template (in case ofahtm file)
             #
             if path.endswith('.htm'):
-                next=request.args.get('redirect')
-                if next!=None:
-                    next=urllib.parse.quote(next)
-
+                next=HTTPRequest.redirect(request)
                 logger.info(f"Redirect : {next}")
 
                 loader=jinja2.FileSystemLoader(www_root);
@@ -76,7 +74,14 @@ class Content(Resource):
 
                 return response
             else:
-                abort(404)
+                #logger.info("Abbruch")
+                #abort(404)
+                return send_file(file_full_name)
+
+            #
+            # Send file
+            #
+
             #
             # end of content class
             #
