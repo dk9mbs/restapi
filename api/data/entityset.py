@@ -19,32 +19,33 @@ logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
+    #parser.add_argument('where',type=str, help='Valid sql where clause', location='query')
+    #parser.add_argument('orderby',type=str, help='Valid sql orderby clause', location='query')
+    #parser.add_argument('select',type=str, help='Valid sql select', location='query')
+    #parser.add_argument('pagesize', type=int, help='Pagesize of the resultset',default=5000, location='query')
+    #parser.add_argument('page', type=int, help='Page',default=1, location='query')
     return parser
 
 
 
-class EntityAdd(Resource):
+class EntitySet(Resource):
     api=AppInfo.get_api()
 
     api=AppInfo.get_api()
     @api.doc(parser=create_parser())
-    def post(self, table):
+    def get(self, table):
         try:
+            create_parser().parse_args()
             context=g.context
-
-            if request.json==None:
-                abort(400, "cannot extract json data in http request for insert %s" % (table))
-
-            fetch=build_fetchxml_by_alias(context,table,None, request.json, type="insert")
+            fetch=build_fetchxml_by_alias(context,table,None, None,type="select")
             fetchparser=FetchXmlParser(fetch, context)
-            rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
-            result={"rows_affected": rs.get_cursor().rowcount}
-
-            return result
+            rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
+            return rs.get_result()
         except RestApiNotAllowed as err:
-            abort(400,f"{err}")
+            logger.info(f"{err}")
+            abort(400, f"{err}")
         except Exception as err:
             abort(500,f"{err}")
 
 def get_endpoint():
-    return EntityAdd
+    return EntitySet

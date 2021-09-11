@@ -10,10 +10,12 @@ from flask import make_response, send_file
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 
-from core.appinfo import AppInfo
 from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
 from services.httprequest import HTTPRequest
+from services.filesystemtools import FileSystemTools
+
+from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core import log
@@ -36,23 +38,21 @@ class Content(Resource):
 
             create_parser().parse_args()
             context=g.context
-            path_root=f"/{path}"
             #
             # content class
             #
-            www_root="/home/dk9mbs/src/restapi/wwwroot"
-            file_full_name=f"{www_root}{path_root}"
+            www_root=FileSystemTools.format_path("/home/dk9mbs/src/restapi/wwwroot/")
+            file_full_name=f"{www_root}{path}"
             logger.info(f"{file_full_name}")
             #
-            # load the record
+            # load the portal record
             #
-            if path_root!='/login.htm':
-                #fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
-                fetch=build_fetchxml_by_alias(context, "api_portal", "default", type="select")
-                fetchparser=FetchXmlParser(fetch, context)
-                rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
-                if rs.get_result()==None:
-                    abort(400, "Item not found => %s" % id)
+            #fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
+            fetch=build_fetchxml_by_alias(context, "api_portal", "default", type="select")
+            fetchparser=FetchXmlParser(fetch, context)
+            rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
+            if rs.get_result()==None:
+                abort(404, "Item not found => %s" % id)
             #
             # render the defined jinja template (in case ofahtm file)
             #
@@ -74,24 +74,18 @@ class Content(Resource):
 
                 return response
             else:
-                #logger.info("Abbruch")
-                #abort(404)
                 return send_file(file_full_name)
 
-            #
-            # Send file
-            #
 
-            #
-            # end of content class
-            #
-
+        except FileNotFoundError as err:
+            logger.error(f"File not found: {file_full_name}")
+            abort(404, f"File not found: {file_full_name}")
         except jinja2.exceptions.TemplateNotFound as err:
             logger.info(f"TemplateNotFound: {err}")
             abort(404, f"Template not found: {err}")
         except RestApiNotAllowed as err:
             logger.info(f"RestApiNotAllowed Exception: {err}")
-            return redirect(f"/login.htm?redirect={path_root}", code=302)
+            return redirect(f"/login.htm?redirect=/{path}", code=302)
         except Exception as err:
             logger.info(f"Exception: {err}")
             abort(500,f"{err}")

@@ -16,6 +16,7 @@ AppInfo.init(__name__, CONFIG['default'])
 import api.data.entity
 import api.data.entitylistfilter
 import api.data.entityadd
+import api.data.entityset
 import api.core.login
 import api.core.logoff
 import api.action
@@ -72,7 +73,8 @@ AppInfo.get_api().add_resource(api.core.login.get_endpoint() ,"/v1.0/core/login"
 AppInfo.get_api().add_resource(api.core.logoff.get_endpoint() ,"/v1.0/core/logoff")
 AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/v1.0/data/<table>/<id>")
 AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/v1.0/data")
-AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/v1.0/data/<table>")
+AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/v1.0/data/<table>", methods=['POST'])
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(),"/v1.0/data/<table>", methods=['GET'])
 AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>")
 #
 # endpoint for static and dynamics content
