@@ -14,12 +14,13 @@ from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
 from services.httprequest import HTTPRequest
 from services.filesystemtools import FileSystemTools
+from services.jinjatemplate import JinjaTemplate
 
 from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core import log
-from core.exceptions import RestApiNotAllowed
+from core.exceptions import RestApiNotAllowed, ConfigNotValid
 
 logger=log.create_logger(__name__)
 
@@ -28,8 +29,8 @@ def create_parser():
     parser.add_argument('path',type=str, help='Vilid filename', location='query')
     return parser
 
-class Content(Resource):
-    api=AppInfo.get_api("content")
+class Portal(Resource):
+    api=AppInfo.get_api("portal")
 
     @api.doc(parser=create_parser())
     def get(self, path):
@@ -41,7 +42,8 @@ class Content(Resource):
             #
             # content class
             #
-            www_root=FileSystemTools.format_path("/home/dk9mbs/src/restapi/wwwroot/")
+            www_root=FileSystemTools.format_path(AppInfo.get_current_config('ui','wwwroot', exception=True))
+
             file_full_name=f"{www_root}{path}"
             logger.info(f"{file_full_name}")
             #
@@ -60,14 +62,7 @@ class Content(Resource):
                 next=HTTPRequest.redirect(request)
                 logger.info(f"Redirect : {next}")
 
-                loader=jinja2.FileSystemLoader(www_root);
-
-                jenv = jinja2.Environment(
-                    loader=loader,
-                    extensions=['jinja2.ext.autoescape'],
-                    autoescape=False)
-
-                template=jenv.get_template(path)
+                template=JinjaTemplate.create_file_template(path)
 
                 response = make_response(template.render({"redirect": next}))
                 response.headers['content-type'] = 'text/html'
@@ -76,19 +71,21 @@ class Content(Resource):
             else:
                 return send_file(file_full_name)
 
-
-        except FileNotFoundError as err:
-            logger.error(f"File not found: {file_full_name}")
-            abort(404, f"File not found: {file_full_name}")
+        except ConfigNotValid as err:
+            logger.error(f"Config not valid {err}")
+            return make_response(JinjaTemplate.render_status_template(500, err), 500)
         except jinja2.exceptions.TemplateNotFound as err:
             logger.info(f"TemplateNotFound: {err}")
-            abort(404, f"Template not found: {err}")
+            return make_response(JinjaTemplate.render_status_template(404, f"Template not found {err}"), 404)
+        except FileNotFoundError as err:
+            logger.info(f"FileNotFound: {err}")
+            return make_response(JinjaTemplate.render_status_template(404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
             logger.info(f"RestApiNotAllowed Exception: {err}")
             return redirect(f"/login.htm?redirect=/{path}", code=302)
         except Exception as err:
             logger.info(f"Exception: {err}")
-            abort(500,f"{err}")
+            return make_response(JinjaTemplate.render_status_template(500, err), 500)
 
 def get_endpoint():
-    return Content
+    return Portal

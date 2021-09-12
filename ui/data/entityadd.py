@@ -22,19 +22,17 @@ def create_parser():
     return parser
 
 
-
 class EntityAdd(Resource):
-    api=AppInfo.get_api()
+    api=AppInfo.get_api("ui")
 
     @api.doc(parser=create_parser())
     def post(self, table):
         try:
             context=g.context
 
-            if request.json==None:
-                abort(400, "cannot extract json data in http request for insert %s" % (table))
+            json=request.form.to_dict()
 
-            fetch=build_fetchxml_by_alias(context,table,None, request.json, type="insert")
+            fetch=build_fetchxml_by_alias(context,table,None, json, type="insert")
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
             result={"rows_affected": rs.get_cursor().rowcount, "inserted_id": rs.get_inserted_id()}

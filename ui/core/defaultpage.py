@@ -14,7 +14,7 @@ def create_parser():
     return parser
 
 class DefaultPage(Resource):
-    api=AppInfo.get_api("content")
+    api=AppInfo.get_api("portal")
 
     @api.doc(parser=create_parser())
     def get(self):

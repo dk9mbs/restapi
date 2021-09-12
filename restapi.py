@@ -21,8 +21,9 @@ import api.core.login
 import api.core.logoff
 import api.action
 # import ui endpoints
-import ui.core.content
+import ui.core.portal
 import ui.core.defaultpage
+import ui.data.entityadd
 
 logger=log.create_logger(__name__)
 
@@ -77,10 +78,16 @@ AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/v1.0/data/<ta
 AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(),"/v1.0/data/<table>", methods=['GET'])
 AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>")
 #
-# endpoint for static and dynamics content
+# endpoints for model driven forms
 #
-AppInfo.get_api("content").add_resource(ui.core.defaultpage.get_endpoint(), "/")
-AppInfo.get_api("content").add_resource(ui.core.content.get_endpoint(), "/<path:path>")
+AppInfo.get_api("ui").add_resource(ui.data.entityadd.get_endpoint(), "/v1.0/data/<table>", methods=['POST'])
+#AppInfo.get_api("ui").add_resource(ui.core.content.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
+#AppInfo.get_api("ui").add_resource(ui.core.content.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['PUT'])
+#
+# endpoint for static and dynamic portal content
+#
+AppInfo.get_api("portal").add_resource(ui.core.defaultpage.get_endpoint(), "/")
+AppInfo.get_api("portal").add_resource(ui.core.portal.get_endpoint(), "/<path:path>")
 
 logger.info(AppInfo.get_app().url_map)
 

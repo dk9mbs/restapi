@@ -15,6 +15,7 @@ class Recordset:
         self._cursor=cursor
         self._result=None
         self._fetch_mode=0
+        self._inserted_id="" # in case of insert statements
 
     def __del__(self):
         self.close()
@@ -41,6 +42,15 @@ class Recordset:
 
     def get_cursor(self):
         return self._cursor
+
+    def set_inserted_id(self, id):
+        self._inserted_id=id
+
+    def get_inserted_id(self):
+        if self._inserted_id==None:
+            return 0
+        else:
+            return self._inserted_id
 
     """
     Clear the buffer

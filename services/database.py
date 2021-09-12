@@ -27,16 +27,22 @@ class DatabaseServices:
                 if not Permission().validate(context, command_builder.get_sql_type(), context.get_username(), table):
                     #raise NameError (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
                     raise RestApiNotAllowed (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
+
+
+        meta=read_table_meta(context, table_name=command_builder.get_main_table())
+        id_field_name=meta['id_field_name']
+        id_field_type=meta['id_field_type']
+
         if command_builder.get_sql_type().upper()=='UPDATE':
-            meta=read_table_meta(context, table_name=command_builder.get_main_table())
+            #meta=read_table_meta(context, table_name=command_builder.get_main_table())
             if meta['enable_audit_log']!=0:
                 sql, paras=command_builder.get_select()
                 cursor=context.get_connection().cursor()
                 cursor.execute(sql, paras)
                 rsold=Recordset(cursor)
                 rsold.read(0)
-                id_field_name=meta['id_field_name']
-                id_field_type=meta['id_field_type']
+                #id_field_name=meta['id_field_name']
+                #id_field_type=meta['id_field_type']
 
                 logger.info(rsold.get_result())
                 if rsold.get_result()!=None:
@@ -63,7 +69,6 @@ class DatabaseServices:
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
 
-
         handler.execute('after', params)
 
         if command_builder.get_auto_commit()==1 or command_builder.get_auto_commit()==True:
@@ -73,6 +78,11 @@ class DatabaseServices:
         if fetch_mode != -1:
             rs.read(fetch_mode)
 
+        if command_builder.get_sql_type().upper() == "INSERT":
+            if context.get_connection().insert_id()==0 or context.get_connection().insert_id()==None:
+                rs.set_inserted_id(command_builder.get_sql_fields()[id_field_name]['value'])
+            else:
+                rs.set_inserted_id(context.get_connection().insert_id())
         return rs
 
 
