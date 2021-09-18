@@ -26,51 +26,36 @@ logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
-    parser.add_argument('path',type=str, help='Vilid filename', location='query')
+    parser.add_argument('table',type=str, help='Name of the datatable', location='query')
+    parser.add_argument('id',type=str, help='Rowid', location='query')
     return parser
 
-class Portal(Resource):
-    api=AppInfo.get_api("portal")
+class DataForm(Resource):
+    api=AppInfo.get_api("ui")
 
     @api.doc(parser=create_parser())
-    def get(self, path):
+    def get(self, table, id):
         try:
-            logger.info(f"Path: {path}")
-
             create_parser().parse_args()
             context=g.context
-            #
-            # content class
-            #
-            www_root=FileSystemTools.format_path(AppInfo.get_current_config('ui','wwwroot', exception=True))
 
-            file_full_name=f"{www_root}{path}"
-            logger.info(f"{file_full_name}")
-            #
-            # load the portal record
-            #
-            if not path.endswith("login.htm"):
-                #fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
-                fetch=build_fetchxml_by_alias(context, "api_portal", "default", type="select")
-                fetchparser=FetchXmlParser(fetch, context)
-                rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
-                if rs.get_result()==None:
-                    abort(404, "Item not found => %s" % id)
+            file=f"dataforms/{table}.htm"
+
+            fetch=build_fetchxml_by_alias(context, table, id, type="select")
+            fetchparser=FetchXmlParser(fetch, context)
+            rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
+            if rs.get_result()==None:
+                abort(404, "Item not found => %s" % id)
             #
             # render the defined jinja template (in case ofahtm file)
             #
-            if path.endswith('.htm'):
-                next=HTTPRequest.redirect(request)
-                logger.info(f"Redirect : {next}")
+            logger.info(f"Redirect : {next}")
 
-                template=JinjaTemplate.create_file_template(path)
+            template=JinjaTemplate.create_file_template(file)
+            response = make_response(template.render({"table": table, "id": id, "data": rs.get_result()}))
+            response.headers['content-type'] = 'text/html'
 
-                response = make_response(template.render({"redirect": next}))
-                response.headers['content-type'] = 'text/html'
-
-                return response
-            else:
-                return send_file(file_full_name)
+            return response
 
         except ConfigNotValid as err:
             logger.error(f"Config not valid {err}")
@@ -89,4 +74,4 @@ class Portal(Resource):
             return make_response(JinjaTemplate.render_status_template(500, err), 500)
 
 def get_endpoint():
-    return Portal
+    return DataForm

@@ -24,6 +24,8 @@ import api.action
 import ui.core.portal
 import ui.core.defaultpage
 import ui.data.entityadd
+import ui.data.entity
+import ui.data.dataform
 
 logger=log.create_logger(__name__)
 
@@ -81,8 +83,8 @@ AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>
 # endpoints for model driven forms
 #
 AppInfo.get_api("ui").add_resource(ui.data.entityadd.get_endpoint(), "/v1.0/data/<table>", methods=['POST'])
-#AppInfo.get_api("ui").add_resource(ui.core.content.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
-#AppInfo.get_api("ui").add_resource(ui.core.content.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['PUT'])
+AppInfo.get_api("ui").add_resource(ui.data.entity.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['POST'])
+AppInfo.get_api("ui").add_resource(ui.data.dataform.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
 #
 # endpoint for static and dynamic portal content
 #
