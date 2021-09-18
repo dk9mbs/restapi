@@ -29,8 +29,8 @@ class JinjaTemplate:
     def render_status_template(http_status, err_desc):
         www_root=AppInfo.get_current_config("ui","wwwroot",exception=True)
 
-        path=f"error/{http_status}.htm"
-        default_template="error/default.htm"
+        path=f"templates/error/{http_status}.htm"
+        default_template="templates/error/default.htm"
 
         template=None
         log.create_logger(__name__).info(f"{FileSystemTools.format_path(www_root)}{path}")

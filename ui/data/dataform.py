@@ -39,7 +39,7 @@ class DataForm(Resource):
             create_parser().parse_args()
             context=g.context
 
-            file=f"dataforms/{table}.htm"
+            file=f"templates/{table}.htm"
 
             fetch=build_fetchxml_by_alias(context, table, id, type="select")
             fetchparser=FetchXmlParser(fetch, context)
