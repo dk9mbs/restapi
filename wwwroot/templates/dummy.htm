@@ -1,0 +1,42 @@
+{% extends "templates/base/base.htm" %}
+{% import "templates/base/uitools.htm" as forms %}
+
+
+
+{% block title %}TuxLog{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+
+        <form method="POST" action="/ui/v1.0/data/{{ table }}/{{ id }}">
+
+    {% call forms.row_form_group() %}
+        {% call forms.input('id', 'Unique Rowid', 'RowID', data['id'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row_form_group() %}
+        {% call forms.input('name', 'Name', 'Enter the name here', data['name'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row_form_group() %}
+        {% call forms.input('port', 'IP Port', 'Enter the IP Port here', data['Port'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row_form_group() %}
+        {% call forms.submit_button('__save', 'Save') %}
+        {% endcall %}
+    {% endcall %}
+
+        </form>
+
+{% endblock %}
+
+
+
+

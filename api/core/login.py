@@ -44,7 +44,10 @@ class Login(Resource):
         log.create_logger(__name__).info(f"{request.accept_mimetypes}")
 
         if session_id==None:
-            abort(400,'wrong username or password')
+            if next==None:
+                abort(400,'wrong username or password')
+            else:
+                return redirect(f"/ui/login?redirect={next}&msg=Wrong username or password", code=302)
         else:
             session['session_id']=session_id
             g.context=AppInfo.create_context(session_id)

@@ -26,51 +26,38 @@ logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
-    parser.add_argument('path',type=str, help='Vilid filename', location='query')
     return parser
 
 class Portal(Resource):
-    api=AppInfo.get_api("portal")
+    api=AppInfo.get_api("ui")
 
     @api.doc(parser=create_parser())
-    def get(self, path):
+    def get(self):
         try:
+            path="templates/base/login.htm"
+
             logger.info(f"Path: {path}")
 
             create_parser().parse_args()
             context=g.context
-            #
-            # content class
-            #
-            www_root=FileSystemTools.format_path(AppInfo.get_current_config('ui','wwwroot', exception=True))
 
-            file_full_name=f"{www_root}{path}"
-            logger.info(f"{file_full_name}")
-            #
-            # load the portal record
-            #
-            if not path.endswith("login.htm"):
-                #fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
-                fetch=build_fetchxml_by_alias(context, "api_portal", "default", type="select")
-                fetchparser=FetchXmlParser(fetch, context)
-                rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
-                if rs.get_result()==None:
-                    abort(404, "Item not found => %s" % id)
-            #
-            # render the defined jinja template (in case ofahtm file)
-            #
-            if path.endswith('.htm'):
-                next=HTTPRequest.redirect(request)
-                logger.info(f"Redirect : {next}")
+            next=HTTPRequest.redirect(request, "/ui/login")
+            logger.info(f"Redirect : {next}")
 
-                template=JinjaTemplate.create_file_template(path)
+            msg=''
+            if 'msg' in request.args:
+                msg=request.args.get('msg')
 
-                response = make_response(template.render({"redirect": next}))
-                response.headers['content-type'] = 'text/html'
+            logged_on=False
+            if 'session_id' in session:
+                logged_on=True
 
-                return response
-            else:
-                return send_file(file_full_name)
+            template=JinjaTemplate.create_file_template(path)
+
+            response = make_response(template.render({"redirect": next, "msg": msg, "logged_on": logged_on}))
+            response.headers['content-type'] = 'text/html'
+
+            return response
 
         except ConfigNotValid as err:
             logger.error(f"Config not valid {err}")
@@ -83,7 +70,7 @@ class Portal(Resource):
             return make_response(JinjaTemplate.render_status_template(404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
             logger.info(f"RestApiNotAllowed Exception: {err}")
-            return redirect(f"/ui/login?redirect=/{path}", code=302)
+            return redirect(f"/auth/login.htm?redirect=/{path}", code=302)
         except Exception as err:
             logger.info(f"Exception: {err}")
             return make_response(JinjaTemplate.render_status_template(500, err), 500)

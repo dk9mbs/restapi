@@ -1,0 +1,23 @@
+{% macro input(name, label, palceholder='', value='', type='text', size=20) -%}
+    <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+    <div class="col-sm-10">
+      <input type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
+    </div>
+    {{ caller() }}
+{%- endmacro %}
+
+{% macro row_form_group () %}
+    <div class="form-group row p-1">
+    {{ caller() }}
+    </div>
+{% endmacro %}
+
+{% macro submit_button (name, description) -%}
+    <div class="col-sl-10">
+        <button type="submit" class="btn btn-primary">{{ description }}</button>
+    </div>
+    {{ caller() }}
+{%- endmacro %}
+
+
+

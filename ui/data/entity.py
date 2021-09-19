@@ -36,22 +36,6 @@ def create_parser_delete():
 class Entity(Resource):
     api=AppInfo.get_api("ui")
 
-#    @api.doc(parser=create_parser_delete())
-#    def delete(self,table,id):
-#        try:
-#            create_parser_delete().parse_args()
-#            context=g.context
-#            fetch=build_fetchxml_by_alias(context,table,id, type="delete")
-#            fetchparser=FetchXmlParser(fetch, context)
-#            rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
-#            result={"rows_affected": rs.get_cursor().rowcount}
-#            rs.close()
-#            return result
-#        except RestApiNotAllowed as err:
-#            abort(400, f"{err}")
-#        except Exception as err:
-#            abort(500,f"{err}")
-
     @api.doc(parser=create_parser_post())
     def post(self,table,id):
         try:
@@ -71,7 +55,7 @@ class Entity(Resource):
 
         except RestApiNotAllowed as err:
             logger.info(f"RestApiNotAllowed Exception: {err}")
-            return redirect(f"/auth/login.htm?redirect=/ui/v1.0/data/{table}/{id}", code=302)
+            return redirect(f"/ui/login?redirect=/ui/v1.0/data/{table}/{id}", code=302)
         except Exception as err:
            return make_response(JinjaTemplate.render_status_template(500, err), 500)
 

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+{% import "templates/base/uitools.htm" as forms %}
+<html lang="en">
+<head>
+    <title>Login</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azp$
+
+</head>
+<body>
+
+
+
+    <div">{{ msg }}</div>
+
+    {% if logged_on == False %}
+    <form method="post" action="/api/v1.0/core/login?redirect={{ redirect }}">
+
+    {% call forms.row_form_group() %}
+        {% call forms.input('restapi_username', 'Username', 'Username' ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row_form_group() %}
+        {% call forms.input('restapi_password', 'Password', 'Password' ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row_form_group() %}
+        <!-- <div>Redirect to {{ redirect }}</div> -->
+    {% endcall %}
+
+    {% call forms.row_form_group() %}
+        {% call forms.submit_button('__login', 'Login' ) %}
+        {% endcall %}
+    {% endcall %}
+    </form>
+
+    {% endif %}
+
+    {% if logged_on == True %}
+    <form method="post" action="/api/v1.0/core/logoff?redirect=/ui/login">
+
+    {% call forms.row_form_group() %}
+        {% call forms.submit_button('__logoff', 'Logoff' ) %}
+        {% endcall %}
+    {% endcall %}
+
+    </form>
+    {% endif %}
+
+
+</body>
+</html>

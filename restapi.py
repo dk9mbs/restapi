@@ -22,6 +22,7 @@ import api.core.logoff
 import api.action
 # import ui endpoints
 import ui.core.portal
+import ui.login
 import ui.core.defaultpage
 import ui.data.entityadd
 import ui.data.entity
@@ -85,6 +86,7 @@ AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>
 AppInfo.get_api("ui").add_resource(ui.data.entityadd.get_endpoint(), "/v1.0/data/<table>", methods=['POST'])
 AppInfo.get_api("ui").add_resource(ui.data.entity.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['POST'])
 AppInfo.get_api("ui").add_resource(ui.data.dataform.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
+AppInfo.get_api("ui").add_resource(ui.login.get_endpoint(), "/login", methods=['GET'])
 #
 # endpoint for static and dynamic portal content
 #

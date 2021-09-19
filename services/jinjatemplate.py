@@ -36,7 +36,7 @@ class JinjaTemplate:
         log.create_logger(__name__).info(f"{FileSystemTools.format_path(www_root)}{path}")
 
         if os.path.isfile(f"{FileSystemTools.format_path(www_root)}{path}"):
-            template=JinjaTemplate.create_file_template("error/500.htm").render({"error": http_status, "description": err_desc})
+            template=JinjaTemplate.create_file_template(path).render({"error": http_status, "description": err_desc})
         elif os.path.isfile(f"{FileSystemTools.format_path(www_root)}{default_template}"):
             template=JinjaTemplate.create_file_template(default_template).render({"error": http_status, "description": err_desc})
         else:
