@@ -20,13 +20,18 @@ import api.data.entityset
 import api.core.login
 import api.core.logoff
 import api.action
+
+import api.form.entityupdate
+import api.form.entityinsert
+
 # import ui endpoints
 import ui.core.portal
 import ui.login
 import ui.core.defaultpage
-import ui.data.entityadd
-import ui.data.entity
-import ui.data.dataform
+
+import ui.data.dataformlist
+import ui.data.dataformupdate
+import ui.data.dataforminsert
 
 logger=log.create_logger(__name__)
 
@@ -75,18 +80,22 @@ def before_request():
 
 AppInfo.get_api().add_resource(api.core.login.get_endpoint() ,"/v1.0/core/login")
 AppInfo.get_api().add_resource(api.core.logoff.get_endpoint() ,"/v1.0/core/logoff")
-AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/v1.0/data/<table>/<id>")
-AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/v1.0/data")
+AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/v1.0/data/<table>/<id>", methods=['GET','PUT','DELETE'])
+AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/v1.0/data", methods=['POST'])
 AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/v1.0/data/<table>", methods=['POST'])
 AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(),"/v1.0/data/<table>", methods=['GET'])
 AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>")
-#
-# endpoints for model driven forms
-#
-AppInfo.get_api("ui").add_resource(ui.data.entityadd.get_endpoint(), "/v1.0/data/<table>", methods=['POST'])
-AppInfo.get_api("ui").add_resource(ui.data.entity.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['POST'])
-AppInfo.get_api("ui").add_resource(ui.data.dataform.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
+AppInfo.get_api().add_resource(api.form.entityupdate.get_endpoint(), "/v1.0/form/<table>/<id>", methods=['POST'])
+AppInfo.get_api().add_resource(api.form.entityinsert.get_endpoint(), "/v1.0/form/<table>", methods=['POST'])
+
+
+# get the dataform form edit records
+AppInfo.get_api("ui").add_resource(ui.data.dataformupdate.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
+AppInfo.get_api("ui").add_resource(ui.data.dataforminsert.get_endpoint(), "/v1.0/data/<table>", methods=['GET'])
+AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/datalist/<table>", methods=['GET'])
+# login process
 AppInfo.get_api("ui").add_resource(ui.login.get_endpoint(), "/login", methods=['GET'])
+
 #
 # endpoint for static and dynamic portal content
 #

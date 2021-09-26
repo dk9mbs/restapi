@@ -20,36 +20,32 @@
 
     {% if logged_on == False %}
     <form method="post" action="/api/v1.0/core/login?redirect={{ redirect }}">
+    <div class="container m-1">
 
-    {% call forms.row_form_group() %}
-        {% call forms.input('restapi_username', 'Username', 'Username' ) %}
+    <div class="row m-1">
+        {% call forms.input('restapi_username', '', 'Username' ) %}
         {% endcall %}
-    {% endcall %}
+    </div>
 
-    {% call forms.row_form_group() %}
-        {% call forms.input('restapi_password', 'Password', 'Password' ) %}
+    <div class="row m-1">
+        {% call forms.input('restapi_password', '', 'Password' ) %}
         {% endcall %}
-    {% endcall %}
+    </div>
 
-    {% call forms.row_form_group() %}
-        <!-- <div>Redirect to {{ redirect }}</div> -->
-    {% endcall %}
+    <div class="container m-1">
+        <button type="submit" class="btn btn-primary"> Login</button>
+    </div>
 
-    {% call forms.row_form_group() %}
-        {% call forms.submit_button('__login', 'Login' ) %}
-        {% endcall %}
-    {% endcall %}
+    </div>
     </form>
-
     {% endif %}
 
     {% if logged_on == True %}
     <form method="post" action="/api/v1.0/core/logoff?redirect=/ui/login">
 
-    {% call forms.row_form_group() %}
-        {% call forms.submit_button('__logoff', 'Logoff' ) %}
-        {% endcall %}
-    {% endcall %}
+    <div class="container m-1">
+        <button type="submit" class="btn btn-primary"> Logoff</button>
+    </div>
 
     </form>
     {% endif %}

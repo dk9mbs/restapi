@@ -10,13 +10,15 @@ from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 
 from core.appinfo import AppInfo
-from services.fetchxml import build_fetchxml_by_alias
-from services.database import DatabaseServices
-from services.jinjatemplate import JinjaTemplate
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core.exceptions import RestApiNotAllowed
 from core import log
+
+from services.httprequest import HTTPRequest
+from services.fetchxml import build_fetchxml_by_alias
+from services.database import DatabaseServices
+from services.jinjatemplate import JinjaTemplate
 
 logger=log.create_logger(__name__)
 
@@ -26,21 +28,15 @@ def create_parser_post():
     parser.add_argument('id',type=str, help='ID from the datarow', location='query')
     return parser
 
-def create_parser_delete():
-    parser=reqparse.RequestParser()
-    parser.add_argument('table',type=str, help='Name of the Datatable', location='query')
-    parser.add_argument('id',type=str, help='ID from the datarow', location='query')
-    return parser
-
-
 class Entity(Resource):
-    api=AppInfo.get_api("ui")
+    api=AppInfo.get_api()
 
     @api.doc(parser=create_parser_post())
     def post(self,table,id):
         try:
             create_parser_post().parse_args()
             context=g.context
+
 
             json=request.form.to_dict()
             for key in list(json):
@@ -51,7 +47,9 @@ class Entity(Resource):
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
 
-            return redirect(f"/ui/v1.0/data/{table}/{id}", code=302)
+            next=HTTPRequest.redirect(request, default=f"/ui/v1.0/data/{table}/$$id$$", id=id)
+
+            return redirect(next, code=302)
 
         except RestApiNotAllowed as err:
             logger.info(f"RestApiNotAllowed Exception: {err}")

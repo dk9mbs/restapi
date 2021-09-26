@@ -1,19 +1,21 @@
 #!/usr/bin/python3
 import sys
 import json
-from flask import Flask,request,abort, g, session
+from flask import Flask,request,abort, g, session, redirect
 from flask import Blueprint
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from datetime import date, datetime
 
 from core.appinfo import AppInfo
-from services.fetchxml import build_fetchxml_by_alias
-from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core.exceptions import RestApiNotAllowed
 from core import log
+
+from services.httprequest import HTTPRequest
+from services.fetchxml import build_fetchxml_by_alias
+from services.database import DatabaseServices
 
 logger=log.create_logger(__name__)
 
@@ -23,7 +25,7 @@ def create_parser():
 
 
 class EntityAdd(Resource):
-    api=AppInfo.get_api("ui")
+    api=AppInfo.get_api()
 
     @api.doc(parser=create_parser())
     def post(self, table):
@@ -37,11 +39,15 @@ class EntityAdd(Resource):
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
             result={"rows_affected": rs.get_cursor().rowcount, "inserted_id": rs.get_inserted_id()}
 
-            return result
+            next=HTTPRequest.redirect(request, default=f"/ui/v1.0/data/{table}/{rs.get_inserted_id()}", id=rs.get_inserted_id())
+
+            return redirect(next, code=302)
+
         except RestApiNotAllowed as err:
-            abort(400,f"{err}")
+            logger.info(f"RestApiNotAllowed Exception: {err}")
+            return redirect(f"/ui/login?redirect=/ui/v1.0/data/{table}", code=302)
         except Exception as err:
-            abort(500,f"{err}")
+           return make_response(JinjaTemplate.render_status_template(500, err), 500)
 
 def get_endpoint():
     return EntityAdd

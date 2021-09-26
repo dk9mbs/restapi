@@ -19,6 +19,7 @@ logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
+    parser.add_argument('table',type=str, help='Tablename', location='query')
     #parser.add_argument('where',type=str, help='Valid sql where clause', location='query')
     #parser.add_argument('orderby',type=str, help='Valid sql orderby clause', location='query')
     #parser.add_argument('select',type=str, help='Valid sql select', location='query')

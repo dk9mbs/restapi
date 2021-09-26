@@ -1,8 +1,16 @@
-{% macro input(name, label, palceholder='', value='', type='text', size=20) -%}
+{% macro input(name, label='', placeholder='', value='', type='text', size=20) -%}
+    {% if label!='' %}
     <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+
     <div class="col-sm-10">
       <input type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
     </div>
+    {% else %}
+    <div class="col-sm-12">
+      <input type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
+    </div>
+    {% endif %}
+
     {{ caller() }}
 {%- endmacro %}
 
@@ -12,12 +20,38 @@
     </div>
 {% endmacro %}
 
-{% macro submit_button (name, description) -%}
-    <div class="col-sl-10">
-        <button type="submit" class="btn btn-primary">{{ description }}</button>
-    </div>
+{% macro col_form_group () %}
+    <div class="form-group col p-1">
     {{ caller() }}
-{%- endmacro %}
+    </div>
+{% endmacro %}
 
+
+{% macro record_form (table, id='') %}
+        {% if id=='' %}
+        <form method="POST" action="/api/v1.0/form/{{ table }}?redirect=/ui/v1.0/data/{{ table }}/$$id$$">
+        {% else %}
+        <form method="POST" action="/api/v1.0/form/{{ table }}/{{ id }}?redirect=/ui/v1.0/data/{{ table }}/$$id$$">
+        {% endif %}
+
+        {{ caller() }}
+
+        <div class="row">
+        <div class="col">
+            <button type="submit" class="btn btn-primary"> Save</button>
+        </div>
+
+        <div class="col">
+            <button type="button" class="btn btn-primary" onclick="window.location='/ui/v1.0/data/{{ table }}'" > New</button>
+        </div>
+
+        <div class="col">
+            <button type="button" class="btn btn-primary" onclick="window.location='/ui/v1.0/datalist/{{ table }}'" > List</button>
+        </div>
+
+        </div>
+
+        </form>
+{% endmacro %}
 
 

@@ -26,6 +26,8 @@ logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
+    parser.add_argument('restapi_username',type=str, help='Username', location='query')
+    parser.add_argument('restapi_password',type=str, help='Password', location='query')
     return parser
 
 class Portal(Resource):

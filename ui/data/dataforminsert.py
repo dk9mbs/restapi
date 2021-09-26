@@ -27,32 +27,23 @@ logger=log.create_logger(__name__)
 def create_parser():
     parser=reqparse.RequestParser()
     parser.add_argument('table',type=str, help='Name of the datatable', location='query')
-    parser.add_argument('id',type=str, help='Rowid', location='query')
     return parser
 
-class DataForm(Resource):
+class DataFormInsert(Resource):
     api=AppInfo.get_api("ui")
 
     @api.doc(parser=create_parser())
-    def get(self, table, id):
+    def get(self, table):
         try:
             create_parser().parse_args()
             context=g.context
 
-            file=f"templates/{table}.htm"
+            file=f"templates/{table}_insert.htm"
 
-            fetch=build_fetchxml_by_alias(context, table, id, type="select")
-            fetchparser=FetchXmlParser(fetch, context)
-            rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
-            if rs.get_result()==None:
-                abort(404, "Item not found => %s" % id)
-            #
-            # render the defined jinja template (in case ofahtm file)
-            #
             logger.info(f"Redirect : {next}")
 
             template=JinjaTemplate.create_file_template(file)
-            response = make_response(template.render({"table": table, "id": id, "data": rs.get_result()}))
+            response = make_response(template.render({"table": table}))
             response.headers['content-type'] = 'text/html'
 
             return response
@@ -74,4 +65,4 @@ class DataForm(Resource):
             return make_response(JinjaTemplate.render_status_template(500, err), 500)
 
 def get_endpoint():
-    return DataForm
+    return DataFormInsert
