@@ -52,7 +52,9 @@ class DataFormUpdate(Resource):
             logger.info(f"Redirect : {next}")
 
             template=JinjaTemplate.create_file_template(file)
-            response = make_response(template.render({"table": table, "id": id, "data": rs.get_result()}))
+            response = make_response(template.render({"table": table,
+                    "pagemode": "dataformupdate",
+                    "id": id, "data": rs.get_result()}))
             response.headers['content-type'] = 'text/html'
 
             return response

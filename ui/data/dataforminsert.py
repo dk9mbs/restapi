@@ -43,7 +43,7 @@ class DataFormInsert(Resource):
             logger.info(f"Redirect : {next}")
 
             template=JinjaTemplate.create_file_template(file)
-            response = make_response(template.render({"table": table}))
+            response = make_response(template.render({"table": table, "pagemode": "dataforminsert"}))
             response.headers['content-type'] = 'text/html'
 
             return response

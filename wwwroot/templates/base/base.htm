@@ -31,35 +31,51 @@
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
+
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    
-    {% if pagemode=="dataformupdate" %}        
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Basedata
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Another action</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Something else here</a></li>
-          </ul>
+
+        {% if pagemode=="dataformupdate" %}        
+        <li class="nav-item active">
+            <a class="nav-link" href="#" onclick="document.getElementById('frmData').submit()">Save <span class="sr-only"></span></a>
         </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="#" onclick="window.location='/ui/v1.0/data/{{ table }}'">New <span class="sr-only"></span></a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="#" onclick="window.location='/ui/v1.0/datalist/{{ table }}';">List <span class="sr-only"></span></a>
+        </li>
+        {% endif %}
+
+        {% if pagemode=="dataforminsert" %}        
+        <li class="nav-item active">
+            <a class="nav-link" href="#" onclick="document.getElementById('frmData').submit()">Save <span class="sr-only"></span></a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="#" onclick="window.location='/ui/v1.0/datalist/{{ table }}';">List <span class="sr-only"></span></a>
+        </li>
+        {% endif %}
+
+        {% if pagemode=="dataformlist" %}        
+        <li class="nav-item active">
+            <a class="nav-link" href="#" onclick="window.location='/ui/v1.0/data/{{ table }}'">New <span class="sr-only"></span></a>
+        </li>
+        {% endif %}
+
       </ul>
-    {% endif %}
 
     </div>
+
   </div>
 </nav>
     <!-- End navbar -->
 
-    <div id="content" class="card p-1 m-1">
-            {% block content %}{% endblock content %}
+    <div id="content" class="container">
+        {% block content %}{% endblock content %}
     </div>
 
-    <div id="footer">
-        {% block footer %}<div class="card p-1 m-1">RestAPI Dataforms V1.0</div>{% endblock %}
+    <div id="footer" class="container">
+        {% block footer %}{% endblock %}
     </div>
 </body>
 </html>

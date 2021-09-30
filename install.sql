@@ -189,5 +189,25 @@ CREATE TABLE IF NOT EXISTS api_portal(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT IGNORE INTO api_portal(id,name) VALUES ('default', 'default');
-
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS name varchar(100);
+
+
+
+CREATE TABLE IF NOT EXISTS api_table_view(
+    id int NOT NULL AUTO_INCREMENT,
+    table_id int NOT NULL,
+    fetch_xml text NOT NULL,
+    col_definition text NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(table_id) REFERENCES api_table(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_table_view (id,table_id,fetch_xml, col_definition) VALUES (
+1,1,'<restapi type="select">
+<table name="dummy"/>
+<filter type="and">
+<condition field="name" value="$$query$$" operator=" like "/>
+</filter>
+</restapi>','[{"name": "id", "header":"#"},
+{"name": "name", "header":"Name"},
+{"name": "Port", "header":"TCP Port"}]');

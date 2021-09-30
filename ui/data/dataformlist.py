@@ -70,7 +70,7 @@ class EntityList(Resource):
 
             template=JinjaTemplate.create_file_template(file)
             response = make_response(template.render({"data": rs.get_result(),
-                        "columns": columns, "table_meta": meta}))
+                        "columns": columns,"table": table, "table_meta": meta, "pagemode": "dataformlist"}))
 
             response.headers['content-type'] = 'text/html'
 
