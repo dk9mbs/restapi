@@ -331,8 +331,8 @@ def list_event_handler(rest):
 
     fields=[
         {"description":"id","field":"id","rjust":"8"},
-        {"description":"plugin_module_name","field":"plugin_module_name","ljust":"40"},
-        {"description":"Publisher","field":"publisher","ljust":"25"},
+        {"description":"plugin_module_name","field":"plugin_module_name","ljust":"45"},
+        {"description":"Publisher","field":"publisher","ljust":"35"},
         {"description":"Event","field":"event","ljust":"10"},
         {"description":"Type","field":"type","ljust":"10"},
         {"description":"Solution","field":"solution_id","rjust":"8"},

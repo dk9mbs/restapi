@@ -8,8 +8,12 @@ from flaskext.mysql import MySQL
 from config import CONFIG
 from core.appinfo import AppInfo
 from core import log
+import jinjainit
+
+
 
 AppInfo.init(__name__, CONFIG['default'])
+jinjainit.init()
 
 # Core api endpoints
 # do not import before AppInfo.init() !!!
@@ -92,8 +96,11 @@ AppInfo.get_api().add_resource(api.form.entityinsert.get_endpoint(), "/v1.0/form
 # get the dataform form edit records
 AppInfo.get_api("ui").add_resource(ui.data.dataformupdate.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
 AppInfo.get_api("ui").add_resource(ui.data.dataforminsert.get_endpoint(), "/v1.0/data/<table>", methods=['GET'])
-AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/datalist/<table>", methods=['GET'])
+AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/data/view/<table>", methods=['GET'])
+AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/data/view/<table>/<view>", methods=['GET'])
+#
 # login process
+#
 AppInfo.get_api("ui").add_resource(ui.login.get_endpoint(), "/login", methods=['GET'])
 
 #

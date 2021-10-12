@@ -18,12 +18,18 @@ class HTTPRequest:
             id=str(kwargs[id_key])
 
         if not redirect_key in request.args:
-            return default.replace(var_id, id)
+            return HTTPRequest.__replace_default(default, var_id, id)
 
         next = request.args.get(redirect_key)
 
         if next == "" or next == None:
-            return default.replace(var_id, id)
+            return HTTPRequest.__replace_default(default, var_id, id)
 
         return urllib.parse.unquote(next.replace(var_id, id))
 
+    @staticmethod
+    def __replace_default(default, var_id, id):
+        if default==None:
+            return None
+        else:
+            return default.replace(var_id, id)

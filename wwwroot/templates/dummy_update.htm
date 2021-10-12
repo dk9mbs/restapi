@@ -28,7 +28,14 @@
         {% endcall %}
     {% endcall %}
 
+
     {% endcall %}
+
+    {% call forms.row_form_group() %}
+        {% call forms.data_select('test','Device', 112, 'dummy', 'default','%') %}
+        {% endcall %}
+    {% endcall %}
+
 
 {% endblock %}
 

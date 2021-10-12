@@ -38,11 +38,15 @@ class DataFormInsert(Resource):
             create_parser().parse_args()
             context=g.context
 
+            from core.permission import Permission
+            if not Permission().validate(context, "create", context.get_username(), table):
+                raise RestApiNotAllowed("")
+
             file=f"templates/{table}_insert.htm"
 
             logger.info(f"Redirect : {next}")
 
-            template=JinjaTemplate.create_file_template(file)
+            template=JinjaTemplate.create_file_template(context,file)
             response = make_response(template.render({"table": table, "pagemode": "dataforminsert"}))
             response.headers['content-type'] = 'text/html'
 
@@ -50,19 +54,19 @@ class DataFormInsert(Resource):
 
         except ConfigNotValid as err:
             logger.error(f"Config not valid {err}")
-            return make_response(JinjaTemplate.render_status_template(500, err), 500)
+            return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
         except jinja2.exceptions.TemplateNotFound as err:
             logger.info(f"TemplateNotFound: {err}")
-            return make_response(JinjaTemplate.render_status_template(404, f"Template not found {err}"), 404)
+            return make_response(JinjaTemplate.render_status_template(context, 404, f"Template not found {err}"), 404)
         except FileNotFoundError as err:
             logger.info(f"FileNotFound: {err}")
-            return make_response(JinjaTemplate.render_status_template(404, f"File not found {err}"), 404)
+            return make_response(JinjaTemplate.render_status_template(context, 404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
             logger.info(f"RestApiNotAllowed Exception: {err}")
-            return redirect(f"/auth/login.htm?redirect=/{path}", code=302)
+            return redirect(f"/ui/login?redirect=/ui/v1.0/data/{table}", code=302)
         except Exception as err:
             logger.info(f"Exception: {err}")
-            return make_response(JinjaTemplate.render_status_template(500, err), 500)
+            return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
 
 def get_endpoint():
     return DataFormInsert

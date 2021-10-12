@@ -54,7 +54,7 @@ class Portal(Resource):
             if 'session_id' in session:
                 logged_on=True
 
-            template=JinjaTemplate.create_file_template(path)
+            template=JinjaTemplate.create_file_template(context, path)
 
             response = make_response(template.render({"redirect": next, "msg": msg, "logged_on": logged_on}))
             response.headers['content-type'] = 'text/html'

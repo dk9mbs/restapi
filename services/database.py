@@ -28,7 +28,7 @@ class DatabaseServices:
                     #raise NameError (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
                     raise RestApiNotAllowed (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
 
-
+        logger.info(f"Try to read table metadata: {command_builder.get_main_table()}")
         meta=read_table_meta(context, table_name=command_builder.get_main_table())
         id_field_name=meta['id_field_name']
         id_field_type=meta['id_field_type']

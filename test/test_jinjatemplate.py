@@ -15,18 +15,18 @@ class TestJinjaTemplate(unittest.TestCase):
 
     def test_execution(self):
         print("+++ Error page by error page +++")
-        print(JinjaTemplate.render_status_template(500, "500 error page"))
+        print(JinjaTemplate.render_status_template(self.context, 500, "500 error page"))
         print("----------------------------")
 
         print("+++ Error page by default error page +++")
-        print(JinjaTemplate.render_status_template(1234, "Default error page"))
+        print(JinjaTemplate.render_status_template(self.context, 1234, "Default error page"))
         print("----------------------------")
 
         print("+++ Error page by String +++")
         print("For excample default.htm was deleted")
         # mock the config
         AppInfo.set_current_config("ui","wwwroot","/tmp")
-        print(JinjaTemplate.render_status_template(500, "string error page"))
+        print(JinjaTemplate.render_status_template(self.context, 500, "string error page"))
         print("----------------------------")
 
     def tearDown(self):

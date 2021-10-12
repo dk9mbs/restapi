@@ -12,6 +12,7 @@
 
 #deprecated
 #DROP TABLE IF EXISTS api_plugin_type;
+DELETE FROM api_table_view  WHERE solution_id=1;
 
 CREATE TABLE IF NOT EXISTS api_solution(
     id int NOT NULL,
@@ -57,6 +58,9 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (8,'api_portal', 'api_portal','id','String','name',-1);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (9,'api_event_handler', 'api_event_handler','id','Int','table_name',0);
 
 CREATE TABLE IF NOT EXISTS api_user (
     id int NOT NULL AUTO_INCREMENT,
@@ -195,19 +199,65 @@ ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS name varchar(100);
 
 CREATE TABLE IF NOT EXISTS api_table_view(
     id int NOT NULL AUTO_INCREMENT,
+    name varchar(100) NOT NULL DEFAULT '<NEW>',
     table_id int NOT NULL,
+    id_field_name varchar(50) NOT NULL,
     fetch_xml text NOT NULL,
     col_definition text NOT NULL,
+    solution_id int NOT NULL,
     PRIMARY KEY(id),
     FOREIGN KEY(table_id) REFERENCES api_table(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT IGNORE INTO api_table_view (id,table_id,fetch_xml, col_definition) VALUES (
-1,1,'<restapi type="select">
-<table name="dummy"/>
-<filter type="and">
-<condition field="name" value="$$query$$" operator=" like "/>
-</filter>
+INSERT IGNORE INTO api_table_view (id,name,table_id,id_field_name,solution_id,fetch_xml, col_definition) VALUES (
+1,'default',1,'id',1,'<restapi type="select">
+    <table name="dummy"/>
+    <filter type="and">
+        <condition field="name" value="$$query$$" operator=" like "/>
+    </filter>
 </restapi>','[{"name": "id", "header":"#"},
 {"name": "name", "header":"Name"},
 {"name": "Port", "header":"TCP Port"}]');
+
+
+INSERT IGNORE INTO api_table_view (id,name,table_id,id_field_name,solution_id,fetch_xml, col_definition) VALUES (
+2,'default',7,'id',1,'<restapi type="select">
+<table name="api_session" alias="s"/>
+<filter type="and">
+            <condition field="session_values" alias="s" value="$$query$$" operator=" like "/>
+            <condition field="disabled" alias="s" value="0" operator=" like "/>
+        </filter>
+        <orderby>
+            <field name="last_access_on" alias="s" sort="DESC"/>
+        </orderby>
+        <joins>
+            <join type="inner" table="api_user" alias="u" condition="u.id=s.user_id"/>
+        </joins>
+        <select>
+            <field name="id" table_alias="s"/>
+            <field name="created_on" table_alias="s"/>
+            <field name="last_access_on" table_alias="s"/>
+            <field name="disabled" table_alias="s"/>
+            <field name="username" table_alias="u"/>
+        </select>
+</restapi>','[{"name": "id", "header":"Session ID"},
+{"name": "username", "header":"User"},
+{"name": "created_on", "header":"Created On"}, 
+{"name": "last_access_on", "header":"Last Access"}, {"name": "disabled", "header":"Disabled"}]');
+
+
+INSERT IGNORE INTO api_table_view (id,name,table_id,id_field_name,solution_id,fetch_xml, col_definition) VALUES (
+3,'default',2,'id',1,'<restapi type="select">
+    <table name="api_user" alias="u"/>
+    <filter type="and">
+        <condition field="username" value="$$query$$" operator=" like "/>
+    </filter>
+    <select>
+        <field name="id" table_alias="u"/>
+        <field name="username" table_alias="u" alias="name"/>
+        <field name="disabled" table_alias="u"/>
+        <field name="is_admin" table_alias="u"/>
+    </select>
+</restapi>','[{"name": "id", "header":"#"},
+{"name": "name", "header":"Username"},
+{"name": "disabled", "header":"Disabled"},{"name":"is_admin", "header": "Admin"}]');

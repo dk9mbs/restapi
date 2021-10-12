@@ -51,7 +51,7 @@ class DataFormUpdate(Resource):
             #
             logger.info(f"Redirect : {next}")
 
-            template=JinjaTemplate.create_file_template(file)
+            template=JinjaTemplate.create_file_template(context,file)
             response = make_response(template.render({"table": table,
                     "pagemode": "dataformupdate",
                     "id": id, "data": rs.get_result()}))
@@ -61,19 +61,19 @@ class DataFormUpdate(Resource):
 
         except ConfigNotValid as err:
             logger.error(f"Config not valid {err}")
-            return make_response(JinjaTemplate.render_status_template(500, err), 500)
+            return make_response(JinjaTemplate.render_status_template(context,500, err), 500)
         except jinja2.exceptions.TemplateNotFound as err:
             logger.info(f"TemplateNotFound: {err}")
-            return make_response(JinjaTemplate.render_status_template(404, f"Template not found {err}"), 404)
+            return make_response(JinjaTemplate.render_status_template(context,404, f"Template not found {err}"), 404)
         except FileNotFoundError as err:
             logger.info(f"FileNotFound: {err}")
-            return make_response(JinjaTemplate.render_status_template(404, f"File not found {err}"), 404)
+            return make_response(JinjaTemplate.render_status_template(context,404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
             logger.info(f"RestApiNotAllowed Exception: {err}")
             return redirect(f"/auth/login.htm?redirect=/{path}", code=302)
         except Exception as err:
             logger.info(f"Exception: {err}")
-            return make_response(JinjaTemplate.render_status_template(500, err), 500)
+            return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
 
 def get_endpoint():
     return DataFormUpdate

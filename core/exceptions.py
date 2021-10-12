@@ -3,3 +3,9 @@ class RestApiNotAllowed(Exception):
 
 class ConfigNotValid(Exception):
     pass
+
+class DataViewNotFound(Exception):
+    pass
+
+class TableMetaDataNotFound(Exception):
+    pass
