@@ -14,7 +14,7 @@ class TestMetaTableView(unittest.TestCase):
 
     def test_by_table(self):
         meta_table=read_table_meta(self.context, alias="dummy")
-        meta=read_table_view_meta(self.context,meta_table['id'], "default")
+        meta=read_table_view_meta(self.context,meta_table['id'], "default", "LISTVIEW")
 
         print("====================")
         print(meta)

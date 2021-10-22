@@ -48,6 +48,18 @@
     </div>
 {% endmacro %}
 
+{% macro row () %}
+    <div class="row p-1">
+    {{ caller() }}
+    </div>
+{% endmacro %}
+
+{% macro col () %}
+    <div class="col p-1">
+    {{ caller() }}
+    </div>
+{% endmacro %}
+
 
 {% macro record_form (table, id='') %}
         {% if id=='' %}
@@ -57,21 +69,6 @@
         {% endif %}
 
         {{ caller() }}
-        <!--
-        <div class="row">
-        <div class="col">
-            <button type="submit" class="btn btn-primary"> Save</button>
-        </div>
-
-        <div class="col">
-            <button type="button" class="btn btn-primary" onclick="window.location='/ui/v1.0/data/{{ table }}'" > New</button>
-        </div>
-
-        <div class="col">
-            <button type="button" class="btn btn-primary" onclick="window.location='/ui/v1.0/datalist/{{ table }}'" > List</button>
-        </div>
-        </div>
-        -->
 
         </form>
 {% endmacro %}

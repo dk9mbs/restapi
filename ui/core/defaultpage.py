@@ -28,7 +28,7 @@ class DefaultPage(Resource):
             return redirect(f"/index.htm", code=302)
 
         except Exception as err:
-            logger.info(f"Exception: {err}")
+            logger.exception(f"Exception: {err}")
             abort(500,f"{err}")
 
 def get_endpoint():

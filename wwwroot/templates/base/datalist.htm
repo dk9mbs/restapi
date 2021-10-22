@@ -30,7 +30,7 @@
     <thead>
         <tr>
             {% for col in columns %}
-                <th scope="col">{{ col['header'] }}</th>
+                <th scope="col">{{ col['column_header'] }}</th>
             {% endfor %}
         </tr>
     </thead>
@@ -38,7 +38,7 @@
 {% for result in data %}
     <tr onclick="url='/ui/v1.0/data/{{ table_meta['alias'] }}/{{ result[table_meta['id_field_name']] }}'; window.location=url;">
         {% for col in columns %}
-            <td>{{ result[col['name']] }}</td>
+            <td>{{ result[col['alias']] }}</td>
         {% endfor %}
     </tr>
 {% endfor %}

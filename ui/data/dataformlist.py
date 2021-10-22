@@ -47,10 +47,10 @@ class EntityList(Resource):
                 query=f"%{request.args.get('query')}%"
 
             table_meta=read_table_meta(context,alias=table)
-            view_meta=read_table_view_meta(context, table_meta['id'], view)
+            view_meta=read_table_view_meta(context, table_meta['id'], view, 'LISTVIEW')
 
             fetch=view_meta['fetch_xml']
-            columns=json.loads(view_meta['col_definition'])
+            #columns=json.loads(view_meta['col_definition'])
 
             fetch=fetch.replace("$$query$$", query)
 
@@ -59,29 +59,29 @@ class EntityList(Resource):
 
             template=JinjaTemplate.create_file_template(context, file)
             response = make_response(template.render({"data": rs.get_result(),
-                        "columns": columns,"table": table, "table_meta": table_meta,"view_meta": view_meta, "pagemode": "dataformlist"}))
+                        "columns": fetchparser.get_columns(), "table": table, "table_meta": table_meta,"view_meta": view_meta, "pagemode": "dataformlist"}))
 
             response.headers['content-type'] = 'text/html'
 
             return response
 
         except ConfigNotValid as err:
-            logger.error(f"Config not valid {err}")
+            logger.exception(f"Config not valid {err}")
             return make_response(JinjaTemplate.render_status_template(context,500, err), 500)
         except DataViewNotFound as err:
-            logger.error(f"Dataview on api_table_view not found: {err}")
+            logger.exception(f"Dataview on api_table_view not found: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, "Dataview not found!"), 500)
         except jinja2.exceptions.TemplateNotFound as err:
-            logger.info(f"TemplateNotFound: {err}")
+            logger.exception(f"TemplateNotFound: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 404, f"Template not found {err}"), 404)
         except FileNotFoundError as err:
-            logger.info(f"FileNotFound: {err}")
+            logger.exception(f"FileNotFound: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
-            logger.info(f"RestApiNotAllowed Exception: {err}")
+            logger.exception(f"RestApiNotAllowed Exception: {err}")
             return redirect(f"/ui/login?redirect=/ui/v1.0/data/view/{table}/default", code=302)
         except Exception as err:
-            logger.info(f"Exception: {err}")
+            logger.exception(f"Exception: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
 
 

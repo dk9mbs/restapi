@@ -78,6 +78,7 @@ class DatabaseServices:
         if fetch_mode != -1:
             rs.read(fetch_mode)
 
+        rs.get_columns()
         if command_builder.get_sql_type().upper() == "INSERT":
             if context.get_connection().insert_id()==0 or context.get_connection().insert_id()==None:
                 rs.set_inserted_id(command_builder.get_sql_fields()[id_field_name]['value'])

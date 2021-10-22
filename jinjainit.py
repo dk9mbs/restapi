@@ -12,7 +12,7 @@ from services.database import DatabaseServices
 def test(table_alias, viewname, query):
     context=g.context
     table_meta=read_table_meta(context,alias=table_alias)
-    view_meta=read_table_view_meta(g.context, table_meta['id'], viewname)
+    view_meta=read_table_view_meta(g.context, table_meta['id'], viewname, 'SELECTVIEW')
     fetchparser=FetchXmlParser(str(view_meta['fetch_xml']).replace('$$query$$',query), context)
     rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
     return rs.get_result()

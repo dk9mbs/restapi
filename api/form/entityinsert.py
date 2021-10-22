@@ -38,7 +38,7 @@ class EntityAdd(Resource):
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
             result={"rows_affected": rs.get_cursor().rowcount, "inserted_id": rs.get_inserted_id()}
-
+            
             next=HTTPRequest.redirect(request, default=f"/ui/v1.0/data/{table}/{rs.get_inserted_id()}", id=rs.get_inserted_id())
 
             return redirect(next, code=302)

@@ -1,6 +1,7 @@
 import json
 import xml.etree.ElementTree as ET 
 from core import log
+from core.exceptions import TableAliasNotFoundInFetchXml
 
 logger=log.create_logger(__name__)
 
@@ -23,10 +24,11 @@ class FetchXmlParser:
         self._sql_comment=""
         self._sql_order=""
         self._sql_paramaters_order=[]
-        self._json_fields={}
+        self._json_fields={} # for insert and update
         self._tables=[]
         self._sql_parameters_where=[]
-
+        self._table_aliases={}
+        self._columns_desc=[]
         self.parse()
 
     def __init_properties(self):
@@ -42,7 +44,17 @@ class FetchXmlParser:
         self._json_fields={}
         self._tables=[]
         self._sql_parameters_where=[]
+        self._table_aliases={}
+        self._columns_desc=[]
 
+    def get_columns(self):
+        return self._columns_desc
+
+    def get_table_by_alias(self, alias):
+        if alias in self._table_aliases:
+            return self._table_aliases[alias]
+        else:
+            raise TableAliasNotFoundInFetchXml(f"Alias {alias} not found in fetchxml: {self._fetch_xml}")
 
     def get_sql_fields(self):
         return self._json_fields
@@ -120,6 +132,24 @@ class FetchXmlParser:
         else:
             raise NameError(f"No Type in xml {self._fetch_xml}")
 
+        # create the table alias mapping
+        for node in tree:
+            if node.tag == "table":
+                table=node.attrib['name']
+                alias=table
+                if "alias" in node.attrib:
+                    alias=node.attrib['alias']
+                self._append_alias(table, alias)
+            elif node.tag == "joins":
+                for join in node:
+                    table=join.attrib['table']
+                    alias=table
+                    if "alias" in join.attrib:
+                        alias=join.attrib['alias']
+
+                    self._append_alias(table, alias)
+
+        # read all nodes and create the sql statement
         for node in tree:
             if node.tag == "filter":
                 self._sql_where=self._build_where(node)
@@ -231,11 +261,18 @@ class FetchXmlParser:
         self._sql_table_join=''.join(sql)
 
     def _build_table(self,node):
-        self._sql_table=node.attrib['name']
-        self._tables.append(node.attrib['name'])
+        table=node.attrib['name']
+        self._sql_table=table
+        self._tables.append(table)
+
         if 'alias' in node.attrib:
             self._sql_table_alias=node.attrib['alias']
 
+    """
+        <select>
+            <field name="username" table_alias="u" alias="name"/>
+        </select>
+    """
     def _build_select(self, node):
         sql=[]
         for field in node:
@@ -252,8 +289,31 @@ class FetchXmlParser:
 
             name=self._escape_string(field.attrib['name'])
             sql.append(f"{table_alias}{name} {alias}")
+            self._build_column_header(field)
 
         self._sql_select=''.join(sql)
+
+
+    def _build_column_header(self, field):
+        name=self._escape_string(field.attrib['name'])
+        column_header=name
+        alias=name
+        table=self._sql_table
+        table_alias=""
+
+        if 'header' in field.attrib:
+            column_header=filed.attrib['header']
+
+        if 'table_alias' in field.attrib:
+            table_alias=self._escape_string(field.attrib['table_alias'])
+            table=self.get_table_by_alias(table_alias)['name']
+
+        if 'alias' in field.attrib:
+            alias=field.attrib['alias']
+
+        column_desc={"table": table, "database_field": name,"column_header": column_header, "alias": alias}
+        self._columns_desc.append(column_desc)
+
 
     """
     Convert the xml to a json object
@@ -333,3 +393,10 @@ class FetchXmlParser:
 
         #print(sql)
         return "("+sql+")"
+
+    def _append_alias(self, table, alias=None):
+        if alias==None or alias=="":
+            alias=table
+
+        #self._table_aliases.append({"table": table, "alias": alias})
+        self._table_aliases[alias]={"name": table, "alias": alias}

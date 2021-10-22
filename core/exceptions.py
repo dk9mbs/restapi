@@ -9,3 +9,6 @@ class DataViewNotFound(Exception):
 
 class TableMetaDataNotFound(Exception):
     pass
+
+class TableAliasNotFoundInFetchXml(Exception):
+    pass

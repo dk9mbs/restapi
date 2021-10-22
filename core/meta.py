@@ -1,11 +1,11 @@
 from core.exceptions import DataViewNotFound, TableMetaDataNotFound
 
-def read_table_view_meta(context, table_id, view_name):
+def read_table_view_meta(context, table_id, view_name, type):
     connection=context.get_connection()
-    filter=[table_id,view_name]
+    filter=[table_id,view_name,type]
 
     sql=f"""
-    SELECT * FROM api_table_view WHERE table_id=%s and name=%s
+    SELECT * FROM api_table_view WHERE table_id=%s AND name=%s AND type=%s
     """
 
     cursor=connection.cursor()
@@ -14,7 +14,7 @@ def read_table_view_meta(context, table_id, view_name):
     cursor.fetchall()
 
     if meta==None:
-        raise DataViewNotFound(f"View {view_name} notfound for table_id {table_id}")
+        raise DataViewNotFound(f"View {view_name} with viewtype {type} notfound for table_id {table_id}")
 
     return meta
 

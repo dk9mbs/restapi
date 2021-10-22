@@ -200,28 +200,42 @@ ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS name varchar(100);
 CREATE TABLE IF NOT EXISTS api_table_view(
     id int NOT NULL AUTO_INCREMENT,
     name varchar(100) NOT NULL DEFAULT '<NEW>',
+    type varchar(10) NOT NULL COMMENT 'LISTVIEW,SELECTVIEW,FORMVIEW',
     table_id int NOT NULL,
     id_field_name varchar(50) NOT NULL,
     fetch_xml text NOT NULL,
-    col_definition text NOT NULL,
     solution_id int NOT NULL,
     PRIMARY KEY(id),
-    FOREIGN KEY(table_id) REFERENCES api_table(id)
+    UNIQUE KEY(table_id, type, name),
+    FOREIGN KEY(table_id) REFERENCES api_table(id),
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT IGNORE INTO api_table_view (id,name,table_id,id_field_name,solution_id,fetch_xml, col_definition) VALUES (
-1,'default',1,'id',1,'<restapi type="select">
+INSERT IGNORE INTO api_table_view (id,type,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+1,'LISTVIEW','default',1,'id',1,'<restapi type="select">
     <table name="dummy"/>
     <filter type="and">
         <condition field="name" value="$$query$$" operator=" like "/>
     </filter>
-</restapi>','[{"name": "id", "header":"#"},
-{"name": "name", "header":"Name"},
-{"name": "Port", "header":"TCP Port"}]');
+    <select>
+        <field name="id"/>
+        <field name="name"/>
+        <field name="port"/>
+    </select>
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+2,'SELECTVIEW','default',1,'id',1,'<restapi type="select">
+    <table name="dummy"/>
+    <select>
+        <field name="id" alias="id"/>
+        <field name="name" alias="name"/>
+    </select>
+</restapi>');
 
 
-INSERT IGNORE INTO api_table_view (id,name,table_id,id_field_name,solution_id,fetch_xml, col_definition) VALUES (
-2,'default',7,'id',1,'<restapi type="select">
+INSERT IGNORE INTO api_table_view (id,type,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+3,'LISTVIEW','default',7,'id',1,'<restapi type="select">
 <table name="api_session" alias="s"/>
 <filter type="and">
             <condition field="session_values" alias="s" value="$$query$$" operator=" like "/>
@@ -235,19 +249,15 @@ INSERT IGNORE INTO api_table_view (id,name,table_id,id_field_name,solution_id,fe
         </joins>
         <select>
             <field name="id" table_alias="s"/>
+            <field name="username" table_alias="u"/>
             <field name="created_on" table_alias="s"/>
             <field name="last_access_on" table_alias="s"/>
             <field name="disabled" table_alias="s"/>
-            <field name="username" table_alias="u"/>
         </select>
-</restapi>','[{"name": "id", "header":"Session ID"},
-{"name": "username", "header":"User"},
-{"name": "created_on", "header":"Created On"}, 
-{"name": "last_access_on", "header":"Last Access"}, {"name": "disabled", "header":"Disabled"}]');
+</restapi>');
 
-
-INSERT IGNORE INTO api_table_view (id,name,table_id,id_field_name,solution_id,fetch_xml, col_definition) VALUES (
-3,'default',2,'id',1,'<restapi type="select">
+INSERT IGNORE INTO api_table_view (id,type,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+4,'LISTVIEW','default',2,'id',1,'<restapi type="select">
     <table name="api_user" alias="u"/>
     <filter type="and">
         <condition field="username" value="$$query$$" operator=" like "/>
@@ -258,6 +268,16 @@ INSERT IGNORE INTO api_table_view (id,name,table_id,id_field_name,solution_id,fe
         <field name="disabled" table_alias="u"/>
         <field name="is_admin" table_alias="u"/>
     </select>
-</restapi>','[{"name": "id", "header":"#"},
-{"name": "name", "header":"Username"},
-{"name": "disabled", "header":"Disabled"},{"name":"is_admin", "header": "Admin"}]');
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+5,'SELECTVIEW','default',2,'id',1,'<restapi type="select">
+    <table name="api_user" alias="u"/>
+    <filter type="and">
+        <condition field="username" value="%" operator=" like "/>
+    </filter>
+    <select>
+        <field name="id" table_alias="u"/>
+        <field name="username" table_alias="u" alias="name"/>
+    </select>
+</restapi>');

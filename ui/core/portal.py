@@ -42,13 +42,6 @@ class Portal(Resource):
             #
             # content class
             #
-            #www_root=FileSystemTools.format_path(AppInfo.get_current_config('ui','wwwroot', exception=True))
-
-            #file_full_name=f"{www_root}{path}"
-            logger.info(f"{file_full_name}")
-            #
-            # load the portal record
-            #
             if not path.endswith("login.htm"):
                 #fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
                 fetch=build_fetchxml_by_alias(context, "api_portal", "default", type="select")
@@ -70,22 +63,23 @@ class Portal(Resource):
 
                 return response
             else:
-                return send_file(file_full_name)
+                www_root=FileSystemTools.format_path(AppInfo.get_current_config('ui','wwwroot', exception=True))
+                return send_file(f"{www_root}{path}")
 
         except ConfigNotValid as err:
-            logger.error(f"Config not valid {err}")
+            logger.exception(f"Config not valid {err}")
             return make_response(JinjaTemplate.render_status_template(context,500, err), 500)
         except jinja2.exceptions.TemplateNotFound as err:
-            logger.info(f"TemplateNotFound: {err}")
+            logger.exception(f"TemplateNotFound: {err}")
             return make_response(JinjaTemplate.render_status_template(context,404, f"Template not found {err}"), 404)
         except FileNotFoundError as err:
-            logger.info(f"FileNotFound: {err}")
+            logger.exception(f"FileNotFound: {err}")
             return make_response(JinjaTemplate.render_status_template(context,404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
-            logger.info(f"RestApiNotAllowed Exception: {err}")
+            logger.exception(f"RestApiNotAllowed Exception: {err}")
             return redirect(f"/ui/login?redirect=/{path}", code=302)
         except Exception as err:
-            logger.info(f"Exception: {err}")
+            logger.exception(f"Exception: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
 
 def get_endpoint():
