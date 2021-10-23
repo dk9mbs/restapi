@@ -21,6 +21,7 @@ from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core import log
 from core.exceptions import RestApiNotAllowed, ConfigNotValid
+from core.meta import read_table_meta
 
 logger=log.create_logger(__name__)
 
@@ -39,7 +40,13 @@ class DataFormUpdate(Resource):
             create_parser().parse_args()
             context=g.context
 
-            file=f"templates/{table}_update.htm"
+            table_meta=read_table_meta(context, alias=table)
+            solution_id=table_meta['solution_id']
+
+            if solution_id==1:
+                file=f"templates/{table}_update.htm"
+            else:
+                file=f"solutions/{solution_id}/{table}_update.htm"
 
             fetch=build_fetchxml_by_alias(context, table, id, type="select")
             fetchparser=FetchXmlParser(fetch, context)
