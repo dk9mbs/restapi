@@ -5,7 +5,7 @@ def read_table_view_meta(context, table_id, view_name, type):
     filter=[table_id,view_name,type]
 
     sql=f"""
-    SELECT * FROM api_table_view WHERE table_id=%s AND name=%s AND type=%s
+    SELECT * FROM api_table_view WHERE table_id=%s AND name=%s AND type_id=%s
     """
 
     cursor=connection.cursor()
