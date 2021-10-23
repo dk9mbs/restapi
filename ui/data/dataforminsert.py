@@ -21,6 +21,7 @@ from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core import log
 from core.exceptions import RestApiNotAllowed, ConfigNotValid
+from core.meta import read_table_meta
 
 logger=log.create_logger(__name__)
 
@@ -42,7 +43,13 @@ class DataFormInsert(Resource):
             if not Permission().validate(context, "create", context.get_username(), table):
                 raise RestApiNotAllowed("")
 
-            file=f"templates/{table}_insert.htm"
+            table_meta=read_table_meta(context, alias=table)
+            solution_id=table_meta['solution_id']
+
+            if solution_id==1:
+                file=f"templates/{table}_insert.htm"
+            else:
+                file=f"solutions/{solution_id}/{table}_insert.htm"
 
             logger.info(f"Redirect : {next}")
 
