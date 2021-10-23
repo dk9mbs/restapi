@@ -1,0 +1,49 @@
+{% extends "templates/base/base.htm" %}
+{% import "templates/base/uitools.htm" as forms %}
+
+
+
+{% block title %}TuxLog{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+
+    <div>{{ msg }}</div>
+
+    {% if logged_on == False %}
+    <form method="post" action="/api/v1.0/core/login?redirect={{ redirect }}">
+    <!-- <div class="container m-1"> -->
+
+    <div class="row m-1">
+        {% call forms.input('restapi_username', '', 'Username' ) %}
+        {% endcall %}
+    </div>
+
+    <div class="row m-1">
+        {% call forms.input('restapi_password', '', 'Password' ) %}
+        {% endcall %}
+    </div>
+
+    <div class="container m-1">
+        <button type="submit" class="btn btn-primary"> Login</button>
+    </div>
+
+    <!-- </div> -->
+    </form>
+    {% endif %}
+
+    {% if logged_on == True %}
+    <form method="post" action="/api/v1.0/core/logoff?redirect=/ui/login">
+
+    <!-- <div class="container m-1"> -->
+        <button type="submit" class="btn btn-primary"> Logoff</button>
+    <!-- </div> -->
+
+    </form>
+    {% endif %}
+
+
+{% endblock %}

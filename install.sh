@@ -11,6 +11,8 @@ echo "$INSTANCE_ID"
 
 mkdir -p $BASEDIR/plugins
 mkdir -p $BASEDIR/3thparty
+mkdir -p $BASEDIR/wwwroot/portal
+mkdir -p $BASEDIR/wwwroot/templates/solutions
 #
 # create the spool directory for the uwsgi task
 # the spool is only needed in case of using uwsgi

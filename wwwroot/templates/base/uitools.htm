@@ -1,0 +1,76 @@
+{% macro input(name, label='', placeholder='', value='', type='text', size=20) -%}
+
+    {% if label!='' %}
+        <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+        {% set col=10 %}
+    {% else %}
+        {% set col=12 %}
+    {% endif %}
+
+    <div class="col-sm-{{ col }}">
+      <input type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
+    </div>
+
+    {{ caller() }}
+{%- endmacro %}
+
+{% macro data_select(name,label, value, table_alias, view_name, query='') -%}
+    {% if label!='' %}
+        <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+        {% set col=10 %}
+    {% else %}
+        {% set col=12 %}
+    {% endif %}
+
+    <div class="col-sm-{{ col }}">
+    <select id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
+    {% for option in datacomboview(table_alias,view_name,query) %}
+        {% if option['id']==value %}
+            <option selected value="{{ option['id'] }}">{{ option['name'] }}</option>
+        {% else %}
+            <option value="{{ option['id'] }}">{{ option['name'] }}</option>
+        {% endif %}
+    {% endfor %}
+    {{ caller() }}
+    </select>
+    </div>
+{%- endmacro %}
+
+{% macro row_form_group () %}
+    <div class="form-group row p-1">
+    {{ caller() }}
+    </div>
+{% endmacro %}
+
+{% macro col_form_group () %}
+    <div class="form-group col p-1">
+    {{ caller() }}
+    </div>
+{% endmacro %}
+
+{% macro row () %}
+    <div class="row p-1">
+    {{ caller() }}
+    </div>
+{% endmacro %}
+
+{% macro col () %}
+    <div class="col p-1">
+    {{ caller() }}
+    </div>
+{% endmacro %}
+
+
+{% macro record_form (table, id='') %}
+        {% if id=='' %}
+        <form method="POST" id="frmData" action="/api/v1.0/form/{{ table }}?redirect=/ui/v1.0/data/{{ table }}/$$id$$">
+        {% else %}
+        <form method="POST" id="frmData" action="/api/v1.0/form/{{ table }}/{{ id }}?redirect=/ui/v1.0/data/{{ table }}/$$id$$">
+        {% endif %}
+
+        {{ caller() }}
+
+        </form>
+{% endmacro %}
+
+

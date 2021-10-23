@@ -14,6 +14,10 @@ from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
+from core.exceptions import RestApiNotAllowed
+from core import log
+
+logger=log.create_logger(__name__)
 
 def create_parser_get():
     parser=reqparse.RequestParser()
@@ -43,7 +47,7 @@ class Entity(Resource):
             result={"rows_affected": rs.get_cursor().rowcount}
             rs.close()
             return result
-        except NameError as err:
+        except RestApiNotAllowed as err:
             abort(400, f"{err}")
         except Exception as err:
             abort(500,f"{err}")
@@ -63,7 +67,7 @@ class Entity(Resource):
             result={"rows_affected": rs.get_cursor().rowcount}
             rs.close()
             return result
-        except NameError  as err:
+        except RestApiNotAllowed as err:
             abort(400, f"{err}")
         except Exception as err:
             abort(500,f"{err}")
@@ -83,7 +87,7 @@ class Entity(Resource):
 
             return rs.get_result()
 
-        except NameError as err:
+        except RestApiNotAllowed as err:
             abort(400, f"{err}")
         except Exception as err:
             abort(500,f"{err}")

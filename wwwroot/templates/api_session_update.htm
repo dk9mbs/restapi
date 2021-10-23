@@ -1,0 +1,55 @@
+{% extends "templates/base/base.htm" %}
+{% import "templates/base/uitools.htm" as forms %}
+
+
+
+{% block title %}TuxLog{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+
+    {% call forms.record_form( table, id ) %}
+
+    {% call forms.row() %}
+        {% call forms.input('id', 'Session ID', 'Session ID', data['id'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.data_select('user_id','User', data['user_id'], 'api_user', 'default','%') %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input('session_values', 'Values', '', data['session_values'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input('created_on', 'Created on', '', data['created_on'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input('last_access_on', 'Last Access', '', data['last_access_on'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input('disabled', 'Disabled', '', data['disabled'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+
+    {% endcall %}
+<!--
+-->
+
+{% endblock %}
+
+
+
+

@@ -1,6 +1,7 @@
 import json
 from flaskext.mysql import MySQL
 import pymysql.cursors
+#from mysql.connector import FieldType
 
 from config import CONFIG
 from core.fetchxmlparser import FetchXmlParser
@@ -15,6 +16,7 @@ class Recordset:
         self._cursor=cursor
         self._result=None
         self._fetch_mode=0
+        self._inserted_id="" # in case of insert statements
 
     def __del__(self):
         self.close()
@@ -41,6 +43,33 @@ class Recordset:
 
     def get_cursor(self):
         return self._cursor
+
+    def set_inserted_id(self, id):
+        self._inserted_id=id
+
+    def get_inserted_id(self):
+        if self._inserted_id==None:
+            return 0
+        else:
+            return self._inserted_id
+
+    def get_columns(self):
+        #name, type_code, display_size, internal_size, precision, scale, null_ok
+        columns=[]
+        if self._cursor.description == None:
+            return columns
+
+        for i in range(len(self._cursor.description)):
+            desc=self._cursor.description[i]
+            columns.append({"name": desc[0],
+                    "type_code":desc[1],
+                    "display_size":desc[2],
+                    "internal_size":desc[3],
+                    "precision":desc[4],
+                    "scale":desc[5],
+                    "allow_null":desc[6]})
+
+        return columns
 
     """
     Clear the buffer

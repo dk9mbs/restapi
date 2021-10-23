@@ -1,24 +1,41 @@
 #!/usr/bin/python3
-#import logging
 import importlib
 
-from flask import Flask, g, session, request, abort
+from flask import Flask, g, session, request, abort, make_response, redirect
 from flask import Blueprint
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from config import CONFIG
 from core.appinfo import AppInfo
 from core import log
+import jinjainit
+
+
 
 AppInfo.init(__name__, CONFIG['default'])
+jinjainit.init()
 
 # Core api endpoints
 # do not import before AppInfo.init() !!!
 import api.data.entity
 import api.data.entitylistfilter
 import api.data.entityadd
+import api.data.entityset
 import api.core.login
+import api.core.logoff
 import api.action
+
+import api.form.entityupdate
+import api.form.entityinsert
+
+# import ui endpoints
+import ui.core.portal
+import ui.login
+import ui.core.defaultpage
+
+import ui.data.dataformlist
+import ui.data.dataformupdate
+import ui.data.dataforminsert
 
 logger=log.create_logger(__name__)
 
@@ -32,12 +49,14 @@ def before_request():
         if request.endpoint=='doc':
             abort(404, "Not enabled")
 
-    if request.endpoint!='login':
+    logger.info(f"Endpoint: {request.endpoint}")
+
+    if request.endpoint!='api.login' and request.endpoint!='ui.login':
         if 'session_id' in session:
             try:
                 g.context=AppInfo.create_context(session['session_id'])
             except NameError as err:
-                abort(400, f"{err}")
+                abort(400, f"Session_id found in session context: error raised: {err}")
                 pass
         else:
             #do not set session['session_id'] because the
@@ -57,17 +76,40 @@ def before_request():
 
             session_id=AppInfo.login(username,password)
             if session_id==None:
+                print(f"try to login with username: {username}")
                 abort(400,'Wrong username or password')
 
             g.context=AppInfo.create_context(session_id, auto_logoff=True)
 
 
-AppInfo.get_api().add_resource(api.core.login.Login ,"/api/v1.0/core/login")
-AppInfo.get_api().add_resource(api.core.login.Logoff ,"/api/v1.0/core/logoff")
-AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/api/v1.0/data/<table>/<id>")
-AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/api/v1.0/data")
-AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/api/v1.0/data/<table>")
-AppInfo.get_api().add_resource(api.action.get_endpoint(), "/api/v1.0/action/<action>")
+AppInfo.get_api().add_resource(api.core.login.get_endpoint() ,"/v1.0/core/login")
+AppInfo.get_api().add_resource(api.core.logoff.get_endpoint() ,"/v1.0/core/logoff")
+AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/v1.0/data/<table>/<id>", methods=['GET','PUT','DELETE'])
+AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/v1.0/data", methods=['POST'])
+AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/v1.0/data/<table>", methods=['POST'])
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(),"/v1.0/data/<table>", methods=['GET'])
+AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>")
+AppInfo.get_api().add_resource(api.form.entityupdate.get_endpoint(), "/v1.0/form/<table>/<id>", methods=['POST'])
+AppInfo.get_api().add_resource(api.form.entityinsert.get_endpoint(), "/v1.0/form/<table>", methods=['POST'])
+
+
+# get the dataform form edit records
+AppInfo.get_api("ui").add_resource(ui.data.dataformupdate.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
+AppInfo.get_api("ui").add_resource(ui.data.dataforminsert.get_endpoint(), "/v1.0/data/<table>", methods=['GET'])
+AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/data/view/<table>", methods=['GET'])
+AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/data/view/<table>/<view>", methods=['GET'])
+#
+# login process
+#
+AppInfo.get_api("ui").add_resource(ui.login.get_endpoint(), "/login", methods=['GET'])
+
+#
+# endpoint for static and dynamic portal content
+#
+AppInfo.get_api("portal").add_resource(ui.core.defaultpage.get_endpoint(), "/")
+AppInfo.get_api("portal").add_resource(ui.core.portal.get_endpoint(), "/<path:path>")
+
+logger.info(AppInfo.get_app().url_map)
 
 @app.teardown_request
 def teardown_request(error=None):

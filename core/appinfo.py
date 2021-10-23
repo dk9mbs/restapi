@@ -1,6 +1,6 @@
 import json
 import pymysql.cursors
-from flask import Flask
+from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
@@ -8,17 +8,34 @@ import uuid
 
 from core.context import Context
 from config import CONFIG
+from core.log import create_logger
+from core.exceptions import ConfigNotValid
+
+logger=create_logger(__name__)
+
+class CustomFlask(Flask):
+
+    def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
+        if rule=='/' and endpoint.endswith('root'):
+            logger.info(f"Rule {rule} for endpoint {endpoint} not accepted!")
+            return
+
+        logger.info(f"Add rule {rule} for endpoint {endpoint}")
+        return super(CustomFlask, self).add_url_rule(rule, endpoint, view_func, **options)
+
 
 class AppInfo:
     _app=None
     _api=None
+    _content_api=None
+    _ui_api=None
     _mysql=None
     _current_config={}
 
     @classmethod
     def init(cls,name,config):
         cls._current_config=config
-        cls._app=Flask(name)
+        cls._app=CustomFlask(name)
         cls._app.config['MYSQL_DATABASE_USER'] = config['mysql']['user']
         cls._app.config['MYSQL_DATABASE_PASSWORD'] = config['mysql']['password']
         cls._app.config['MYSQL_DATABASE_DB'] = config['mysql']['database']
@@ -34,19 +51,40 @@ class AppInfo:
                 cls._app.config['RESTAPI_HOST'] = config['server']['host']
 
         cls._app.secret_key = "MySecretKey1234"
-        cls._api=Api(cls._app)
+
+        # start of building api
+        bp_api=Blueprint('api', __name__)
+        bp_ui=Blueprint('ui', __name__)
+        bp_portal=Blueprint('portal',__name__)
+
+        cls._api=Api(bp_api, doc='/swagger/')
+        cls._ui_api=Api(bp_ui, doc='/swagger/')
+        cls._portal_api=Api(bp_portal, doc='/swagger/')
+
+        cls._app.register_blueprint(bp_api, url_prefix='/api')
+        cls._app.register_blueprint(bp_ui, url_prefix='/ui')
+        cls._app.register_blueprint(bp_portal)
+        # buid api
         cls._mysql=MySQL(cls._app ,cursorclass=DictCursor)
         cls._mysql.connect()
 
     @classmethod
-    def get_current_config(cls, section=None, key=None, default=None):
+    def set_current_config(cls,section,key,value):
+        cls._current_config[section][key]=value
+
+    @classmethod
+    def get_current_config(cls, section=None, key=None, default=None, exception=False):
         if section==None:
             return cls._current_config
         else:
             if section in cls._current_config:
                 if key in cls._current_config[section]:
                     return cls._current_config[section][key]
-            return default
+
+            if exception==True:
+                raise ConfigNotValid(f"key {key} not found in section {section}")
+            else:
+                return default
 
     @classmethod
     def create_connection(cls, database_id=1):
@@ -77,8 +115,15 @@ class AppInfo:
         return cls._app
 
     @classmethod
-    def get_api(cls):
-        return cls._api
+    def get_api(cls, name="api"):
+        if name=="api":
+            return cls._api
+        elif name=="portal":
+            return cls._portal_api
+        elif name=="ui":
+            return cls._ui_api
+        else:
+            logger.info(f"{name} is not a valid api name!")
 
     @classmethod
     def get_mysql(cls):
