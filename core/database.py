@@ -34,6 +34,12 @@ class Recordset:
         else:
             raise NameError(f"wrong fetch_mode: {fetch_mode}")
 
+    def get_eof(self):
+        if self._result==None or self._result==[] or self._result=={} or self._result==():
+            return True
+        else:
+            return False
+
     def get_result(self):
         if(self._result==()):
             return []
