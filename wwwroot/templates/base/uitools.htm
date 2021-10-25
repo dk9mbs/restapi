@@ -1,4 +1,10 @@
-{% macro input(name, label='', placeholder='', value='', type='text', size=20) -%}
+{% macro input(name, label='', placeholder='', value='', type='text', size=20, disabled=False) -%}
+    {% if disabled %}
+        {% set show="disabled" %}
+    {% else %}
+        {% set show="" %}
+    {% endif %}
+        
 
     {% if label!='' %}
         <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
@@ -8,13 +14,19 @@
     {% endif %}
 
     <div class="col-sm-{{ col }}">
-      <input type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
+      <input {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
     </div>
 
     {{ caller() }}
 {%- endmacro %}
 
-{% macro data_select(name,label, value, table_alias, view_name, query='') -%}
+{% macro data_select(name,label, value, table_alias, view_name, query='', disabled=False) -%}
+    {% if disabled %}
+        {% set show="disabled" %}
+    {% else %}
+        {% set show="" %}
+    {% endif %}
+
     {% if label!='' %}
         <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
         {% set col=10 %}
@@ -23,7 +35,8 @@
     {% endif %}
 
     <div class="col-sm-{{ col }}">
-    <select id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
+    <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
+    <option value=""></option>
     {% for option in datacomboview(table_alias,view_name,query) %}
         {% if option['id']==value %}
             <option selected value="{{ option['id'] }}">{{ option['name'] }}</option>
