@@ -301,15 +301,16 @@ class FetchXmlParser:
         table=self._sql_table
         table_alias=""
 
-        if 'header' in field.attrib:
-            column_header=filed.attrib['header']
-
         if 'table_alias' in field.attrib:
             table_alias=self._escape_string(field.attrib['table_alias'])
             table=self.get_table_by_alias(table_alias)['name']
 
         if 'alias' in field.attrib:
             alias=field.attrib['alias']
+            column_header=alias
+
+        if 'header' in field.attrib:
+            column_header=filed.attrib['header']
 
         column_desc={"table": table, "database_field": name,"column_header": column_header, "alias": alias}
         self._columns_desc.append(column_desc)
