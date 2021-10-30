@@ -312,7 +312,7 @@ class FetchXmlParser:
         if 'header' in field.attrib:
             column_header=filed.attrib['header']
 
-        column_desc={"table": table, "database_field": name,"column_header": column_header, "alias": alias}
+        column_desc={"table": table, "database_field": name, "label": column_header, "alias": alias}
         self._columns_desc.append(column_desc)
 
 
