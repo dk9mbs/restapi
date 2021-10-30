@@ -57,6 +57,49 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (12,'api_table_view', 'api_table_view','id','String','name',0);
 
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (13,'api_table_field', 'api_table_field','id','Int','name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (14,'api_table_field_type', 'api_table_field_type','id','String','name',0);
+
+/* */
+CREATE TABLE IF NOT EXISTS api_table_field_type(
+    id varchar(50) NOT NULL,
+    name varchar(50) NOT NULL,
+    PRIMARY KEY(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('default','Default');
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('string','String');
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('int','Int');
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('datetime','DateTime');
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('date','Date');
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('time','Time');
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('decimal','Decimal');
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('timestamp','Timestamp');
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('multiline','String (multiline)');
+INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('boolean','Boolean');
+
+CREATE TABLE IF NOT EXISTS api_table_field(
+    id int NOT NULL AUTO_INCREMENT,
+    table_id int NOT NULL COMMENT 'ID from the sourcetable',
+    label varchar(50) NOT NULL COMMENT 'Label/Columnheader for listviews and forms',
+    name varchar(250) NOT NULL COMMENT 'Fieldname (source)',
+    is_lookup smallint NOT NULL DEFAULT '0' COMMENT '0=No 1=YES',
+    type_id varchar(50) NOT NULL COMMENT 'type of field',
+    size int NOT NULL DEFAULT '0' COMMENT 'the size in case of string',
+    allow_null smallint NOT NULL DEFAULT '0',
+    default_value varchar(250) NULL,
+    referenced_table_name varchar(250) NULL COMMENT 'referenced table name',
+    referenced_field_name varchar(250) NULL COMMENT 'Field from the referenced table',
+    UNIQUE KEY(table_id, name),
+    FOREIGN KEY(table_id) REFERENCES api_table(id),
+    FOREIGN KEY(type_id) REFERENCES api_table_field_type(id),
+    PRIMARY KEY(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/* */
+
 CREATE TABLE IF NOT EXISTS api_user (
     id int NOT NULL AUTO_INCREMENT,
     username varchar(100) NOT NULL,
