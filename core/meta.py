@@ -1,7 +1,7 @@
 from core.exceptions import DataViewNotFound, TableMetaDataNotFound
 from core.database import Recordset
 
-def build_table_meta_fields(context):
+def build_table_fields_meta(context):
     connection=context.get_connection()
 
     sql=f"""
@@ -34,7 +34,7 @@ def build_table_meta_fields(context):
             default=field['Default']
             type_id=__convert_field_type(field_name, field['Type'])
 
-            print(f"{table_name}:{field}")
+            #print(f"{table_name}:{field}")
 
             filter=(table_name, field_name)
             sql="""
@@ -80,8 +80,6 @@ def build_table_meta_fields(context):
             cur_write=connection.cursor()
             cur_write.execute(sql, filter)
             cur_write.close()
-
-
 
         rs_fields.close()
 
