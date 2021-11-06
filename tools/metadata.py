@@ -18,12 +18,17 @@ user=args.user
 password=args.password
 
 AppInfo.init(__name__, CONFIG['default'])
+
+print(f"Host............:{AppInfo.get_current_config('mysql','host')}")
+print(f"Database........:{AppInfo.get_current_config('mysql','database')}")
+print(f"User............:{AppInfo.get_current_config('mysql','user')}")
+
 session_id=AppInfo.login(args.user,args.password)
 if session_id==None:
     print(f"connot log in")
     sys.exit(-1)
 
-print(f"Sessionid:{session_id}")
+print(f"Session.........:{session_id}")
 context=AppInfo.create_context(session_id)
 
 build_table_fields_meta(context)

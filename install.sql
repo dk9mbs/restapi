@@ -1,4 +1,9 @@
-DELETE FROM api_table_view  WHERE solution_id=1;
+CREATE TABLE IF NOT EXISTS dummy (
+    id int NOT NULL auto_increment,
+    name varchar(50) NOT NULL,
+    Port int NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS api_solution(
     id int NOT NULL,
@@ -9,61 +14,7 @@ CREATE TABLE IF NOT EXISTS api_solution(
 
 INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
 
-CREATE TABLE IF NOT EXISTS api_table (
-    id int NOT NULL AUTO_INCREMENT,
-    alias varchar(250) NOT NULL,
-    table_name varchar(250) NOT NULL,
-    id_field_name varchar(250) NOT NULL,
-    id_field_type varchar(50) NOT NULL COMMENT 'String,Int',
-    desc_field_name varchar(250) NOT NULL COMMENT 'Name of the description field',
-    enable_audit_log smallint NOT NULL DEFAULT '0',
-    solution_id int NOT NULL DEFAULT '1',
-    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
-    PRIMARY KEY(id),
-    UNIQUE KEY(alias),
-    UNIQUE KEY(table_name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (1,'dummy','dummy','id','Int','name',-1);
-
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (2,'api_user','api_user','id','Int','username',-1);
-
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name, enable_audit_log)
-    VALUES (3,'api_group','api_group','id','Int','groupname',-1);
-
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (4,'api_user_group','api_user_group','id','Int','user_id',-1);
-
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (5,'api_group_permission','api_group_permission','id','Int','group_id',-1);
-
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (7,'api_session', 'api_session','id','Int','User_id',-1);
-
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (8,'api_portal', 'api_portal','id','String','name',-1);
-
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (9,'api_event_handler', 'api_event_handler','id','Int','table_name',0);
-
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (10,'api_table', 'api_table','id','Int','table_name',0);
-
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (11,'api_table_view_type', 'api_table_view_type','id','String','name',0);
-
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (12,'api_table_view', 'api_table_view','id','String','name',0);
-
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (13,'api_table_field', 'api_table_field','id','Int','name',0);
-
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (14,'api_table_field_type', 'api_table_field_type','id','String','name',0);
-
-/* */
 CREATE TABLE IF NOT EXISTS api_table_field_type(
     id varchar(50) NOT NULL,
     name varchar(50) NOT NULL,
@@ -80,6 +31,69 @@ INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('decimal','Decimal');
 INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('timestamp','Timestamp');
 INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('multiline','String (multiline)');
 INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('boolean','Boolean');
+
+
+CREATE TABLE IF NOT EXISTS api_table (
+    id int NOT NULL AUTO_INCREMENT,
+    alias varchar(250) NOT NULL,
+    table_name varchar(250) NOT NULL,
+    id_field_name varchar(250) NOT NULL,
+    id_field_type varchar(50) NOT NULL COMMENT 'String,Int',
+    desc_field_name varchar(250) NOT NULL COMMENT 'Name of the description field',
+    enable_audit_log smallint NOT NULL DEFAULT '0',
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
+    FOREIGN KEY(id_field_type) REFERENCES api_table_field_type(id),
+    PRIMARY KEY(id),
+    UNIQUE KEY(alias),
+    UNIQUE KEY(table_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (1,'dummy','dummy','id','int','name',-1);
+
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (2,'api_user','api_user','id','int','username',-1);
+
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name, enable_audit_log)
+    VALUES (3,'api_group','api_group','id','int','groupname',-1);
+
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (4,'api_user_group','api_user_group','id','int','user_id',-1);
+
+INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (5,'api_group_permission','api_group_permission','id','int','group_id',-1);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (7,'api_session', 'api_session','id','int','User_id',-1);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (8,'api_portal', 'api_portal','id','string','name',-1);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (9,'api_event_handler', 'api_event_handler','id','int','table_name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (10,'api_table', 'api_table','id','int','table_name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (11,'api_table_view_type', 'api_table_view_type','id','string','name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (12,'api_table_view', 'api_table_view','id','string','name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (13,'api_table_field', 'api_table_field','id','int','name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (14,'api_table_field_type', 'api_table_field_type','id','string','name',0);
+
+/* Bugfixing */
+UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
+UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
+
+
+/* */
 
 CREATE TABLE IF NOT EXISTS api_table_field(
     id int NOT NULL AUTO_INCREMENT,
@@ -257,6 +271,8 @@ CREATE TABLE IF NOT EXISTS api_table_view(
     FOREIGN KEY(solution_id) REFERENCES api_solution(id),
     FOREIGN KEY(type_id) REFERENCES api_table_view_type(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DELETE FROM api_table_view  WHERE solution_id=1;
 
 /*
 Views 
