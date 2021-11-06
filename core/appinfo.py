@@ -264,7 +264,7 @@ class AppInfo:
         DELETE FROM api_session WHERE (DATEDIFF(last_access_on, now())<0) OR disabled=-1;
         """
         cursor=connection.cursor()
-        cursor.execute(sql,[context.get_session_id()])
+        cursor.execute(sql)
 
         cls.__username=None
 
