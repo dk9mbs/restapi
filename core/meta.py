@@ -34,8 +34,6 @@ def build_table_fields_meta(context):
             default=field['Default']
             type_id=__convert_field_type(field_name, field['Type'])
 
-            #print(f"{table_name}:{field}")
-
             filter=(table_name, field_name)
             sql="""
             SELECT TABLE_SCHEMA,TABLE_NAME,COLUMN_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME
