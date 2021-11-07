@@ -41,8 +41,10 @@ class EntityAdd(Resource):
 
             return result
         except RestApiNotAllowed as err:
+            logger.exception(f"{err}")
             abort(400,f"{err}")
         except Exception as err:
+            logger.exception(f"{err}")
             abort(500,f"{err}")
 
 def get_endpoint():
