@@ -117,6 +117,7 @@ def teardown_request(error=None):
     if not g.context==None:
         if g.context.get_auto_logoff():
             AppInfo.logoff(g.context)
+            g.context.close()
         else:
             AppInfo.save_context(g.context)
 
