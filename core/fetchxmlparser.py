@@ -329,7 +329,7 @@ class FetchXmlParser:
 
             if 'value' in field.attrib:
                 value=field.attrib['value']
-                if value == "None" or value == "null":
+                if value == "None" or value == "null" or value=="":
                     value=None
 
             name=self._escape_string(field.attrib['name'],"fieldname")
