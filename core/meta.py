@@ -47,7 +47,7 @@ def build_table_fields_meta(context):
             if not rs_foreign.get_eof():
                 referenced_table_name=rs_foreign.get_result()[0]['REFERENCED_TABLE_NAME']
                 referenced_field_name=rs_foreign.get_result()[0]['REFERENCED_COLUMN_NAME']
-                is_lookup=True
+                is_lookup=-1
             rs_foreign.close()
 
             sql=f"""
@@ -139,11 +139,11 @@ def read_table_meta(context, alias=None, table_name=None):
 
 
 def __convert_boolean(value):
-    if value=="YES": return True
-    if value=="-1": return True
-    if value=="1": return True
-    if value=="0": return False
-    if value=="NO": return False
+    if value=="YES": return -1
+    if value=="-1": return -1
+    if value=="1": return -1
+    if value=="0": return 0
+    if value=="NO": return 0
 
 def __convert_field_type(field_name, value):
     if field_name.startswith("is_") and value.startswith("smallint") : return "boolean"

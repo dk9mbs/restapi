@@ -20,6 +20,28 @@
     {{ caller() }}
 {%- endmacro %}
 
+{% macro input_multiline(name, label='', placeholder='', value='', type='text', size=20, disabled=False) -%}
+    {% if disabled %}
+        {% set show="disabled" %}
+    {% else %}
+        {% set show="" %}
+    {% endif %}
+        
+
+    {% if label!='' %}
+        <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+        {% set col=10 %}
+    {% else %}
+        {% set col=12 %}
+    {% endif %}
+
+    <div class="col-sm-{{ col }}">
+      <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}">{{ value }}</textarea>
+    </div>
+
+    {{ caller() }}
+{%- endmacro %}
+
 {% macro data_select(name,label, value, table_alias, view_name, query='', disabled=False) -%}
     {% if disabled %}
         {% set show="disabled" %}
