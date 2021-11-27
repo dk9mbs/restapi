@@ -2,7 +2,7 @@
 
 import sys
 import json
-from flask import Flask, g, session
+from flask import Flask, g, session, make_response
 from flask import abort
 from flask import Blueprint
 from flask import request
@@ -37,8 +37,11 @@ class Action(Resource):
             handler=Plugin(context, action, "execute")
             handler.execute('before', params)
 
+            output=params['output']
 
-            return params['output']
+            response = make_response(output, 200)
+            return response
+
         except NameError  as err:
             abort(400, f"{err}")
         except Exception as err:
