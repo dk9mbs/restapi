@@ -1,4 +1,5 @@
 from flask import g
+from datetime import datetime
 
 from core.jinjaenv import JinjaEnvironment
 from core.plugin import Plugin
@@ -9,6 +10,13 @@ from services.database import DatabaseServices
 #
 # jinja template functions
 #
+def get_current_time(time_zone='MEZ', format='%H:%M'):
+    return datetime.today().strftime(format)
+
+def get_current_date(time_zone='MEZ', format='%d.%m.%Y'):
+    return datetime.today().strftime(format)
+
+
 def test(table_alias, viewname, query):
     context=g.context
     table_meta=read_table_meta(context,alias=table_alias)
@@ -19,4 +27,6 @@ def test(table_alias, viewname, query):
 
 def init():
     JinjaEnvironment.register_template_function('datacomboview', test)
+    JinjaEnvironment.register_template_function('current_time', get_current_time)
+    JinjaEnvironment.register_template_function('current_date', get_current_date)
 
