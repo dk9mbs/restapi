@@ -7,9 +7,19 @@ class Context:
         self.__userinfo=None
         self.__session_values=None
         self._auto_logoff=False
+        self.__args={}
 
     def __del__(self):
         pass
+
+    def set_arg(self, name, value):
+        self.__args[name]=value
+
+    def get_arg(self, name, default=""):
+        if name in self.__args:
+            return self.__args[name]
+        else:
+            return default
 
     def get_username(self):
         if self.__userinfo==None:

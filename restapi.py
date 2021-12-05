@@ -31,6 +31,7 @@ import api.form.entityinsert
 # import ui endpoints
 import ui.core.portal
 import ui.login
+import ui.uihome
 import ui.core.defaultpage
 
 import ui.data.dataformlist
@@ -81,6 +82,8 @@ def before_request():
 
             g.context=AppInfo.create_context(session_id, auto_logoff=True)
 
+        for arg in request.args:
+            g.context.set_arg(arg, request.args[arg])
 
 AppInfo.get_api().add_resource(api.core.login.get_endpoint() ,"/v1.0/core/login")
 AppInfo.get_api().add_resource(api.core.logoff.get_endpoint() ,"/v1.0/core/logoff")
@@ -102,6 +105,7 @@ AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/d
 # login process
 #
 AppInfo.get_api("ui").add_resource(ui.login.get_endpoint(), "/login", methods=['GET'])
+AppInfo.get_api("ui").add_resource(ui.uihome.get_endpoint(), "/home", methods=['GET'])
 
 #
 # endpoint for static and dynamic portal content

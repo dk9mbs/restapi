@@ -41,6 +41,7 @@ class EntityList(Resource):
             parser=create_parser().parse_args()
             context=g.context
 
+            logger.info(f"app_id: {request.url}")
             file=f"templates/base/datalist.htm"
             query="%"
             if 'query' in request.args:
@@ -59,7 +60,8 @@ class EntityList(Resource):
 
             template=JinjaTemplate.create_file_template(context, file)
             response = make_response(template.render({"data": rs.get_result(),
-                        "columns": fetchparser.get_columns(), "table": table, "table_meta": table_meta,"view_meta": view_meta, "pagemode": "dataformlist"}))
+                        "columns": fetchparser.get_columns(), "table": table, "table_meta": table_meta,
+                        "view_meta": view_meta, "pagemode": "dataformlist", "context": context }))
 
             response.headers['content-type'] = 'text/html'
 
@@ -79,7 +81,8 @@ class EntityList(Resource):
             return make_response(JinjaTemplate.render_status_template(context, 404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
             logger.exception(f"RestApiNotAllowed Exception: {err}")
-            return redirect(f"/ui/login?redirect=/ui/v1.0/data/view/{table}/default", code=302)
+            #return redirect(f"/ui/login?redirect=/ui/v1.0/data/view/{table}/default", code=302)
+            return redirect(f"/ui/login?redirect={request.url}", code=302)
         except Exception as err:
             logger.exception(f"Exception: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)

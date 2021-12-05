@@ -54,7 +54,7 @@ class DataFormInsert(Resource):
             logger.info(f"Redirect : {next}")
 
             template=JinjaTemplate.create_file_template(context,file)
-            response = make_response(template.render({"table": table, "pagemode": "dataforminsert"}))
+            response = make_response(template.render({"table": table, "pagemode": "dataforminsert", "context": context }))
             response.headers['content-type'] = 'text/html'
 
             return response
@@ -70,7 +70,8 @@ class DataFormInsert(Resource):
             return make_response(JinjaTemplate.render_status_template(context, 404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
             logger.exception(f"RestApiNotAllowed Exception: {err}")
-            return redirect(f"/ui/login?redirect=/ui/v1.0/data/{table}", code=302)
+            #return redirect(f"/ui/login?redirect=/ui/v1.0/data/{table}", code=302)
+            return redirect(f"/ui/login?redirect={request.url}", code=302)
         except Exception as err:
             logger.exception(f"Exception: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
