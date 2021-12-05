@@ -88,6 +88,15 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (14,'api_table_field_type', 'api_table_field_type','id','string','name',0);
 
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (15,'api_ui_app', 'api_ui_app','id','int','name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (16,'api_ui_app_nav_item_type', 'api_ui_app_nav_item_type','id','int','name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (17,'api_ui_app_nav_item', 'api_ui_app_nav_item','id','int','name',0);
+
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
 UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
@@ -272,6 +281,65 @@ CREATE TABLE IF NOT EXISTS api_table_view(
     FOREIGN KEY(type_id) REFERENCES api_table_view_type(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+/*
+App Management
+ */
+CREATE TABLE IF NOT EXISTS api_ui_app(
+    id int NOT NULL AUTO_INCREMENT,
+    name varchar(50) NOT NULL,
+    description text NULL,
+    home_url varchar(1000) NULL,
+    solution_id int NOT NULL,
+    PRIMARY KEY(id),
+    UNIQUE KEY(name),
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE api_ui_app AUTO_INCREMENT=1000000;
+
+INSERT IGNORE INTO api_ui_app (id, name,description,home_url,solution_id) 
+VALUES (
+1,'Default','System Verwaltungs App','/ui/v1.0/data/view/api_user/default?app_id=1',1);
+
+CREATE TABLE IF NOT EXISTS api_ui_app_nav_item_type(
+    id int NOT NULL AUTO_INCREMENT,
+    name varchar(50) NOT NULL,
+    solution_id int NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE api_ui_app_nav_item_type AUTO_INCREMENT=1000000;
+
+INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (1,1, 'Sidebar');
+INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (2,1, 'Navbar');
+
+
+CREATE TABLE IF NOT EXISTS api_ui_app_nav_item(
+    id int NOT NULL,
+    name varchar(50) NOT NULL,
+    url varchar(1000) NOT NULL COMMENT 'Only the URL without querystring',
+    query_string varchar(1000) NULL COMMENT 'Here only query_string args',
+    app_id int NOT NULL,
+    type_id int NOT NULL,
+    solution_id int NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY (app_id) REFERENCES api_ui_app(id),
+    FOREIGN KEY (type_id) REFERENCES api_ui_app_nav_item_type(id),
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_ui_app_nav_item AUTO_INCREMENT=1000000;
+
+DELETE FROM api_ui_app_nav_item WHERE solution_id=1;
+
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1,1,'User','/ui/v1.0/data/view/api_user/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2,1,'Tables','/ui/v1.0/data/view/api_table/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3,1,'Sessions','/ui/v1.0/data/view/api_session/default',1,1);
+
+/*
+End APP
+*/
+
+/* Dataviews */
 DELETE FROM api_table_view  WHERE solution_id=1;
 
 /*

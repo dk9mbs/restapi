@@ -6,6 +6,13 @@ logger=log.create_logger(__name__)
 
 class HTTPRequest:
     @staticmethod
+    def get_querystring_value(request, name, default=""):
+        if name in request.args:
+            return request.args[name]
+        else:
+            return default
+
+    @staticmethod
     def redirect(request, default=None, **kwargs):
         next=""
         redirect_key="redirect" # in query

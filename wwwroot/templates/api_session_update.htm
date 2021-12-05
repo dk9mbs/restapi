@@ -1,9 +1,7 @@
 {% extends "templates/base/base.htm" %}
 {% import "templates/base/uitools.htm" as forms %}
 
-
-
-{% block title %}TuxLog{% endblock %}
+{% block title %}restAPI{% endblock %}
 
 {% block head %}
     {{ super() }}
@@ -11,7 +9,7 @@
 
 {% block content %}
 
-    {% call forms.record_form( table, id ) %}
+    {% call forms.record_form( table, id, context=context ) %}
 
     {% call forms.row() %}
         {% call forms.input('id', 'Session ID', 'Session ID', data['id'] ) %}

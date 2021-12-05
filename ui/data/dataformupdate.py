@@ -61,7 +61,7 @@ class DataFormUpdate(Resource):
             template=JinjaTemplate.create_file_template(context,file)
             response = make_response(template.render({"table": table,
                     "pagemode": "dataformupdate",
-                    "id": id, "data": rs.get_result()}))
+                    "id": id, "data": rs.get_result(), "context": context }))
             response.headers['content-type'] = 'text/html'
 
             return response
@@ -77,7 +77,8 @@ class DataFormUpdate(Resource):
             return make_response(JinjaTemplate.render_status_template(context,404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
             logger.exception(f"RestApiNotAllowed Exception: {err}")
-            return redirect(f"/auth/login.htm?redirect=/{path}", code=302)
+            #return redirect(f"/auth/login.htm?redirect=/{path}", code=302)
+            return redirect(f"/ui/login?redirect={request.url}", code=302)
         except Exception as err:
             logger.exception(f"Exception: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)

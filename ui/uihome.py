@@ -26,37 +26,38 @@ logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
-    parser.add_argument('restapi_username',type=str, help='Username', location='query')
-    parser.add_argument('restapi_password',type=str, help='Password', location='query')
     return parser
 
-class Portal(Resource):
+class AppHome(Resource):
     api=AppInfo.get_api("ui")
 
     @api.doc(parser=create_parser())
     def get(self):
         try:
-            path="templates/base/login.htm"
+            path="templates/base/uihome.htm"
 
             logger.info(f"Path: {path}")
 
             create_parser().parse_args()
             context=g.context
 
-            next=HTTPRequest.redirect(request, "/ui/login")
-            logger.info(f"Redirect : {next}")
-
-            msg=''
-            if 'msg' in request.args:
-                msg=request.args.get('msg')
-
-            logged_on=False
-            if 'session_id' in session:
-                logged_on=True
-
             template=JinjaTemplate.create_file_template(context, path)
 
-            response = make_response(template.render({"redirect": next, "msg": msg, "logged_on": logged_on, "context": context}))
+            fetch=f"""
+            <restapi type="select">
+                <table name="api_ui_app" alias="a"/>
+                <select>
+                    <field name="id" table_alias="a"/>
+                    <field name="name" table_alias="a"/>
+                    <field name="description" table_alias="a"/>
+                    <field name="home_url" table_alias="a"/>
+                </select>
+            </restapi>
+            """
+            fetch_parser=FetchXmlParser(fetch,context)
+            rs=DatabaseServices.exec(fetch_parser, context, fetch_mode=0)
+
+            response = make_response(template.render({"context": context, "apps":rs.get_result() }))
             response.headers['content-type'] = 'text/html'
 
             return response
@@ -78,4 +79,4 @@ class Portal(Resource):
             return make_response(JinjaTemplate.render_status_template(500, err), 500)
 
 def get_endpoint():
-    return Portal
+    return AppHome
