@@ -1,7 +1,7 @@
 import json
-import xml.etree.ElementTree as ET 
+import xml.etree.ElementTree as ET
 from core import log
-from core.exceptions import TableAliasNotFoundInFetchXml
+from core.exceptions import TableAliasNotFoundInFetchXml, FieldNotFoundInMetaData, MissingFieldPermisson, TableMetaDataNotFound
 
 logger=log.create_logger(__name__)
 
@@ -23,6 +23,7 @@ class FetchXmlParser:
         self._sql_select="*"
         self._sql_comment=""
         self._sql_order=""
+        self._sql_group_by=""
         self._sql_paramaters_order=[]
         self._json_fields={} # for insert and update
         self._tables=[]
@@ -40,6 +41,7 @@ class FetchXmlParser:
         self._sql_select="*"
         self._sql_comment=""
         self._sql_order=""
+        self._sql_group_by=""
         self._sql_paramaters_order=[]
         self._json_fields={}
         self._tables=[]
@@ -102,6 +104,9 @@ class FetchXmlParser:
             sql.append(f" WHERE {self._sql_where}")
             params=self._sql_parameters_where
 
+        if self._sql_group_by != "":
+            sql.append(f" GROUP BY {self._sql_group_by}")
+
         if self._sql_order != "":
             sql.append(f" ORDER BY {self._sql_order}")
             params=params+self._sql_paramaters_order
@@ -135,14 +140,12 @@ class FetchXmlParser:
         # create the table alias mapping
         for node in tree:
             if node.tag == "table":
-                table=node.attrib['name']
-                alias=table
-                if "alias" in node.attrib:
-                    alias=node.attrib['alias']
-                self._append_alias(table, alias)
+                self._build_table(node)
+
             elif node.tag == "joins":
                 for join in node:
-                    table=join.attrib['table']
+                    #table=join.attrib['table']
+                    table=self._validate_table_alias(self._context,join.attrib['table'])
                     alias=table
                     if "alias" in join.attrib:
                         alias=join.attrib['alias']
@@ -165,7 +168,6 @@ class FetchXmlParser:
                 self._build_comment(node)
             elif node.tag == "orderby":
                 self._build_order(node)
-
 
     def _escape_string(self, input, scope="somewhere"):
         not_allowed=[";","--","\0","\b","\n","\t","\r"]
@@ -207,9 +209,10 @@ class FetchXmlParser:
 
         return (''.join(fields),''.join(values), parameters)
 
+
     """
     <orderby>
-        <field name="tablename" alias="t" sort="ASC"/>
+        <field name="fieldname" alias="t" sort="ASC"/>
     </orderby>
     """
     def _build_order(self, node):
@@ -248,6 +251,7 @@ class FetchXmlParser:
             alias=""
 
             table=self._escape_string(join.attrib['table'])
+            table=self._validate_table_alias(self._context,table)
 
             if 'type' in join.attrib:
                 join_type=self._escape_string(join.attrib['type'])
@@ -261,38 +265,72 @@ class FetchXmlParser:
         self._sql_table_join=''.join(sql)
 
     def _build_table(self,node):
-        table=node.attrib['name']
-        self._sql_table=table
-        self._tables.append(table)
+        #table=node.attrib['name']
+        table=self._validate_table_alias(self._context,node.attrib['name'])
+        alias=table
+
 
         if 'alias' in node.attrib:
-            self._sql_table_alias=node.attrib['alias']
+            alias=node.attrib['alias']
+
+        self._sql_table=table
+        self._sql_table_alias=alias
+
+        self._tables.append(table)
+        self._append_alias(table, alias)
 
     """
-        <select>
-            <field name="username" table_alias="u" alias="name"/>
-        </select>
+    <select>
+        <field name="username" table_alias="u" alias="name" func="count" grouping="y"/>
+    </select>
     """
     def _build_select(self, node):
         sql=[]
+        group=[]
+
         for field in node:
             if not sql==[]:
                 sql.append(",")
             table_alias=""
             alias=""
+            func=""
+
+            name=f"{self._escape_string(field.attrib['name'])}"
 
             if 'alias' in field.attrib:
                 alias=self._escape_string(f"{field.attrib['alias']}")
 
             if 'table_alias' in field.attrib:
-                table_alias=self._escape_string(f"{field.attrib['table_alias']}.")
+                table_alias=self._escape_string(f"{field.attrib['table_alias']}")
+            else:
+                table_alias=self._sql_table_alias #wird in parse gesetzt
 
-            name=self._escape_string(field.attrib['name'])
-            sql.append(f"{table_alias}{name} {alias}")
+            if 'func' in field.attrib:
+                func=self._escape_string(field.attrib['func'])
+
+            if 'grouping' in field.attrib:
+                if not group==[]:
+                    group.append(",")
+
+                group.append(f"{table_alias}.{name}")
+
+
+            name_complete=f"{table_alias}.{self._escape_string(field.attrib['name'])}"
+
+            # check if access allow or denied
+            if not self._validate_field_permission(self._context, self._sql_type, table_alias, name):
+                raise MissingFieldPermisson(f"Table:{table_alias} Field:{name}")
+
+            if not func == "":
+                name_complete=f"{func}({name_complete})"
+
+            sql.append(f"{name_complete} {alias}")
             self._build_column_header(field)
 
         self._sql_select=''.join(sql)
 
+        if not group == []:
+            self._sql_group_by=''.join(group)
 
     def _build_column_header(self, field):
         name=self._escape_string(field.attrib['name'])
@@ -392,12 +430,62 @@ class FetchXmlParser:
                     sql=sql+field+" "+operator+" %s"
                     self._sql_parameters_where.append(value)
 
-        #print(sql)
         return "("+sql+")"
 
     def _append_alias(self, table, alias=None):
         if alias==None or alias=="":
             alias=table
 
-        #self._table_aliases.append({"table": table, "alias": alias})
         self._table_aliases[alias]={"name": table, "alias": alias}
+
+    def _validate_table_alias(self, context, table_alias):
+        connection=context.get_connection()
+        table_name=""
+        sql=f"""
+        SELECT id, table_name FROM api_table
+        WHERE alias=%s;
+        """
+        params=(table_alias)
+        cur=connection.cursor()
+        cur.execute(sql,params)
+
+        row=cur.fetchone()
+        cur.fetchall()
+        if row==None:
+            cur.close()
+            raise TableMetaDataNotFound(f"Table not found for alias: {table_alias}")
+
+        table_name=row['table_name']
+        cur.close()
+
+        return table_name
+
+    def _validate_field_permission(self, context, mode, table_alias, field_name):
+        connection=context.get_connection()
+
+        if not table_alias in self._table_aliases:
+            raise TableAliasNotFoundInFetchXml(f"{table_alias}")
+
+        table_name=self._table_aliases[table_alias]['name']
+
+        sql=f"""
+        SELECT t.table_name, f.type_id,f.name
+        FROM api_table_field f
+        INNER JOIN api_table t ON f.table_id=t.id
+        WHERE t.table_name=%s AND f.name=%s;
+        """
+
+        params=(table_name , field_name)
+        cur=connection.cursor()
+        cur.execute(sql, params)
+
+        row=cur.fetchone()
+        cur.fetchall()
+
+        if row==None:
+            cur.close()
+            raise FieldNotFoundInMetaData(f"Table: {table_name} on field: {field_name}")
+
+        cur.close()
+
+        return True
