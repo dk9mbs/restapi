@@ -12,3 +12,9 @@ class TableMetaDataNotFound(Exception):
 
 class TableAliasNotFoundInFetchXml(Exception):
     pass
+
+class FieldNotFoundInMetaData(Exception):
+    pass
+
+class MissingFieldPermisson(Exception):
+    pass
