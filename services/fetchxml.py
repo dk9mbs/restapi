@@ -36,7 +36,10 @@ def __build_fetchxml_by(context,alias,table_name,id=None,data=None,auto_commit=0
             if v==None:
                 tmp.append(f"""<field name="{k}"/>\n""")
             else:
-                tmp.append(f"""<field name="{k}" value="{v}"/>\n""")
+                #tmp.append(f"""<field name="{k}" value="{v}"/>\n""")
+                tmp.append(f"""<field name="{k}">\n""")
+                tmp.append(f"""<value><![CDATA[{v}]]></value>\n""")
+                tmp.append(f"""</field>\n""")
 
         tmp.append("</fields>\n")
     tmp.append("</restapi>")

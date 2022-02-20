@@ -359,7 +359,6 @@ class FetchXmlParser:
     """
     def _build_fields(self,node):
         fields={}
-
         for field in node:
             # values are replaced by execute
             # in case of no value attrib in node use None/null per default
@@ -367,8 +366,14 @@ class FetchXmlParser:
 
             if 'value' in field.attrib:
                 value=field.attrib['value']
-                if value == "None" or value == "null" or value=="":
-                    value=None
+            else:
+                for val in field:
+                    if val.tag=="value":
+                        value=val.text
+
+            if value == "None" or value == "null" or value=="":
+                value=None
+
 
             name=self._escape_string(field.attrib['name'],"fieldname")
 

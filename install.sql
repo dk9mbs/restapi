@@ -1,3 +1,8 @@
+DROP TABLE IF EXISTS api_portal_content;
+DROP TABLE IF EXISTS api_portal_content_type;
+DROP TABLE IF EXISTS api_portal;
+
+
 CREATE TABLE IF NOT EXISTS dummy (
     id int NOT NULL auto_increment,
     name varchar(50) NOT NULL,
@@ -96,6 +101,13 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (17,'api_ui_app_nav_item', 'api_ui_app_nav_item','id','int','name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (18,'api_portal_content_type', 'api_portal_content_type','id','int','name',-1);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (19,'api_portal_content', 'api_portal_content','id','int','name',-1);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -246,15 +258,51 @@ CREATE TABLE IF NOT EXISTS api_audit_log(
     INDEX (table_name,record_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+/* portal */
 
 CREATE TABLE IF NOT EXISTS api_portal(
     id varchar(50) NOT NULL,
     name varchar(100) NOT NULL,
+    solution_id int NOT NULL,
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT IGNORE INTO api_portal(id,name) VALUES ('default', 'default');
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS name varchar(100);
+ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS solution_id int NOT NULL;
+
+INSERT IGNORE INTO api_portal(id,name,solution_id) VALUES ('default', 'default',1);
+
+
+CREATE TABLE IF NOT EXISTS api_portal_content_type(
+    id int NOT NULL,
+    name varchar(50) NOT NULL,
+    solution_id int NOT NULL,
+    PRIMARY KEY(id),
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_portal_content_type(id,name,solution_id) VALUES (1, 'main',1);
+
+CREATE TABLE IF NOT EXISTS api_portal_content(
+    id int NOT NULL AUTO_INCREMENT,
+    portal_id varchar(100) NOT NULL,
+    name varchar(50) NOT NULL,
+    type_id int NOT NULL,
+    content text NULL COMMENT 'Please fill here your page content',
+    solution_id int NOT NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id),
+    FOREIGN KEY(type_id) REFERENCES api_portal_content_type(id),
+    FOREIGN KEY(portal_id) REFERENCES api_portal(id),
+    UNIQUE KEY(name,portal_id,type_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_portal_content AUTO_INCREMENT=1000000;
+
+/* end portal */
+
 
 CREATE TABLE IF NOT EXISTS api_table_view_type(
     id varchar(10) NOT NULL,
@@ -334,6 +382,10 @@ DELETE FROM api_ui_app_nav_item WHERE solution_id=1;
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1,1,'User','/ui/v1.0/data/view/api_user/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2,1,'Tables','/ui/v1.0/data/view/api_table/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3,1,'Sessions','/ui/v1.0/data/view/api_session/default',1,1);
+
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4,1,'Portals','/ui/v1.0/data/view/api_portal/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (5,1,'Content Types','/ui/v1.0/data/view/api_portal_content_type/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (6,1,'Contents','/ui/v1.0/data/view/api_portal_content/default',1,1);
 
 /*
 End APP
@@ -609,7 +661,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
 22,'SELECTVIEW','default',12,'id',1,'<restapi type="select">
     <table name="api_table_view" alias="tv"/>
-        <filter type="or">
+    <filter type="or">
         <condition field="name" table_alias="tv" value="$$query$$" operator=" like "/>
     </filter>
     <joins>
@@ -620,3 +672,48 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="name" table_alias="tv" alias="name"/>
     </select>
 </restapi>');
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+23,'LISTVIEW','default',18,'id',1,'<restapi type="select">
+    <table name="api_portal_content_type" alias="t"/>
+    <select>
+        <field name="id" table_alias="t" alias="id"/>
+        <field name="name" table_alias="t" alias="name"/>
+    </select>
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+24,'SELECTVIEW','default',18,'id',1,'<restapi type="select">
+    <table name="api_portal_content_type" alias="t"/>
+    <select>
+        <field name="id" table_alias="t" alias="id"/>
+        <field name="name" table_alias="t" alias="name"/>
+    </select>
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+25,'LISTVIEW','default',19,'id',1,'<restapi type="select">
+    <table name="api_portal_content" alias="t"/>
+    <filter type="or">
+        <condition field="name" alias="t" value="$$query$$" operator=" like "/>
+    </filter>
+    <joins>
+        <join type="inner" table="api_portal" alias="p" condition="t.portal_id=p.id"/>
+    </joins>
+    <select>
+        <field name="id" table_alias="t" alias="id"/>
+        <field name="name" table_alias="t" alias="Name"/>
+        <field name="name" table_alias="p" alias="Portal"/>
+    </select>
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+26,'SELECTVIEW','default',19,'id',1,'<restapi type="select">
+    <table name="api_portal_content" alias="t"/>
+    <select>
+        <field name="id" table_alias="t" alias="id"/>
+        <field name="name" table_alias="t" alias="name"/>
+    </select>
+</restapi>');
+

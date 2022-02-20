@@ -111,6 +111,7 @@ AppInfo.get_api("ui").add_resource(ui.uihome.get_endpoint(), "/home", methods=['
 # endpoint for static and dynamic portal content
 #
 AppInfo.get_api("portal").add_resource(ui.core.defaultpage.get_endpoint(), "/")
+AppInfo.get_api("portal").add_resource(ui.core.portal.get_endpoint(), "/VPages/<session_id>/<content_name>")
 AppInfo.get_api("portal").add_resource(ui.core.portal.get_endpoint(), "/<path:path>")
 
 logger.info(AppInfo.get_app().url_map)
