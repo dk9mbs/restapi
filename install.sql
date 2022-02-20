@@ -1,8 +1,3 @@
-DROP TABLE IF EXISTS api_portal_content;
-DROP TABLE IF EXISTS api_portal_content_type;
-DROP TABLE IF EXISTS api_portal;
-
-
 CREATE TABLE IF NOT EXISTS dummy (
     id int NOT NULL auto_increment,
     name varchar(50) NOT NULL,
