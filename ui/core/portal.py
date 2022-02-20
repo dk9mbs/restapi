@@ -26,29 +26,30 @@ logger=log.create_logger(__name__)
 
 def create_parser():
     parser=reqparse.RequestParser()
-    parser.add_argument('path',type=str, help='Vilid filename', location='query')
+    parser.add_argument('path',type=str, help='Valid filename', location='query')
     return parser
 
 class Portal(Resource):
     api=AppInfo.get_api("portal")
 
     @api.doc(parser=create_parser())
-    def get(self, path):
+    def get(self, path="index.htm", session_id=None, content_name=None):
         try:
             logger.info(f"Path: {path}")
+            logger.info(f"content_name: {content_name}")
+            logger.info(f"session_id: {session_id}")
 
             create_parser().parse_args()
             context=g.context
+
+            portal_id="default"
             #
             # content class
             #
             if not path.endswith("login.htm"):
-                #fetch=build_fetchxml_by_alias(context, "log_logbooks", "dk9mbs", type="select")
-                fetch=build_fetchxml_by_alias(context, "api_portal", "default", type="select")
-                fetchparser=FetchXmlParser(fetch, context)
-                rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
-                if rs.get_result()==None:
-                    abort(404, "Item not found => %s" % id)
+                pass
+
+
             #
             # render the defined jinja template (in case ofahtm file)
             #
@@ -56,9 +57,35 @@ class Portal(Resource):
                 next=HTTPRequest.redirect(request)
                 logger.info(f"Redirect : {next}")
 
-                template=JinjaTemplate.create_file_template(context, path)
+                fetch=build_fetchxml_by_alias(context, "api_portal", portal_id, type="select")
+                fetchparser=FetchXmlParser(fetch, context)
+                rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
+                if rs.get_result()==None:
+                    abort(404, "Portal not found => %s" % id)
 
-                response = make_response(template.render({"redirect": next}))
+                # render the content first
+                if content_name==None:
+                    content_name=HTTPRequest.get_querystring_value(request, "content_name", default="home")
+
+                content=self.__get_content(context, portal_id, content_name)
+                if content==None:
+                    abort(404, "Content not found => %s" % content_name)
+
+                params={"context": context,
+                        "content_name": content_name,
+                        "content_id": content['id'] }
+
+                template=JinjaTemplate.create_string_template(context, content['content'].encode('utf-8').decode('utf-8'))
+                content_str=template.render(params)
+
+                #
+                # Render the complete page
+                #
+                params['content']=content_str
+                template=JinjaTemplate.create_file_template(context, path)
+                page_str=template.render(params)
+
+                response = make_response(page_str)
                 response.headers['content-type'] = 'text/html'
 
                 return response
@@ -81,6 +108,23 @@ class Portal(Resource):
         except Exception as err:
             logger.exception(f"Exception: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
+
+    def __get_content(self,context,portal_id, content_name):
+        fetch=f"""
+        <restapi type="select">
+        <table name="api_portal_content"/>
+        <filter type="and">
+            <condition field="name" value="{content_name}" operator="="/>
+            <condition field="portal_id" value="{portal_id}" operator="="/>
+        </filter>
+        </restapi>
+        """
+        fetchparser=FetchXmlParser(fetch, context)
+        rs_content=DatabaseServices.exec(fetchparser,context,run_as_system=True, fetch_mode=1)
+        if rs_content.get_eof():
+            return None
+
+        return rs_content.get_result()
 
 def get_endpoint():
     return Portal

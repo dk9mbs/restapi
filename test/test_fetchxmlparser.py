@@ -88,6 +88,28 @@ class TestFetchxmlParser(unittest.TestCase):
         print(f"Columns: {parser.get_columns()}")
 
         print("==========================")
+
+
+        print("\n\n\nUpdate Field:")
+        xml=f"""
+        <restapi type="update">
+            <table name="dummy"/>
+            <filter>
+                <condition field="id" value="99"/>
+            </filter>
+
+            <fields>
+                <field name="id">
+                    <value><![CDATA[test12345<hallo>]]></value>
+                </field>
+            </fields>
+        </restapi>
+        """
+        parser=FetchXmlParser(xml, self.context)
+        parser.parse()
+
+        print(parser.get_sql())
+
     def tearDown(self):
         AppInfo.save_context(self.context, True)
         AppInfo.logoff(self.context)
