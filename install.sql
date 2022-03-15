@@ -103,6 +103,9 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (19,'api_portal_content', 'api_portal_content','id','int','name',-1);
 
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (20,'api_file', 'api_file','id','int','name',-1);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -380,11 +383,29 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4,1,'Portals','/ui/v1.0/data/view/api_portal/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (5,1,'Content Types','/ui/v1.0/data/view/api_portal_content_type/default',1,1);
-INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (6,1,'Contents','/ui/v1.0/data/view/api_portal_content/default',1,1);
+
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (7,1,'File','/ui/v1.0/data/view/api_file/default',1,1);
 
 /*
 End APP
 */
+
+CREATE TABLE IF NOT EXISTS api_file(
+    id int NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
+    name varchar(100) NOT NULL COMMENT 'Unique name',
+    size int NOT NULL DEFAULT '0',
+    mime_type varchar(100) NOT NULL,
+    path text NOT NULL COMMENT '',
+    path_hash varchar(128) NOT NULL COMMENT '',
+    description text NULL,
+    file LONGBLOB NOT NULL COMMENT 'BLOB data',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    UNIQUE KEY(path_hash),
+    INDEX(name),
+    INDEX(path_hash)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 /* Dataviews */
 DELETE FROM api_table_view  WHERE solution_id=1;
@@ -709,6 +730,28 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     <select>
         <field name="id" table_alias="t" alias="id"/>
         <field name="name" table_alias="t" alias="name"/>
+    </select>
+</restapi>');
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+27,'LISTVIEW','default',20,'id',1,'<restapi type="select">
+    <table name="api_file" alias="a"/>
+    <filter type="or">
+        <condition field="name" alias="a" value="$$query$$" operator=" like "/>
+    </filter>
+    <select>
+        <field name="id" table_alias="a" alias="id"/>
+        <field name="name" table_alias="a" alias="Name"/>
+    </select>
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+28,'SELECTVIEW','default',20,'id',1,'<restapi type="select">
+    <table name="api_file" alias="a"/>
+    <select>
+        <field name="id" table_alias="a" alias="id"/>
+        <field name="name" table_alias="a" alias="name"/>
     </select>
 </restapi>');
 

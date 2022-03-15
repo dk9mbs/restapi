@@ -5,6 +5,12 @@ from datetime import datetime
 from datetime import date
 from datetime import time
 
+class FileUploadException(Exception):
+    pass
+
+class FileDownloadException(Exception):
+    pass
+
 class RestApiClient:
     def __init__(self, root_url="http://localhost:5001/api"):
         self.__session_id=None
@@ -128,6 +134,65 @@ class RestApiClient:
             return json.loads(r.text)
         else:
             return r.text
+
+
+    def post_file(self,local_file, remote_path, json_out=False):
+        #url=f"http://localhost:5000/api/v1.0/file/{path}"
+        url=f"{self.__root}/file/{remote_path}"
+
+        files={'file': open(local_file,'rb')}
+        #values={'file' : 'file.txt' , 'DB':'photcat' , 'OUT':'csv' , 'SHORT':'short'}
+        r=requests.post(url,files=files,data={})
+        if r.status_code!=200:
+            raise FileUploadException(f"{r.status_code} {r.text}")
+
+        if json_out==True:
+            return json.loads(r.text)
+        else:
+            return r.text
+
+
+    def put_file(self,local_file, remote_path, json_out=False):
+        url=f"{self.__root}/file/{remote_path}"
+
+        files={'file': open(local_file,'rb')}
+        #values={'file' : 'file.txt' , 'DB':'photcat' , 'OUT':'csv' , 'SHORT':'short'}
+        r=requests.put(url,files=files,data={})
+        if r.status_code==404:
+            raise FileUploadException(f"File not found. {r.status_code} {r.text}")
+
+        if r.status_code!=200:
+            raise FileUploadException(f"{r.status_code} {r.text}")
+
+        if json_out==True:
+            return json.loads(r.text)
+        else:
+            return r.text
+
+
+    def get_file(self, remote_path, local_file_name, json_out=False):
+        url=f"{self.__root}/file/{remote_path}"
+        r=requests.get(url)
+
+        if r.status_code!=200:
+            raise FileDownloadException(f"{r.status_code} {r.text}")
+
+        result={"file": r.content}
+
+
+        #file_bytes=
+        #attachment=json.loads(rest.read("api_attachment", 1))
+        #import base64
+
+        #base64_message = attachment['file']
+        #base64_bytes = base64_message.encode('ascii')
+        #message_bytes = base64.b64decode(base64_bytes)
+
+        #f = open('/tmp/img.jpg', 'wb')
+        #f.write(message_bytes)
+        #f.close()
+
+        return result
 
     def __json_serial(self, obj):
         """JSON serializer for objects not serializable by default json code"""

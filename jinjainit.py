@@ -63,15 +63,26 @@ def __datacomboview(table_alias, viewname, query):
     return rs.get_result()
 
 
-def __image_by_id(context, id, width):
-    html=f"""<!-- Anfang Placeholder(img_by_id|1000137|Ladespulen|width:500px;)-->
-    <a target="_blank" style="width:500px;" 
-    href="http://dk9mbs.de/clientphp/document/getdocument.php?documentid={id}">
-    <img style="width:{width}px;" src="http://dk9mbs.de/clientphp/document/getdocument.php?documentid={id}"></img>
+def __image_by_path(context, path, **kwargs):
+    width=100
+    unit="%"
+
+    if 'width' in kwargs:
+        width=kwargs['width']
+
+    if 'unit' in kwargs:
+        unit=kwargs['unit']
+
+    html=f"""<!-- start of jinja image(img_by_path|{path}|width:{width}{unit};)-->
+    <a target="_blank" style="width:{width}{unit};"
+    href="/api/v1.0/file/{path}">
+    <img style="width:{width}{unit};" src="/api/v1.0/file/{path}"></img>
     </a>
-    <!-- Ende Placeholder -->
+    <!-- end of placeholder -->
     """
     return html
+
+
 
 def init():
     JinjaEnvironment.register_template_function('datacomboview', __datacomboview)
@@ -79,5 +90,5 @@ def init():
     JinjaEnvironment.register_template_function('current_date', __get_current_date)
     JinjaEnvironment.register_template_function('ui_app_info', __ui_app_info)
     JinjaEnvironment.register_template_function('build_query_string', __build_query_string)
-    JinjaEnvironment.register_template_function('image_by_id', __image_by_id)
+    JinjaEnvironment.register_template_function('image_by_path', __image_by_path)
 

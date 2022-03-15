@@ -18,3 +18,6 @@ class FieldNotFoundInMetaData(Exception):
 
 class MissingFieldPermisson(Exception):
     pass
+
+class FileNotFoundInDatabase(Exception):
+    pass
