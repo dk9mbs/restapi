@@ -47,7 +47,7 @@ class EntityAdd(Resource):
             logger.info(f"RestApiNotAllowed Exception: {err}")
             return redirect(f"/ui/login?redirect=/ui/v1.0/data/{table}", code=302)
         except Exception as err:
-           return make_response(JinjaTemplate.render_status_template(500, err), 500)
+           return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
 
 def get_endpoint():
     return EntityAdd

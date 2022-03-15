@@ -74,7 +74,7 @@ class Entity(Resource):
 
 
     @api.doc(parser=create_parser_get())
-    def get(self,table,id):
+    def get(self,table,id,field=""):
         try:
             create_parser_get().parse_args()
             context=g.context
@@ -85,7 +85,10 @@ class Entity(Resource):
             if rs.get_result()==None:
                 abort(400, "Item not found => %s" % id)
 
-            return rs.get_result()
+            if field=="":
+                return rs.get_result()
+            else:
+                return rs.get_result()[field]
 
         except RestApiNotAllowed as err:
             abort(400, f"{err}")

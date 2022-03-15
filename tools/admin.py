@@ -15,6 +15,10 @@ parser.add_argument('--password', type=str, help='Password for given --username'
 parser.add_argument('--groupname', type=str, help='For add or remove --username to group or list permissions')
 parser.add_argument('--tablename', type=str, help='Tablename')
 parser.add_argument('--query', '-q', type=str, help='Search string for listqueries')
+parser.add_argument('--file', '-f', type=str, help='Local filename')
+parser.add_argument('--remotepath', '-r', type=str, help='Remotepath path')
+
+
 args = parser.parse_args()
 
 url=args.url
@@ -350,6 +354,39 @@ def list_event_handler(rest):
     print(line)
 
 
+def get_file(rest, remote_path, local_file):
+    file=rest.get_file(remote_path, local_file)
+    f=open(local_file,'wb')
+    f.write(file['file'])
+    f.flush()
+    f.close()
+
+    print(f"{remote_path} saved as {local_file}")
+    #attachment=json.loads(rest.read("api_attachment", 1))
+
+    ##
+    #import base64
+
+    #base64_message = attachment['file']
+    #base64_bytes = base64_message.encode('ascii')
+    #message_bytes = base64.b64decode(base64_bytes)
+    ##message = message_bytes.decode('ascii')
+    ##
+
+    #f = open('/tmp/img.jpg', 'wb')
+    #f.write(message_bytes)
+    #f.close()
+
+
+def post_file(rest, local_file, remote_path):
+    # upload
+    r=rest.post_file(local_file, remote_path)
+    print(r)
+
+def put_file(rest, local_file, remote_path):
+    #update
+    r=rest.put_file(local_file, remote_path)
+    print(r)
 
 if command=='listusers':
     list_users(rest, args.query)
@@ -375,6 +412,12 @@ elif command == 'listsessions':
     list_sessions(rest)
 elif command == 'listeventhandlers':
     list_event_handler(rest)
+elif command == 'getfile':
+    get_file(rest, args.remotepath, args.file)
+elif command == 'postfile':
+    post_file(rest, args.file, args.remotepath)
+elif command == 'putfile':
+    put_file(rest, args.file, args.remotepath)
 else:
     print("use -h switch")
 
