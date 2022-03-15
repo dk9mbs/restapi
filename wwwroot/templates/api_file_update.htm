@@ -1,0 +1,43 @@
+{% extends "templates/base/base.htm" %}
+{% import "templates/base/uitools.htm" as forms %}
+
+{% block title %}restAPI{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+
+    {% call forms.record_form( table, id, context=context ) %}
+
+    {% call forms.row() %}
+        {% call forms.input('id', 'ID', 'ID', data['id'], disabled=true ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input('created_on', 'Created on', '', data['created_on'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input('name', 'Name', '', data['name'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input_multiline('file', 'File', '', data['file'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+
+    {% endcall %}
+<!--
+-->
+
+{% endblock %}
+
+
+
+
