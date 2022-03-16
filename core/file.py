@@ -39,7 +39,7 @@ class File:
         connection=context.get_connection()
 
         file_bytes=file.read()
-        extension=pathlib.Path(file.filename).suffix
+        extension=pathlib.Path(file.filename).suffix.lower()
 
         if not f"{extension}" in mimetypes.types_map:
             raise UnknownMimeType(f"Extension: {extension}")
