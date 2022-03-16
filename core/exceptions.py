@@ -21,3 +21,6 @@ class MissingFieldPermisson(Exception):
 
 class FileNotFoundInDatabase(Exception):
     pass
+
+class UnknownMimeType(Exception):
+    pass

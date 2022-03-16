@@ -1,8 +1,10 @@
 import sys
 import os
+import pathlib
 from flaskext.mysql import MySQL
+import mimetypes
 
-from core.exceptions import RestApiNotAllowed, FileNotFoundInDatabase
+from core.exceptions import RestApiNotAllowed, FileNotFoundInDatabase, UnknownMimeType
 from core import log
 from core.meta import read_table_meta
 from core.exceptions import TableMetaDataNotFound
@@ -37,7 +39,13 @@ class File:
         connection=context.get_connection()
 
         file_bytes=file.read()
-        mime_type="image/jpeg"
+        extension=pathlib.Path(file.filename).suffix
+
+        if not f"{extension}" in mimetypes.types_map:
+            raise UnknownMimeType(f"Extension: {extension}")
+
+
+        mime_type=mimetypes.types_map[extension]
         size=len(file_bytes)
         file_name=file.filename
         full_path=os.path.join(remote_path, file_name)
