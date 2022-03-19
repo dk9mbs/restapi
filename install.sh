@@ -43,7 +43,13 @@ master = true
 processes = 1
 #socket = 127.0.0.1:5000
 #protocol = http
-socket = /tmp/restapi.$INSTANCE_ID.sock
+
+# use socket for nginx
+#socket = /tmp/restapi.$INSTANCE_ID.sock
+
+# use http-socket for apache2
+http-socket = :8881
+
 chmod-socket = 666
 vacuum = true
 uid = www-data
