@@ -1,0 +1,38 @@
+{% extends "templates/base/base.htm" %}
+{% import "templates/base/uitools.htm" as forms %}
+
+{% block title %}Portal{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+
+    {% call forms.record_form( table, context=context ) %}
+
+    {% call forms.row() %}
+        {% call forms.input('id', 'ID', 'ID', '', disabled=false ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input('name', 'Name', '', '' ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input_multiline('template', 'Template', '', '' ) %}
+        {% endcall %}
+    {% endcall %}
+
+
+    {% endcall %}
+<!--
+-->
+
+{% endblock %}
+
+
+
+

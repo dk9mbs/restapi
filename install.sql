@@ -106,6 +106,9 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (20,'api_file', 'api_file','id','int','name',-1);
 
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (21,'api_setting', 'api_setting','id','int','setting',-1);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -267,9 +270,27 @@ CREATE TABLE IF NOT EXISTS api_portal(
 
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS name varchar(100);
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS solution_id int NOT NULL;
+ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS template text NULL;
 
 INSERT IGNORE INTO api_portal(id,name,solution_id) VALUES ('default', 'default',1);
-
+UPDATE api_portal SET template='<!DOCTYPE HTML5>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="language" content="deutsch, de" />
+<meta name="robots" content="index, follow" />
+<meta name="author" content="dk9mbs.de" />
+<meta http-equiv="expires" content="5" />
+<meta name="Keywords" content="" >
+<meta name="Description" content="" >
+<title>Demo Portal</title>
+</head>
+<body>
+    <div id="content">
+    {{ content }}
+    </div>
+</body>
+</html>' WHERE id='default' AND template IS NULL;
 
 CREATE TABLE IF NOT EXISTS api_portal_content_type(
     id int NOT NULL,
@@ -380,11 +401,11 @@ DELETE FROM api_ui_app_nav_item WHERE solution_id=1;
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1,1,'User','/ui/v1.0/data/view/api_user/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2,1,'Tables','/ui/v1.0/data/view/api_table/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3,1,'Sessions','/ui/v1.0/data/view/api_session/default',1,1);
-
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4,1,'Portals','/ui/v1.0/data/view/api_portal/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (5,1,'Content Types','/ui/v1.0/data/view/api_portal_content_type/default',1,1);
-
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (7,1,'File','/ui/v1.0/data/view/api_file/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (8,1,'Contents','/ui/v1.0/data/view/api_portal_content/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (9,1,'Settings','/ui/v1.0/data/view/api_setting/default',1,1);
 
 /*
 End APP
@@ -405,6 +426,19 @@ CREATE TABLE IF NOT EXISTS api_file(
     INDEX(name),
     INDEX(path_hash)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS api_setting (
+    id int NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
+    setting varchar(250) NOT NULL,
+    value varchar(250) NOT NULL,
+    description varchar(50) NOT NULL,
+    solution_id int NOT NULL DEFAULT'1',
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id),
+    PRIMARY KEY(id),
+    UNIQUE KEY(setting)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('portal.default_portal','default','Default portal_id',1);
 
 
 /* Dataviews */
@@ -752,6 +786,28 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     <select>
         <field name="id" table_alias="a" alias="id"/>
         <field name="name" table_alias="a" alias="name"/>
+    </select>
+</restapi>');
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+29,'LISTVIEW','default',21,'id',1,'<restapi type="select">
+    <table name="api_setting" alias="a"/>
+    <filter type="or">
+        <condition field="setting" alias="a" value="$$query$$" operator=" like "/>
+    </filter>
+    <select>
+        <field name="id" table_alias="a" alias="id"/>
+        <field name="setting" table_alias="a" alias="Setting"/>
+    </select>
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+30,'SELECTVIEW','default',21,'id',1,'<restapi type="select">
+    <table name="api_setting" alias="a"/>
+    <select>
+        <field name="id" table_alias="a" alias="id"/>
+        <field name="setting" table_alias="a" alias="Setting"/>
     </select>
 </restapi>');
 
