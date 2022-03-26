@@ -21,6 +21,7 @@ from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core import log
 from core.exceptions import RestApiNotAllowed, ConfigNotValid
+from core.setting import Setting
 
 logger=log.create_logger(__name__)
 
@@ -42,7 +43,7 @@ class Portal(Resource):
             create_parser().parse_args()
             context=g.context
 
-            portal_id="default"
+            portal_id=Setting.get_value(context,'portal.default_portal','default')
             #
             # content class
             #
@@ -77,12 +78,12 @@ class Portal(Resource):
 
                 template=JinjaTemplate.create_string_template(context, content['content'].encode('utf-8').decode('utf-8'))
                 content_str=template.render(params)
-
                 #
                 # Render the complete page
                 #
                 params['content']=content_str
-                template=JinjaTemplate.create_file_template(context, path)
+                #template=JinjaTemplate.create_file_template(context, path)
+                template=JinjaTemplate.create_string_template(context, rs.get_result()['template'])
                 page_str=template.render(params)
 
                 response = make_response(page_str)
@@ -114,11 +115,15 @@ class Portal(Resource):
         <restapi type="select">
         <table name="api_portal_content"/>
         <filter type="and">
+            <filter type="or">
+                <condition field="portal_id" value="{portal_id}" operator="="/>
+                <condition field="portal_id" value="default" operator="="/>
+            </filter>
             <condition field="name" value="{content_name}" operator="="/>
-            <condition field="portal_id" value="{portal_id}" operator="="/>
         </filter>
         </restapi>
         """
+
         fetchparser=FetchXmlParser(fetch, context)
         rs_content=DatabaseServices.exec(fetchparser,context,run_as_system=True, fetch_mode=1)
         if rs_content.get_eof():
@@ -128,3 +133,4 @@ class Portal(Resource):
 
 def get_endpoint():
     return Portal
+

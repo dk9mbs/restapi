@@ -381,24 +381,19 @@ class FetchXmlParser:
 
         self._json_fields=fields
 
-    def _build_where(self, node):
+    def _build_where(self, node, parent_op=None):
+        # node ist ein Filter Element
         sql=""
+
         op=" AND "
         if 'type' in node.attrib:
             op=node.attrib['type']
 
-        for item in node:
-            if item.tag=="filter":
-                # in case of sub filter condition
-                if 'type' in item.attrib:
-                    op=self._escape_string(item.attrib['type'],"operator")
-                else:
-                    op="AND"
+        if parent_op==None:
+            parent_op=op
 
-                if not sql=="":
-                    sql=sql+(" %s " % op)
-                sql=sql+self._build_where(item)
-            else:
+        for item in node:
+            if item.tag=="condition":
                 #op=" AND "
                 operator="="
                 field=self._escape_string(item.attrib['field'],"fieldname")
@@ -407,8 +402,8 @@ class FetchXmlParser:
                 if 'value' in item.attrib:
                     value=item.attrib['value']
 
-                if 'type' in item.attrib:
-                    op=self._escape_string(item.attrib['type'],"operator")
+                #if 'type' in item.attrib:
+                #    op=self._escape_string(item.attrib['type'],"operator")
 
                 if 'alias' in item.attrib:
                     field="%s.%s" % ( self._escape_string(item.attrib['alias'],"alias"), field)
@@ -434,6 +429,19 @@ class FetchXmlParser:
                 else:
                     sql=sql+field+" "+operator+" %s"
                     self._sql_parameters_where.append(value)
+
+        for item in node:
+            if item.tag=="filter":
+                # in case of sub filter condition
+                if 'type' in item.attrib:
+                    op=self._escape_string(item.attrib['type'],"operator")
+                else:
+                    op="AND"
+
+                if not sql=="":
+                    sql=sql+(" %s " % parent_op)
+
+                sql=sql+self._build_where(item, op)
 
         return "("+sql+")"
 

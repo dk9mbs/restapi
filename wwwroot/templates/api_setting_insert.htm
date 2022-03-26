@@ -1,0 +1,32 @@
+{% extends "templates/base/base.htm" %}
+{% import "templates/base/uitools.htm" as forms %}
+
+{% block title %}Portal{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+
+    {% call forms.record_form( table, context=context ) %}
+
+    {% call forms.row() %}
+        {% call forms.input('setting', 'Setting', '', '' ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input('value', 'Value', '', '' ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% endcall %}
+<!--
+-->
+
+{% endblock %}
+
+
+
+
