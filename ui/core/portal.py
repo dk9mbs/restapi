@@ -5,6 +5,7 @@ import json
 import jinja2
 import os
 import urllib
+from urllib.parse import urlparse
 from flask import Flask, g, session, redirect, abort,request,Blueprint
 from flask import make_response, send_file
 from flask_restplus import Resource, Api, reqparse
@@ -36,20 +37,19 @@ class Portal(Resource):
     @api.doc(parser=create_parser())
     def get(self, path="index.htm", session_id=None, content_name=None):
         try:
+            host=request.host
+
             logger.info(f"Path: {path}")
             logger.info(f"content_name: {content_name}")
-            logger.info(f"session_id: {session_id}")
+            logger.info(f"host: {host}")
 
             create_parser().parse_args()
             context=g.context
 
-            portal_id=Setting.get_value(context,'portal.default_portal','default')
-            #
-            # content class
-            #
-            if not path.endswith("login.htm"):
-                pass
+            portal_id=self.__get_portal(context, host)
 
+            if portal_id==None:
+                portal_id=Setting.get_value(context,'portal.default_portal','default')
 
             #
             # render the defined jinja template (in case ofahtm file)
@@ -109,6 +109,25 @@ class Portal(Resource):
         except Exception as err:
             logger.exception(f"Exception: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
+
+    def __get_portal(self, context, host):
+        o = urlparse(request.base_url)
+
+        fetch=f"""
+        <restapi type="select">
+        <table name="api_portal_host" alias="ph"/>
+        <filter type="and">
+            <condition field="host" value="{o.hostname}" operator="="/>
+        </filter>
+        </restapi>
+        """
+
+        fetchparser=FetchXmlParser(fetch, context)
+        rs=DatabaseServices.exec(fetchparser,context,run_as_system=True, fetch_mode=1)
+        if rs.get_eof():
+            return None
+
+        return rs.get_result()['portal_id']
 
     def __get_content(self,context,portal_id, content_name):
         fetch=f"""
