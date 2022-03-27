@@ -83,6 +83,10 @@ def __image_by_path(context, path, **kwargs):
     return html
 
 
+def __execute_fetch_xml(context, fetch_xml):
+    fetchparser=FetchXmlParser(fetch_xml, context)
+    rs=DatabaseServices.exec(fetchparser, context, fetch_mode=0)
+    return rs
 
 def init():
     JinjaEnvironment.register_template_function('datacomboview', __datacomboview)
@@ -91,4 +95,5 @@ def init():
     JinjaEnvironment.register_template_function('ui_app_info', __ui_app_info)
     JinjaEnvironment.register_template_function('build_query_string', __build_query_string)
     JinjaEnvironment.register_template_function('image_by_path', __image_by_path)
+    JinjaEnvironment.register_template_function('dataquery', __execute_fetch_xml)
 

@@ -1,0 +1,37 @@
+{% extends "templates/base/base.htm" %}
+{% import "templates/base/uitools.htm" as forms %}
+
+{% block title %}restAPI{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+
+    {% call forms.record_form( table, id, context=context ) %}
+
+    {% call forms.row() %}
+        {% call forms.input('id', 'ID', 'ID', data['id'], disabled=true ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.input('host', 'Host', '', data['host'] ) %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call forms.row() %}
+        {% call forms.data_select('portal_id','Portal', data['portal_id'], 'api_portal', 'default','%') %}
+        {% endcall %}
+    {% endcall %}
+
+    {% endcall %}
+<!--
+-->
+
+{% endblock %}
+
+
+
+

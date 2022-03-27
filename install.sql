@@ -109,6 +109,9 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (21,'api_setting', 'api_setting','id','int','setting',-1);
 
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (22,'api_portal_host', 'api_portal_host','id','int','host',0);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -292,6 +295,17 @@ UPDATE api_portal SET template='<!DOCTYPE HTML5>
 </body>
 </html>' WHERE id='default' AND template IS NULL;
 
+CREATE TABLE IF NOT EXISTS api_portal_host(
+    id int NOT NULL AUTO_INCREMENT,
+    host varchar(250) NOT NULL,
+    portal_id varchar(50) NOT NULL,
+    PRIMARY KEY(id),
+    UNIQUE KEY(host),
+    FOREIGN KEY(portal_id) REFERENCES api_portal(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_portal_host(host,portal_id) VALUES ('subdomain.domain.org','default');
+
 CREATE TABLE IF NOT EXISTS api_portal_content_type(
     id int NOT NULL,
     name varchar(50) NOT NULL,
@@ -406,6 +420,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (7,1,'File','/ui/v1.0/data/view/api_file/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (8,1,'Contents','/ui/v1.0/data/view/api_portal_content/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (9,1,'Settings','/ui/v1.0/data/view/api_setting/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (10,1,'Portal Hosts','/ui/v1.0/data/view/api_portal_host/default',1,1);
 
 /*
 End APP
@@ -799,6 +814,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     <select>
         <field name="id" table_alias="a" alias="id"/>
         <field name="setting" table_alias="a" alias="Setting"/>
+        <field name="Value" table_alias="a" alias="Value"/>
     </select>
 </restapi>');
 
@@ -808,6 +824,29 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     <select>
         <field name="id" table_alias="a" alias="id"/>
         <field name="setting" table_alias="a" alias="Setting"/>
+    </select>
+</restapi>');
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+31,'LISTVIEW','default',22,'id',1,'<restapi type="select">
+    <table name="api_portal_host" alias="ph"/>
+    <filter type="or">
+        <condition field="host" alias="ph" value="$$query$$" operator=" like "/>
+    </filter>
+    <select>
+        <field name="id" table_alias="ph" alias="id"/>
+        <field name="host" table_alias="ph" alias="Host"/>
+        <field name="portal_id" table_alias="ph" alias="Portal"/>
+    </select>
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+32,'SELECTVIEW','default',21,'id',1,'<restapi type="select">
+    <table name="api_portal_host" alias="ph"/>
+    <select>
+        <field name="id" table_alias="ph" alias="id"/>
+        <field name="host" table_alias="ph" alias="Name"/>
     </select>
 </restapi>');
 
