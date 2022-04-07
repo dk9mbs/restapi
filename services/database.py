@@ -86,5 +86,14 @@ class DatabaseServices:
                 rs.set_inserted_id(context.get_connection().insert_id())
         return rs
 
+    @staticmethod
+    def recordset_to_list(context, rs, fields):
+        result=dict()
+        for field in fields:
+            result[field]=[]
 
+        for item in rs.get_result():
+            for field in fields:
+                result[field].append(item[field])
 
+        return result

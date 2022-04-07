@@ -88,6 +88,9 @@ def __execute_fetch_xml(context, fetch_xml):
     rs=DatabaseServices.exec(fetchparser, context, fetch_mode=0)
     return rs
 
+def __recordset_to_list(context, rs, fields):
+    return DatabaseServices.recordset_to_list(context, rs, fields)
+
 def init():
     JinjaEnvironment.register_template_function('datacomboview', __datacomboview)
     JinjaEnvironment.register_template_function('current_time', __get_current_time)
@@ -96,4 +99,5 @@ def init():
     JinjaEnvironment.register_template_function('build_query_string', __build_query_string)
     JinjaEnvironment.register_template_function('image_by_path', __image_by_path)
     JinjaEnvironment.register_template_function('dataquery', __execute_fetch_xml)
+    JinjaEnvironment.register_template_function('recordset_to_list', __recordset_to_list)
 

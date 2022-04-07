@@ -24,3 +24,9 @@ class FileNotFoundInDatabase(Exception):
 
 class UnknownMimeType(Exception):
     pass
+
+class FetchXmlFormat(Exception):
+    pass
+
+class SpecialCharsInFetchXml(Exception):
+    pass
