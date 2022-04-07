@@ -1,7 +1,8 @@
 import json
 import xml.etree.ElementTree as ET
 from core import log
-from core.exceptions import TableAliasNotFoundInFetchXml, FieldNotFoundInMetaData, MissingFieldPermisson, TableMetaDataNotFound
+from core.exceptions import TableAliasNotFoundInFetchXml, FieldNotFoundInMetaData, MissingFieldPermisson, TableMetaDataNotFound, FetchXmlFormat
+from core.exceptions import SpecialCharsInFetchXml
 
 logger=log.create_logger(__name__)
 
@@ -30,6 +31,8 @@ class FetchXmlParser:
         self._sql_parameters_where=[]
         self._table_aliases={}
         self._columns_desc=[]
+        self._limit=0
+        self._limit_offset=0
         self.parse()
 
     def __init_properties(self):
@@ -48,6 +51,8 @@ class FetchXmlParser:
         self._sql_parameters_where=[]
         self._table_aliases={}
         self._columns_desc=[]
+        self._limit=0
+        self._limit_offset=0
 
     def get_columns(self):
         return self._columns_desc
@@ -98,7 +103,12 @@ class FetchXmlParser:
     def get_select(self):
         params=[]
         sql=[]
-        sql.append(f"SELECT {self._sql_select} FROM {self._sql_table} {self._sql_table_alias} {self._sql_table_join} ")
+        row_count_option=""
+
+        if self._limit>0:
+            row_count_option=" SQL_CALC_FOUND_ROWS"
+
+        sql.append(f"SELECT{row_count_option} {self._sql_select} FROM {self._sql_table} {self._sql_table_alias} {self._sql_table_join} ")
 
         if self._sql_where != "":
             sql.append(f" WHERE {self._sql_where}")
@@ -110,6 +120,9 @@ class FetchXmlParser:
         if self._sql_order != "":
             sql.append(f" ORDER BY {self._sql_order}")
             params=params+self._sql_paramaters_order
+
+        if self._limit > 0:
+            sql.append(f" LIMIT {self._limit_offset}, {self._limit} ")
 
         sql.append(f"{self._sql_comment}")
         return (''.join(sql),params)
@@ -135,7 +148,13 @@ class FetchXmlParser:
         if 'type' in tree.attrib:
             self._sql_type=tree.attrib['type']
         else:
-            raise NameError(f"No Type in xml {self._fetch_xml}")
+            raise FetchXmlFormat(f"No Type in xml {self._fetch_xml}")
+
+        if 'limit' in tree.attrib:
+            self._limit=int(tree.attrib['limit'])
+
+        if 'offset' in tree.attrib:
+            self._limit_offset=int(tree.attrib['offset'])
 
         # create the table alias mapping
         for node in tree:
@@ -174,7 +193,7 @@ class FetchXmlParser:
 
         for x in not_allowed:
             if input.find(x)>-1:
-                raise NameError(f"Special Chars in String: {x}")
+                raise SpecialCharsInFetchXml(f"Special Chars in String: {x}")
             input=input.replace(x, "")
 
 
