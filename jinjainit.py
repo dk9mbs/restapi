@@ -88,8 +88,8 @@ def __execute_fetch_xml(context, fetch_xml):
     rs=DatabaseServices.exec(fetchparser, context, fetch_mode=0)
     return rs
 
-def __recordset_to_list(context, rs, fields):
-    return DatabaseServices.recordset_to_list(context, rs, fields)
+def __recordset_to_list(context, rs, fields, reverse=False):
+    return DatabaseServices.recordset_to_list(context, rs, fields, reverse)
 
 def init():
     JinjaEnvironment.register_template_function('datacomboview', __datacomboview)

@@ -87,7 +87,7 @@ class DatabaseServices:
         return rs
 
     @staticmethod
-    def recordset_to_list(context, rs, fields):
+    def recordset_to_list(context, rs, fields, reverse=False):
         result=dict()
         for field in fields:
             result[field]=[]
@@ -95,5 +95,9 @@ class DatabaseServices:
         for item in rs.get_result():
             for field in fields:
                 result[field].append(item[field])
+
+        if reverse==True:
+            for field in fields:
+                result[field].reverse()
 
         return result

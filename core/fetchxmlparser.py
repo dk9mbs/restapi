@@ -105,8 +105,9 @@ class FetchXmlParser:
         sql=[]
         row_count_option=""
 
-        if self._limit>0:
-            row_count_option=" SQL_CALC_FOUND_ROWS"
+        # Disable the folling lines. Because it is very very slow!
+        #if self._limit>0:
+        #    row_count_option=" SQL_CALC_FOUND_ROWS"
 
         sql.append(f"SELECT{row_count_option} {self._sql_select} FROM {self._sql_table} {self._sql_table_alias} {self._sql_table_join} ")
 
