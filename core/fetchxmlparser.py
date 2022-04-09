@@ -462,6 +462,9 @@ class FetchXmlParser:
                 elif operator == "lastXyears":
                     sql=f"{sql}{field}>=DATE_SUB(NOW(), INTERVAL %s year)"
                     self._sql_parameters_where.append(value)
+                elif operator == "olderThenXMinutes":
+                    sql=f"{sql}DATE_ADD({field}, INTERVAL %s minute)<NOW()"
+                    self._sql_parameters_where.append(value)
                 else:
                     sql=sql+field+" "+operator+" %s"
                     self._sql_parameters_where.append(value)
