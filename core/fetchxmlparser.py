@@ -328,14 +328,18 @@ class FetchXmlParser:
             if 'func' in field.attrib:
                 func=self._escape_string(field.attrib['func'])
 
+            name_complete=f"{table_alias}.{self._escape_string(field.attrib['name'])}"
+
             if 'grouping' in field.attrib:
                 if not group==[]:
                     group.append(",")
 
-                group.append(f"{table_alias}.{name}")
 
+                if func=="":
+                    group.append(f"{name_complete}")
+                else:
+                    group.append(f"{func}({name_complete})")
 
-            name_complete=f"{table_alias}.{self._escape_string(field.attrib['name'])}"
 
             # check if access allow or denied
             if not self._validate_field_permission(self._context, self._sql_type, table_alias, name):
@@ -446,6 +450,18 @@ class FetchXmlParser:
                     sql=sql+field+" IS NULL"
                 elif operator == "notnull":
                     sql=sql+field+" IS NOT NULL"
+                elif operator == "lastXhours":
+                    sql=f"{sql}{field}>=DATE_SUB(NOW(), INTERVAL %s hour)"
+                    self._sql_parameters_where.append(value)
+                elif operator == "lastXdays":
+                    sql=f"{sql}{field}>=DATE_SUB(NOW(), INTERVAL %s day)"
+                    self._sql_parameters_where.append(value)
+                elif operator == "lastXmonth":
+                    sql=f"{sql}{field}>=DATE_SUB(NOW(), INTERVAL %s month)"
+                    self._sql_parameters_where.append(value)
+                elif operator == "lastXyears":
+                    sql=f"{sql}{field}>=DATE_SUB(NOW(), INTERVAL %s year)"
+                    self._sql_parameters_where.append(value)
                 else:
                     sql=sql+field+" "+operator+" %s"
                     self._sql_parameters_where.append(value)
