@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS api_solution(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
+INSERT IGNORE INTO api_solution(id,name) VALUES (2,'customizing');
 
 
 CREATE TABLE IF NOT EXISTS api_table_field_type(
@@ -286,7 +287,11 @@ UPDATE api_portal SET template='<!DOCTYPE HTML5>
 <meta http-equiv="expires" content="5" />
 <meta name="Keywords" content="" >
 <meta name="Description" content="" >
+
 <title>Demo Portal</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 <body>
     <div id="content">
