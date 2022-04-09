@@ -453,6 +453,9 @@ class FetchXmlParser:
                 elif operator == "lastXhours":
                     sql=f"{sql}{field}>=DATE_SUB(NOW(), INTERVAL %s hour)"
                     self._sql_parameters_where.append(value)
+                elif operator == "lastXminutes":
+                    sql=f"{sql}{field}>=DATE_SUB(NOW(), INTERVAL %s minute)"
+                    self._sql_parameters_where.append(value)
                 elif operator == "lastXdays":
                     sql=f"{sql}{field}>=DATE_SUB(NOW(), INTERVAL %s day)"
                     self._sql_parameters_where.append(value)
