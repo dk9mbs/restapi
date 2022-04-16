@@ -2,7 +2,7 @@ import json
 import xml.etree.ElementTree as ET
 from core import log
 from core.exceptions import TableAliasNotFoundInFetchXml, FieldNotFoundInMetaData, MissingFieldPermisson, TableMetaDataNotFound, FetchXmlFormat
-from core.exceptions import SpecialCharsInFetchXml
+from core.exceptions import SpecialCharsInFetchXml, MissingArgumentInFetchXml
 
 logger=log.create_logger(__name__)
 
@@ -25,10 +25,12 @@ class FetchXmlParser:
         self._sql_comment=""
         self._sql_order=""
         self._sql_group_by=""
-        self._sql_paramaters_order=[]
         self._json_fields={} # for insert and update
         self._tables=[]
+        self._sql_paramaters_order=[]
         self._sql_parameters_where=[]
+        self._sql_parameters_select=[]
+        self._sql_parameters_groupby=[]
         self._table_aliases={}
         self._columns_desc=[]
         self._limit=0
@@ -45,10 +47,12 @@ class FetchXmlParser:
         self._sql_comment=""
         self._sql_order=""
         self._sql_group_by=""
-        self._sql_paramaters_order=[]
         self._json_fields={}
         self._tables=[]
+        self._sql_paramaters_order=[]
         self._sql_parameters_where=[]
+        self._sql_parameters_select=[]
+        self._sql_parameters_groupby=[]
         self._table_aliases={}
         self._columns_desc=[]
         self._limit=0
@@ -110,13 +114,15 @@ class FetchXmlParser:
         #    row_count_option=" SQL_CALC_FOUND_ROWS"
 
         sql.append(f"SELECT{row_count_option} {self._sql_select} FROM {self._sql_table} {self._sql_table_alias} {self._sql_table_join} ")
+        params=self._sql_parameters_select
 
         if self._sql_where != "":
             sql.append(f" WHERE {self._sql_where}")
-            params=self._sql_parameters_where
+            params=params+self._sql_parameters_where
 
         if self._sql_group_by != "":
             sql.append(f" GROUP BY {self._sql_group_by}")
+            params=params+self._sql_parameters_groupby
 
         if self._sql_order != "":
             sql.append(f" ORDER BY {self._sql_order}")
@@ -313,7 +319,6 @@ class FetchXmlParser:
                 sql.append(",")
             table_alias=""
             alias=""
-            func=""
 
             name=f"{self._escape_string(field.attrib['name'])}"
 
@@ -325,28 +330,36 @@ class FetchXmlParser:
             else:
                 table_alias=self._sql_table_alias #wird in parse gesetzt
 
-            if 'func' in field.attrib:
-                func=self._escape_string(field.attrib['func'])
-
             name_complete=f"{table_alias}.{self._escape_string(field.attrib['name'])}"
 
             if 'grouping' in field.attrib:
                 if not group==[]:
                     group.append(",")
 
+                group.append(self.__build_function("select", name_complete, field.attrib))
 
-                if func=="":
-                    group.append(f"{name_complete}")
+
+            if 'if_condition_field' in field.attrib and 'if_condition_value' in field.attrib:
+                if_table_alias=""
+                if_condition_field=self._escape_string(field.attrib['if_condition_field'])
+                if_condition_value=self._escape_string(field.attrib['if_condition_value'])
+
+                if 'if_table_alias' in field.attrib:
+                    if_table_alias=self._escape_string(f"{field.attrib['if_table_alias']}")
                 else:
-                    group.append(f"{func}({name_complete})")
+                    if_table_alias=self._sql_table_alias
+
+                if not self._validate_field_permission(self._context, self._sql_type, if_table_alias, if_condition_field):
+                    raise MissingFieldPermisson(f"Table:{table_alias} Field:{name}")
+
+                name_complete=f"case when {if_table_alias}.{if_condition_field} = '{if_condition_value}' then {name_complete} else NULL end"
 
 
             # check if access allow or denied
             if not self._validate_field_permission(self._context, self._sql_type, table_alias, name):
                 raise MissingFieldPermisson(f"Table:{table_alias} Field:{name}")
 
-            if not func == "":
-                name_complete=f"{func}({name_complete})"
+            name_complete=self.__build_function("groupby", name_complete, field.attrib)
 
             sql.append(f"{name_complete} {alias}")
             self._build_column_header(field)
@@ -355,6 +368,36 @@ class FetchXmlParser:
 
         if not group == []:
             self._sql_group_by=''.join(group)
+
+    """
+    Build an sql field with function
+    used in select and grouping section
+    scope: select or groupby
+    """
+    def __build_function(self,scope, field_def, attribute):
+        result=""
+        func=""
+        if 'func' in attribute:
+            func=self._escape_string(attribute['func']).upper()
+
+        if func=="":
+            result=f"{field_def}"
+        else:
+            if func=="DATE_FORMAT":
+                if not 'format' in attribute:
+                    raise MissingArgumentInFetchXml(f"Missing format string: {field_def} {func}")
+
+                result=f"{func}({field_def}, %s)"
+                if scope=='select':
+                    self._sql_parameters_select.append(attribute['format'])
+                elif scope=='groupby':
+                    self._sql_parameters_groupby.append(attribute['format'])
+
+            else:
+                result=f"{func}({field_def})"
+
+        return result
+
 
     def _build_column_header(self, field):
         name=self._escape_string(field.attrib['name'])
