@@ -30,3 +30,6 @@ class FetchXmlFormat(Exception):
 
 class SpecialCharsInFetchXml(Exception):
     pass
+
+class MissingArgumentInFetchXml(Exception):
+    pass
