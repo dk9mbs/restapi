@@ -307,7 +307,8 @@ class FetchXmlParser:
 
     """
     <select>
-        <field name="username" table_alias="u" alias="name" func="count" grouping="y"/>
+        <field if_condition_table_alias="" if_condition_field_field="" if_condition_value="" if_condition_func=""
+        name="username" table_alias="u" alias="name" func="count" grouping="y"/>
     </select>
     """
     def _build_select(self, node):
@@ -317,49 +318,55 @@ class FetchXmlParser:
         for field in node:
             if not sql==[]:
                 sql.append(",")
-            table_alias=""
+            table_alias=self._sql_table_alias #wird in parse gesetzt
             alias=""
+            func=""
 
             name=f"{self._escape_string(field.attrib['name'])}"
+
+            if 'func' in field.attrib:
+                func=self._escape_string(field.attrib['func']).upper()
 
             if 'alias' in field.attrib:
                 alias=self._escape_string(f"{field.attrib['alias']}")
 
             if 'table_alias' in field.attrib:
                 table_alias=self._escape_string(f"{field.attrib['table_alias']}")
-            else:
-                table_alias=self._sql_table_alias #wird in parse gesetzt
 
-            name_complete=f"{table_alias}.{self._escape_string(field.attrib['name'])}"
+            name_complete=f"{table_alias}.{name}"
 
             if 'grouping' in field.attrib:
                 if not group==[]:
                     group.append(",")
 
-                group.append(self.__build_function("select", name_complete, field.attrib))
+                group.append(self.__build_select_field_name(func, f"{table_alias}.{name}", field.attrib, self._sql_parameters_groupby))
 
 
             if 'if_condition_field' in field.attrib and 'if_condition_value' in field.attrib:
-                if_table_alias=""
+                if_condition_table_alias=self._sql_table_alias
+                if_condition_func=""
                 if_condition_field=self._escape_string(field.attrib['if_condition_field'])
                 if_condition_value=self._escape_string(field.attrib['if_condition_value'])
 
-                if 'if_table_alias' in field.attrib:
-                    if_table_alias=self._escape_string(f"{field.attrib['if_table_alias']}")
-                else:
-                    if_table_alias=self._sql_table_alias
+                if 'if_condition_func' in field.attrib:
+                    if_condition_func=self._excape_string(field.attrib['if_condition_func'])
 
-                if not self._validate_field_permission(self._context, self._sql_type, if_table_alias, if_condition_field):
+                if 'if_condition_table_alias' in field.attrib:
+                    if_condition_table_alias=self._escape_string(f"{field.attrib['if_condition_table_alias']}")
+
+                # check if access allow or denied
+                if not self._validate_field_permission(self._context, self._sql_type, if_condition_table_alias, if_condition_field):
                     raise MissingFieldPermisson(f"Table:{table_alias} Field:{name}")
 
-                name_complete=f"case when {if_table_alias}.{if_condition_field} = '{if_condition_value}' then {name_complete} else NULL end"
+                name_complete=f"case when {if_condition_table_alias}.{if_condition_field} = %s then {name_complete} else NULL end"
+                self._sql_parameters_select.append(if_condition_value)
 
 
             # check if access allow or denied
             if not self._validate_field_permission(self._context, self._sql_type, table_alias, name):
                 raise MissingFieldPermisson(f"Table:{table_alias} Field:{name}")
 
-            name_complete=self.__build_function("groupby", name_complete, field.attrib)
+            name_complete=self.__build_select_field_name(func, name_complete, field.attrib, self._sql_parameters_select)
 
             sql.append(f"{name_complete} {alias}")
             self._build_column_header(field)
@@ -372,29 +379,22 @@ class FetchXmlParser:
     """
     Build an sql field with function
     used in select and grouping section
-    scope: select or groupby
     """
-    def __build_function(self,scope, field_def, attribute):
+    def __build_select_field_name(self,func, name_complete, attribute, sql_params):
         result=""
-        func=""
-        if 'func' in attribute:
-            func=self._escape_string(attribute['func']).upper()
 
-        if func=="":
-            result=f"{field_def}"
+        if func=="" or func==None:
+            result=f"{name_complete}"
         else:
             if func=="DATE_FORMAT":
                 if not 'format' in attribute:
-                    raise MissingArgumentInFetchXml(f"Missing format string: {field_def} {func}")
+                    raise MissingArgumentInFetchXml(f"Missing format string: {name_complete} {func}")
 
-                result=f"{func}({field_def}, %s)"
-                if scope=='select':
-                    self._sql_parameters_select.append(attribute['format'])
-                elif scope=='groupby':
-                    self._sql_parameters_groupby.append(attribute['format'])
+                result=f"{func}({name_complete}, %s)"
+                sql_params.append(attribute['format'])
 
             else:
-                result=f"{func}({field_def})"
+                result=f"{func}({name_complete})"
 
         return result
 
