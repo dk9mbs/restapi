@@ -321,6 +321,7 @@ class FetchXmlParser:
             table_alias=self._sql_table_alias #wird in parse gesetzt
             alias=""
             func=""
+            locale_parameters=[]
 
             name=f"{self._escape_string(field.attrib['name'])}"
 
@@ -339,7 +340,7 @@ class FetchXmlParser:
                 if not group==[]:
                     group.append(",")
 
-                group.append(self.__build_select_field_name(func, f"{table_alias}.{name}", field.attrib, self._sql_parameters_groupby))
+                group.append(self.__build_select_field_name(func, f"{table_alias}.{name}", field.attrib,locale_parameters, self._sql_parameters_groupby))
 
 
             if 'if_condition_field' in field.attrib and 'if_condition_value' in field.attrib:
@@ -359,14 +360,15 @@ class FetchXmlParser:
                     raise MissingFieldPermisson(f"Table:{table_alias} Field:{name}")
 
                 name_complete=f"case when {if_condition_table_alias}.{if_condition_field} = %s then {name_complete} else NULL end"
-                self._sql_parameters_select.append(if_condition_value)
+                #self._sql_parameters_select.append(if_condition_value)
+                locale_parameters.append(if_condition_value)
 
 
             # check if access allow or denied
             if not self._validate_field_permission(self._context, self._sql_type, table_alias, name):
                 raise MissingFieldPermisson(f"Table:{table_alias} Field:{name}")
 
-            name_complete=self.__build_select_field_name(func, name_complete, field.attrib, self._sql_parameters_select)
+            name_complete=self.__build_select_field_name(func, name_complete, field.attrib,locale_parameters, self._sql_parameters_select)
 
             sql.append(f"{name_complete} {alias}")
             self._build_column_header(field)
@@ -380,7 +382,7 @@ class FetchXmlParser:
     Build an sql field with function
     used in select and grouping section
     """
-    def __build_select_field_name(self,func, name_complete, attribute, sql_params):
+    def __build_select_field_name(self,func, name_complete, attribute,locale_params, sql_params):
         result=""
 
         if func=="" or func==None:
@@ -391,10 +393,27 @@ class FetchXmlParser:
                     raise MissingArgumentInFetchXml(f"Missing format string: {name_complete} {func}")
 
                 result=f"{func}({name_complete}, %s)"
-                sql_params.append(attribute['format'])
+                locale_params.append(attribute['format'])
+            elif func=="CONCAT":
+                before=""
+                after=""
+                if 'string_before' in attribute:
+                    before=attribute['string_before']
+                if 'string_after' in attribute:
+                    after=attribute['string_after']
+
+                result=f"{func}(%s, {name_complete}, %s)"
+                locale_params.insert(0,f"{before}")
+                locale_params.append(f"{after}")
 
             else:
                 result=f"{func}({name_complete})"
+
+        for item in locale_params:
+            sql_params.append(item)
+
+        for i in range(len(locale_params) - 1, -1, -1):
+            del locale_params[i]
 
         return result
 

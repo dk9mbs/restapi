@@ -66,6 +66,11 @@ class DatabaseServices:
         logger.info(sql)
         logger.info(paras)
 
+        tmp=sql
+        for item in paras:
+            tmp=tmp.replace("%s", f"'{item}'", 1)
+        logger.info(tmp)
+
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
 
@@ -87,14 +92,25 @@ class DatabaseServices:
         return rs
 
     @staticmethod
-    def recordset_to_list(context, rs, fields, reverse=False):
+    def recordset_to_list(context, rs, fields, reverse=False, default_value=0):
         result=dict()
+        last_value=dict()
+
         for field in fields:
             result[field]=[]
 
         for item in rs.get_result():
             for field in fields:
-                result[field].append(item[field])
+                value=item[field]
+                if value==None:
+                    if field in last_value and not last_value==None:
+                        value=last_value[field]
+                    else:
+                        value=default_value
+                else:
+                    last_value[field]=value
+
+                result[field].append(value)
 
         if reverse==True:
             for field in fields:
