@@ -16,16 +16,6 @@ class TestFetchxmlParser(unittest.TestCase):
     def test_exec(self):
         xml=f"""
         <restapi type="select">
-            <table name="dummy" alias="d"/>
-            <select>
-                <field name="id" func="COUNT"/>
-                <field if_condition_field="id" if_condition_value="1" name="name" grouping="n"/>
-            </select>
-        </restapi>
-        """
-
-        xml=f"""
-        <restapi type="select">
             <table name="iot_sensor_data" alias="d"/>
             <select>
                 <field alias="created_on" name="created_on" func="date_format" format="%Y-%m-%d %H:00:00" grouping="y"/>
@@ -38,8 +28,6 @@ class TestFetchxmlParser(unittest.TestCase):
         print(xml)
         fetch=FetchXmlParser(xml, self.context)
         dummy=DatabaseServices.exec(fetch,self.context, fetch_mode=1)
-        #self.assertIsNone(dummy.get_result())
-        print(dummy)
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

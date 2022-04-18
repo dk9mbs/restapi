@@ -15,21 +15,22 @@ class TestFetchxmlParser(unittest.TestCase):
 
     def test_exec(self):
         xml=f"""
-        <restapi type="select" limit="100" offset="0">
-            <table name="iot_sensor_data" alias="u"/>
+        <restapi type="select">
+            <table name="dummy" alias="d"/>
             <select>
-                <field name="sensor_value" table_alias="u"/>
-                <field name="sensor_id" table_alias="u"/>
+                <field name="name" func="concat" string2="hallo" table_alias="d" 
+                    if_condition_field="id" if_condition_value="99" string_before="before-" string_after="-after"
+                    grouping="y" alias="name_with_pre_and_post" />
             </select>
-            <orderby>
-                <field name="id" alias="u" sort="DESC"/>
-            </orderby>
+            <filter type="or">
+                <condition field="id" value="99" alias="d"/>
+            </filter>
         </restapi>
         """
         fetch=FetchXmlParser(xml, self.context)
-        rs=DatabaseServices.exec(fetch,self.context, fetch_mode=0)
-        list=DatabaseServices.recordset_to_list(self.context, rs, {"sensor_value", "sensor_id"})
-        self.assertIsNotNone(rs.get_result())
+        rs=DatabaseServices.exec(fetch,self.context, fetch_mode=1)
+        #self.assertIsNone(dummy.get_result())
+        self.assertEqual(rs.get_result()['name_with_pre_and_post'], "before-UPDATE-after")
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
