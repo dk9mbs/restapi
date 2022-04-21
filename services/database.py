@@ -94,26 +94,52 @@ class DatabaseServices:
     @staticmethod
     def recordset_to_list(context, rs, fields, reverse=False, default_value=0):
         result=dict()
-        last_value=dict()
 
         for field in fields:
             result[field]=[]
 
         for item in rs.get_result():
             for field in fields:
-                value=item[field]
-                if value==None:
-                    if field in last_value and not last_value==None:
-                        value=last_value[field]
-                    else:
-                        value=default_value
-                else:
-                    last_value[field]=value
+                result[field].append(item[field])
 
-                result[field].append(value)
+        for field in fields:
+            if not field=="created_on" and not field=="chart_label":
+                DatabaseServices.__fill_empty_list_items(result[field])
+
 
         if reverse==True:
             for field in fields:
                 result[field].reverse()
 
+
         return result
+
+    @staticmethod
+    def __fill_empty_list_items(list, default=0):
+        min=None;
+        max=None;
+        avg=0;
+
+        for item in list:
+            if min==None and not item==None:
+                min=float(item)
+            if max==None and not item==None:
+                max=float(item)
+
+            if not item==None and not min==None:
+                if float(item)<float(min):
+                    min=item
+
+            if not item==None and not max==None:
+                if float(item)>float(max):
+                    max=item
+
+        if min==None and max==None:
+            avg=0
+        else:
+            avg=float((float(min)+float(max))/2)
+
+        for i in range(len(list)):
+            if list[i]==None:
+                list[i]=avg
+
