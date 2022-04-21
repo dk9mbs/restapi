@@ -9,7 +9,7 @@ from config import CONFIG
 from core.appinfo import AppInfo
 from core import log
 import jinjainit
-
+from core.plugin import Plugin
 
 
 AppInfo.init(__name__, CONFIG['default'])
@@ -42,6 +42,14 @@ import ui.data.dataforminsert
 logger=log.create_logger(__name__)
 
 app=AppInfo.get_app()
+
+system=AppInfo.system_credentials()
+session_id=AppInfo.login(system['username'],system['password'])
+context=AppInfo.create_context(session_id, auto_logoff=True)
+params={}
+handler=Plugin(context, "$app_start","execute")
+handler.execute('before', params)
+
 
 @app.before_request
 def before_request():
@@ -100,8 +108,6 @@ AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>
 AppInfo.get_api().add_resource(api.form.entityupdate.get_endpoint(), "/v1.0/form/<table>/<id>", methods=['POST'])
 AppInfo.get_api().add_resource(api.form.entityinsert.get_endpoint(), "/v1.0/form/<table>", methods=['POST'])
 
-
-
 # get the dataform form edit records
 AppInfo.get_api("ui").add_resource(ui.data.dataformupdate.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
 AppInfo.get_api("ui").add_resource(ui.data.dataforminsert.get_endpoint(), "/v1.0/data/<table>", methods=['GET'])
@@ -112,7 +118,6 @@ AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/d
 #
 AppInfo.get_api("ui").add_resource(ui.login.get_endpoint(), "/login", methods=['GET'])
 AppInfo.get_api("ui").add_resource(ui.uihome.get_endpoint(), "/home", methods=['GET'])
-
 #
 # endpoint for static and dynamic portal content
 #
@@ -121,6 +126,12 @@ AppInfo.get_api("portal").add_resource(ui.core.portal.get_endpoint(), "/VPages/<
 AppInfo.get_api("portal").add_resource(ui.core.portal.get_endpoint(), "/<path:path>")
 
 logger.info(AppInfo.get_app().url_map)
+
+params={}
+handler=Plugin(context, "$app_start","execute")
+handler.execute('after', params)
+AppInfo.logoff(context)
+context.close()
 
 @app.teardown_request
 def teardown_request(error=None):
