@@ -28,7 +28,7 @@ class TestFetchxmlParser(unittest.TestCase):
         """
         fetch=FetchXmlParser(xml, self.context)
         rs=DatabaseServices.exec(fetch,self.context, fetch_mode=0)
-        list=DatabaseServices.recordset_to_list(self.context, rs, {"sensor_value", "sensor_id"})
+        list=DatabaseServices.recordset_to_list(self.context, rs, ["sensor_value", "sensor_id"])
         self.assertIsNotNone(rs.get_result())
 
     def tearDown(self):

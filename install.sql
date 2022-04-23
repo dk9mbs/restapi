@@ -246,8 +246,34 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type)
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (3,'plugin_test','dummy','update','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (4,'plugin_test','dummy','update','after');
 
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL default '0' COMMENT '-1: run async 0=not async';
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS config text NULL COMMENT 'locale event handler config';
 
 
+CREATE TABLE IF NOT EXISTS api_process_log_status(
+    id int NOT NULL,
+    name varchar(100) NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_process_log_status(id,name) VALUES (0,'Pending');
+INSERT IGNORE INTO api_process_log_status(id,name) VALUES (10,'Success');
+INSERT IGNORE INTO api_process_log_status(id,name) VALUES (20,'Error');
+INSERT IGNORE INTO api_process_log_status(id,name) VALUES (30,'Timeout');
+
+
+CREATE TABLE IF NOT EXISTS api_process_log (
+    id varchar(100) NOT NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    status_id int NOT NULL DEFAULT '0'  COMMENT '0=pending 10=ok 20=Error 30=Timeout',
+    error_text text NULL COMMENT 'in case of an exception',
+    response_code int NULL COMMENT 'HTTP Code',
+    request_msg text NULL COMMENT 'HTTP Request body',
+    response_msg text NULL COMMENT '',
+    response_on datetime NULL COMMENT 'Response on',
+    PRIMARY KEY(id),
+    FOREIGN KEY(status_id) REFERENCES api_process_log_status(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS api_audit_log(
     id INT NOT NULL AUTO_INCREMENT,
