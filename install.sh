@@ -7,7 +7,20 @@
 # by example dev, test or prod
 #
 INSTANCE_ID=$(python $BASEDIR/cfgreader.py instance id)
-echo "$INSTANCE_ID"
+
+MYSQL_USER=$(python $BASEDIR/cfgreader.py mysql user)
+MYSQL_PASSWORD=$(python $BASEDIR/cfgreader.py mysql password)
+MYSQL_DATABASE=$(python $BASEDIR/cfgreader.py mysql database)
+MYSQL_HOST=$(python $BASEDIR/cfgreader.py mysql host)
+
+echo "Instance         $INSTANCE_ID"
+echo "mysql User       $MYSQL_USER"
+echo "mysql password   *******"
+echo "mysql databse    $MYSQL_DATABASE"
+echo "mysql host       $MYSQL_HOST"
+
+mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install.sql
+echo "$?"
 
 mkdir -p $BASEDIR/plugins
 mkdir -p $BASEDIR/3thparty

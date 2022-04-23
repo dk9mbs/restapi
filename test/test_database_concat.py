@@ -15,6 +15,20 @@ class TestFetchxmlParser(unittest.TestCase):
 
     def test_exec(self):
         xml=f"""
+        <restapi type="update">
+            <table name="dummy"/>
+            <filter>
+                <condition field="id" value="99"/>
+            </filter>
+            <fields>
+                <field name="name" value="TEST"/>
+            </fields>
+        </restapi>
+        """
+        fetch=FetchXmlParser(xml, self.context)
+        DatabaseServices.exec(fetch,self.context)
+
+        xml=f"""
         <restapi type="select">
             <table name="dummy" alias="d"/>
             <select>
@@ -30,7 +44,7 @@ class TestFetchxmlParser(unittest.TestCase):
         fetch=FetchXmlParser(xml, self.context)
         rs=DatabaseServices.exec(fetch,self.context, fetch_mode=1)
         #self.assertIsNone(dummy.get_result())
-        self.assertEqual(rs.get_result()['name_with_pre_and_post'], "before-UPDATE-after")
+        self.assertEqual(rs.get_result()['name_with_pre_and_post'], "before-TEST-after")
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

@@ -103,7 +103,7 @@ class DatabaseServices:
                 result[field].append(item[field])
 
         for field in fields:
-            if not field=="created_on" and not field=="chart_label":
+            if DatabaseServices.__is_numeric_list(result[field]):
                 DatabaseServices.__fill_empty_list_items(result[field])
 
 
@@ -113,6 +113,14 @@ class DatabaseServices:
 
 
         return result
+
+    @staticmethod
+    def __is_numeric_list(list):
+        for item in list:
+            if not str(item).isnumeric():
+                return False
+
+        return True
 
     @staticmethod
     def __fill_empty_list_items(list, default=0):
