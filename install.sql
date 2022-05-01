@@ -113,6 +113,9 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (22,'api_portal_host', 'api_portal_host','id','int','host',0);
 
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (23,'api_process_log', 'api_process_log','id','string','id',0);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -247,6 +250,7 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type)
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (4,'plugin_test','dummy','update','after');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (5,'api_http_endpoint','dummy','insert','after',-1);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (6,'api_http_endpoint','dummy','update','after',-1);
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (7,'api_clear_log','$timer_every_ten_minutes','execute','after',0);
 
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL default '0' COMMENT '-1: run async 0=not async';
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS config text NULL COMMENT 'locale event handler config';
@@ -263,9 +267,10 @@ INSERT IGNORE INTO api_process_log_status(id,name) VALUES (10,'Success');
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (20,'Error');
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (30,'Timeout');
 
+DROP TABLE IF EXISTS api_process_log;
 
 CREATE TABLE IF NOT EXISTS api_process_log (
-    id varchar(100) NOT NULL,
+    id varchar(36) NOT NULL,
     created_on datetime NOT NULL DEFAULT current_timestamp,
     status_id int NOT NULL DEFAULT '0'  COMMENT '0=pending 10=ok 20=Error 30=Timeout',
     error_text text NULL COMMENT 'in case of an exception',
@@ -273,8 +278,12 @@ CREATE TABLE IF NOT EXISTS api_process_log (
     request_msg text NULL COMMENT 'HTTP Request body',
     response_msg text NULL COMMENT '',
     response_on datetime NULL COMMENT 'Response on',
+    config text NULL COMMENT 'Locale config from api_event_handler',
+    event_handler_id int NOT NULL COMMENT 'Event handler id',
+    run_async smallint NOT NULL DEFAULT '0',
     PRIMARY KEY(id),
-    FOREIGN KEY(status_id) REFERENCES api_process_log_status(id)
+    FOREIGN KEY(status_id) REFERENCES api_process_log_status(id),
+    FOREIGN KEY(event_handler_id) REFERENCES api_event_handler(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS api_audit_log(

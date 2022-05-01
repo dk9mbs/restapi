@@ -17,10 +17,10 @@ class CustomFlask(Flask):
 
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
         if rule=='/' and endpoint.endswith('root'):
-            logger.info(f"Rule {rule} for endpoint {endpoint} not accepted!")
+            #logger.info(f"Rule {rule} for endpoint {endpoint} not accepted!")
             return
 
-        logger.info(f"Add rule {rule} for endpoint {endpoint}")
+        #logger.info(f"Add rule {rule} for endpoint {endpoint}")
         return super(CustomFlask, self).add_url_rule(rule, endpoint, view_func, **options)
 
 

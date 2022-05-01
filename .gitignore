@@ -4,6 +4,7 @@ config.py
 *.pyo
 plugins/*
 !plugins/api_http_endpoint.py
+!plugins/api_clear_log.py
 3thparty
 wwwroot/*
 !wwwroot/index.htm
