@@ -14,7 +14,15 @@ action:
 -output
 
 event:
-table change:
+table change or create:
 -data : in data
+
+app on statrt: 
+params: {}
+
+timer:
+params: {}
+
+plugin_context:
 -response :outdata
 -config : config from api_event_handler
