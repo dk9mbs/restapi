@@ -9,8 +9,10 @@ logger=log.create_logger(__name__)
 
 def execute(context, plugin_context, params):
     now=datetime.datetime.now()
-    timeout=90
-    url="http://localhost:1880/test/$publisher/$trigger"
+    config=plugin_context['config']
+
+    url=__get_config_value(config, "endpoint", "http://localhost:1880/restapi/$publisher/$trigger")
+    timeout=int(__get_config_value(config, "timeout", "90"))
 
     if 'data' in params:
         payload=params['data']
@@ -20,8 +22,7 @@ def execute(context, plugin_context, params):
         payload={}
 
     payload={"payload": payload,
-        "plugin_context": plugin_context,
-        "session_id": context.get_session_id()}
+        "plugin_context": plugin_context}
 
     url=url.replace("$publisher", plugin_context['publisher'])
     url=url.replace("$trigger", plugin_context['trigger'])
@@ -29,6 +30,11 @@ def execute(context, plugin_context, params):
 
     r = requests.post(url, json=payload, timeout=timeout)
 
-    params['response']['status_code']=r.status_code
-    params['response']['payload']=r.text
+    plugin_context['response']['status_code']=r.status_code
+    plugin_context['response']['payload']=r.text
 
+def __get_config_value(config, name, default):
+    if name in config:
+        return config[name]
+
+    return default
