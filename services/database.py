@@ -28,7 +28,7 @@ class DatabaseServices:
                     #raise NameError (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
                     raise RestApiNotAllowed (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
 
-        logger.info(f"Try to read table metadata: {command_builder.get_main_table()}")
+        #logger.info(f"Try to read table metadata: {command_builder.get_main_table()}")
         meta=read_table_meta(context, table_name=command_builder.get_main_table())
         id_field_name=meta['id_field_name']
         id_field_type=meta['id_field_type']
@@ -41,10 +41,8 @@ class DatabaseServices:
                 cursor.execute(sql, paras)
                 rsold=Recordset(cursor)
                 rsold.read(0)
-                #id_field_name=meta['id_field_name']
-                #id_field_type=meta['id_field_type']
 
-                logger.info(rsold.get_result())
+                #logger.info(rsold.get_result())
                 if rsold.get_result()!=None:
                     for rec in rsold.get_result():
                         id=rec[id_field_name]
@@ -55,7 +53,7 @@ class DatabaseServices:
                                 command_builder.get_sql_fields()[k]['old_value']=old_value
                                 AuditLog.log(context,command_builder.get_sql_type(),id,command_builder.get_main_table(),k,old_value,value)
 
-                        logger.info(command_builder.get_sql_fields())
+                        #logger.info(command_builder.get_sql_fields())
 
         params={"data": command_builder.get_sql_fields()}
         handler=Plugin(context, command_builder.get_main_table(),command_builder.get_sql_type())
@@ -63,16 +61,17 @@ class DatabaseServices:
 
         sql, paras =command_builder.get_sql()
 
-        logger.info(sql)
-        logger.info(paras)
+        #logger.info(sql)
+        #logger.info(paras)
 
         tmp=sql
         for item in paras:
             tmp=tmp.replace("%s", f"'{item}'", 1)
-        logger.info(tmp)
+        #logger.info(tmp)
 
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
+        inserted_id=context.get_connection().insert_id()
 
         handler.execute('after', params)
 
@@ -85,7 +84,7 @@ class DatabaseServices:
 
         rs.get_columns()
         if command_builder.get_sql_type().upper() == "INSERT":
-            if context.get_connection().insert_id()==0 or context.get_connection().insert_id()==None:
+            if inserted_id==0 or inserted_id==None:
                 rs.set_inserted_id(command_builder.get_sql_fields()[id_field_name]['value'])
             else:
                 rs.set_inserted_id(context.get_connection().insert_id())
