@@ -2,7 +2,7 @@ import json
 import xml.etree.ElementTree as ET
 from core import log
 from core.exceptions import TableAliasNotFoundInFetchXml, FieldNotFoundInMetaData, MissingFieldPermisson, TableMetaDataNotFound, FetchXmlFormat
-from core.exceptions import SpecialCharsInFetchXml, MissingArgumentInFetchXml
+from core.exceptions import SpecialCharsInFetchXml, MissingArgumentInFetchXml, OperatorNotAllowedInFetchXml
 
 logger=log.create_logger(__name__)
 
@@ -495,7 +495,7 @@ class FetchXmlParser:
                     field="%s.%s" % ( self._escape_string(item.attrib['alias'],"alias"), field)
 
                 if 'operator' in item.attrib:
-                    operator=item.attrib['operator']
+                    operator=item.attrib['operator'].strip()
 
                 if not sql=="":
                     sql=sql+(" %s " % op)
@@ -533,9 +533,31 @@ class FetchXmlParser:
                 elif operator == "olderThenXHours":
                     sql=f"{sql}DATE_ADD({field}, INTERVAL %s hour)<NOW()"
                     self._sql_parameters_where.append(value)
-                else:
-                    sql=sql+field+" "+operator+" %s"
+                elif operator == "=":
+                    sql=f"{sql}{field}=%s"
                     self._sql_parameters_where.append(value)
+                elif operator == ">=":
+                    sql=f"{sql}{field}>=%s"
+                    self._sql_parameters_where.append(value)
+                elif operator == ">=":
+                    sql=f"{sql}{field}<=%s"
+                    self._sql_parameters_where.append(value)
+                elif operator == "like":
+                    sql=f"{sql}{field} like %s"
+                    self._sql_parameters_where.append(value)
+                elif operator == "startsWith":
+                    sql=f"{sql}{field} like %s"
+                    self._sql_parameters_where.append(f"{value}%")
+                elif operator == "endsWith":
+                    sql=f"{sql}{field} like %s"
+                    self._sql_parameters_where.append(f"%{value}")
+                elif operator == "contains":
+                    sql=f"{sql}{field} like %s"
+                    self._sql_parameters_where.append(f"%{value}%")
+                else:
+                    raise OperatorNotAllowedInFetchXml(operator)
+                    #sql=sql+field+" "+operator+" %s"
+                    #self._sql_parameters_where.append(value)
 
         for item in node:
             if item.tag=="filter":

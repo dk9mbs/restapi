@@ -36,6 +36,21 @@
         {% endcall %}
     {% endcall %}
 
+  <script type="text/javascript" src="//js.nicedit.com/nicEdit-latest.js"></script> 
+  <script type="text/javascript">
+        controls=document.getElementsByTagName("textarea");
+        for(var x=0;x<controls.length;x++) {
+            if (controls[x].id=='content') {
+                edit=new nicEditor({fullPanel : true});
+                nicEditors.editors.push(edit.panelInstance(controls[x]));
+
+                edit.addEvent('blur', function() {
+                    this.nicInstances[0].saveContent();
+                });
+            }
+        }
+  </script>
+
 
     {% endcall %}
 <!--

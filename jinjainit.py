@@ -9,6 +9,7 @@ from services.database import DatabaseServices
 from services.fetchxml import build_fetchxml_by_alias
 from ui.core import httphelper
 from core import log
+from core.jsontools import merge
 
 logger=log.create_logger(__name__)
 #
@@ -57,8 +58,16 @@ def __build_query_string(context, **kwargs):
 def __datacomboview(table_alias, viewname, query):
     context=g.context
     table_meta=read_table_meta(context,alias=table_alias)
-    view_meta=read_table_view_meta(g.context, table_meta['id'], viewname, 'SELECTVIEW')
-    fetchparser=FetchXmlParser(str(view_meta['fetch_xml']).replace('$$query$$',query), context)
+    fetch_xml=f"""
+    <restapi type="select">
+        <table name="{ table_meta['alias'] }" alias="a"/>
+        <select>
+            <field name="{ table_meta['id_field_name'] }" table_alias="a" alias="id"/>
+            <field name="{ table_meta['desc_field_name'] }" table_alias="a" alias="name"/>
+        </select>
+    </restapi>
+    """
+    fetchparser=FetchXmlParser(fetch_xml, context)
     rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
     return rs.get_result()
 
@@ -91,6 +100,23 @@ def __execute_fetch_xml(context, fetch_xml):
 def __recordset_to_list(context, rs, fields, reverse=False):
     return DatabaseServices.recordset_to_list(context, rs, fields, reverse)
 
+def __merge_json(json1, json2):
+    return merge(json1,json2)
+
+def __log_info(text):
+    logger.info(text)
+
+# Filter
+def __filter_from_json(value):
+    import json
+    return json.loads(value)
+
+def __filter_value_from_json(json, name, default=None):
+    if name in json:
+        return json[name]
+
+    return default
+
 def init():
     JinjaEnvironment.register_template_function('datacomboview', __datacomboview)
     JinjaEnvironment.register_template_function('current_time', __get_current_time)
@@ -100,4 +126,10 @@ def init():
     JinjaEnvironment.register_template_function('image_by_path', __image_by_path)
     JinjaEnvironment.register_template_function('dataquery', __execute_fetch_xml)
     JinjaEnvironment.register_template_function('recordset_to_list', __recordset_to_list)
+    JinjaEnvironment.register_template_function('merge_json', __merge_json)
+    JinjaEnvironment.register_template_function('log_info', __log_info)
+
+    JinjaEnvironment.register_filter_function('from_json', __filter_from_json)
+    JinjaEnvironment.register_filter_function('value_from_json', __filter_value_from_json)
+
 

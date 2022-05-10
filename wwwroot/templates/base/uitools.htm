@@ -14,7 +14,11 @@
     {% endif %}
 
     <div class="col-sm-{{ col }}">
-      <input {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
+        {% if type=='checkbox' %}
+            <input type="checkbox" class="form-check-input" id="{{ name }}" name="{{ name }}" value="1">
+        {% else %}      
+            <input {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
+        {% endif %}
     </div>
 
     {{ caller() }}
@@ -109,3 +113,41 @@
 {% endmacro %}
 
 
+
+{% macro input_nicedit(name, label='', placeholder='', value='', type='text', size=20, disabled=False) -%}
+    {% if disabled %}
+        {% set show="disabled" %}
+    {% else %}
+        {% set show="" %}
+    {% endif %}
+        
+
+    {% if label!='' %}
+        <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+        {% set col=10 %}
+    {% else %}
+        {% set col=12 %}
+    {% endif %}
+
+    <div class="col-sm-{{ col }}">
+      <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}">{{ value }}</textarea>
+    </div>
+
+    <!-- Enable nic-Edit -->
+    <script type="text/javascript">
+    controls=document.getElementsByTagName("textarea");
+    for(var x=0;x<controls.length;x++) {
+        if (controls[x].id=='{{ name }}') {
+            edit=new nicEditor({fullPanel : true});
+            nicEditors.editors.push(edit.panelInstance(controls[x]));
+
+            edit.addEvent('blur', function() {
+                this.nicInstances[0].saveContent();
+            });
+        }
+    }
+    </script>
+    <!-- end of enbale nicEdit -->
+
+    {{ caller() }}
+{%- endmacro %}

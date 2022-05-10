@@ -33,3 +33,6 @@ class SpecialCharsInFetchXml(Exception):
 
 class MissingArgumentInFetchXml(Exception):
     pass
+
+class OperatorNotAllowedInFetchXml(Exception):
+    pass

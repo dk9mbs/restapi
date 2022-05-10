@@ -16,22 +16,79 @@ INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
 INSERT IGNORE INTO api_solution(id,name) VALUES (2,'customizing');
 
 
+/* controls */
+CREATE TABLE IF NOT EXISTS api_table_field_control(
+    id int NOT NULL,
+    name varchar(50) NOT NULL,
+    control varchar(250) NOT NULL DEFAULT 'INPUT',
+    control_config text NOT NULL DEFAULT '{}',
+    PRIMARY KEY(id),
+    UNIQUE KEY(name)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (1,'Input','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (2,'Dropdown','SELECT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (3,'Date','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (4,'Time','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (5,'DateTime (do not use)','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (6,'Checkbox','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (7,'Button','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (8,'Color','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (9,'Datetime (local)','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (10,'Email','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (11,'Password','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (12,'URL','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (13,'Monat','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (14,'Number','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (16,'Telephone','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (17,'Week','INPUT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (18,'Multiline','TEXTAREA');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (100,'nicEdit','NIC-EDIT');
+INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (101,'ace Edit','ACE-EDIT');
+
+UPDATE api_table_field_control SET control_config='{"type": "text"}' WHERE id=1;
+UPDATE api_table_field_control SET control_config='{}' WHERE id=2;
+UPDATE api_table_field_control SET control_config='{"type": "date"}' WHERE id=3;
+UPDATE api_table_field_control SET control_config='{"type": "time"}' WHERE id=4;
+UPDATE api_table_field_control SET control_config='{"type": "datetime"}' WHERE id=5;
+UPDATE api_table_field_control SET control_config='{"type": "checkbox"}' WHERE id=6;
+UPDATE api_table_field_control SET control_config='{"type": "button"}' WHERE id=7;
+UPDATE api_table_field_control SET control_config='{"type": "color"}' WHERE id=8;
+UPDATE api_table_field_control SET control_config='{"type": "datetime-local"}' WHERE id=9;
+UPDATE api_table_field_control SET control_config='{"type": "email"}' WHERE id=10;
+UPDATE api_table_field_control SET control_config='{"type": "password"}' WHERE id=11;
+UPDATE api_table_field_control SET control_config='{"type": "url"}' WHERE id=12;
+UPDATE api_table_field_control SET control_config='{"type": "month"}' WHERE id=13;
+UPDATE api_table_field_control SET control_config='{"type": "number"}' WHERE id=14;
+UPDATE api_table_field_control SET control_config='{"type": "tel"}' WHERE id=16;
+UPDATE api_table_field_control SET control_config='{"type": "week"}' WHERE id=17;
+UPDATE api_table_field_control SET control_config='{}' WHERE id=18;
+UPDATE api_table_field_control SET control_config='{}' WHERE id=100;
+UPDATE api_table_field_control SET control_config='{}' WHERE id=101;
+
 CREATE TABLE IF NOT EXISTS api_table_field_type(
     id varchar(50) NOT NULL,
     name varchar(50) NOT NULL,
+    control_id int NOT NULL DEFAULT '0' COMMENT 'Default control id for the ui',
+    FOREIGN KEY (control_id) REFERENCES api_table_field_control(id),
     PRIMARY KEY(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('default','Default');
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('string','String');
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('int','Int');
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('datetime','DateTime');
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('date','Date');
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('time','Time');
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('decimal','Decimal');
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('timestamp','Timestamp');
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('multiline','String (multiline)');
-INSERT IGNORE INTO api_table_field_type(id, name) VALUES ('boolean','Boolean');
+ALTER TABLE api_table_field_type ADD COLUMN IF NOT EXISTS control_id int NOT NULL DEFAULT '0' COMMENT '';
+ALTER TABLE api_table_field_type ADD CONSTRAINT FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control (id);
+
+
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('default','Default',1) ON DUPLICATE KEY UPDATE control_id=1;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('string','String',1) ON DUPLICATE KEY UPDATE control_id=1;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('int','Int',14) ON DUPLICATE KEY UPDATE control_id=14;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('datetime','DateTime',9) ON DUPLICATE KEY UPDATE control_id=9;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('date','Date',3) ON DUPLICATE KEY UPDATE control_id=3;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('time','Time',4) ON DUPLICATE KEY UPDATE control_id=4;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('decimal','Decimal',14) ON DUPLICATE KEY UPDATE control_id=14;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('timestamp','Timestamp',9) ON DUPLICATE KEY UPDATE control_id=9;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('multiline','String (multiline)',100) ON DUPLICATE KEY UPDATE control_id=100;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('boolean','Boolean',6) ON DUPLICATE KEY UPDATE control_id=6;
+INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('lookup','Lookup',2) ON DUPLICATE KEY UPDATE control_id=2;
 
 
 CREATE TABLE IF NOT EXISTS api_table (
@@ -66,7 +123,7 @@ INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,de
     VALUES (5,'api_group_permission','api_group_permission','id','int','group_id',-1);
 
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (7,'api_session', 'api_session','id','int','User_id',-1);
+    VALUES (7,'api_session', 'api_session','id','int','user_id',-1);
 
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (8,'api_portal', 'api_portal','id','string','name',-1);
@@ -116,6 +173,12 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (23,'api_process_log', 'api_process_log','id','string','id',0);
 
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (24,'api_table_field_control', 'api_table_field_control','id','int','name',0);
+
+INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (25,'api_solution', 'api_solution','id','int','name',0);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -135,12 +198,21 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     allow_null smallint NOT NULL DEFAULT '0',
     default_value varchar(250) NULL,
     referenced_table_name varchar(250) NULL COMMENT 'referenced table name',
+    referenced_table_id int NULL COMMENT 'api_table id',
     referenced_field_name varchar(250) NULL COMMENT 'Field from the referenced table',
+    control_id int NULL COMMENT 'control_id',
+    control_config text NOT NULL DEFAULT '{}' COMMENT 'Overwrite the type config',
     UNIQUE KEY(table_id, name),
     FOREIGN KEY(table_id) REFERENCES api_table(id),
     FOREIGN KEY(type_id) REFERENCES api_table_field_type(id),
+    FOREIGN KEY(control_id) REFERENCES api_table_field_control(id),
     PRIMARY KEY(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS referenced_table_id int NULL COMMENT 'api_table id' AFTER referenced_table_name;
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_id int NULL COMMENT 'control_id';
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NULL DEFAULT '{}' COMMENT 'Overwrite the type config';
+ALTER TABLE api_table_field ADD FOREIGN KEY(control_id) REFERENCES api_table_field_control(id);
 /* */
 
 CREATE TABLE IF NOT EXISTS api_user (
@@ -232,11 +304,13 @@ INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
 CREATE TABLE IF NOT EXISTS api_event_handler (
     id int NOT NULL AUTO_INCREMENT,
     plugin_module_name varchar(500) NOT NULL COMMENT 'Namespace to the register function',
-    publisher varchar(500) NOT NULL COMMENT 'Tablename or publisher of the event',
-    event varchar(500) NOT NULL COMMENT 'name of trigger like insert or update',
+    publisher varchar(250) NOT NULL COMMENT 'Tablename or publisher of the event',
+    event varchar(250) NOT NULL COMMENT 'name of trigger like insert or update',
     type varchar(50) NOT NULL,
     sorting int NOT NULL DEFAULT '100' COMMENT 'Sorting',
     solution_id int NOT NULL DEFAULT '1',
+    run_async smallint NOT NULL DEFAULT '0' COMMENT '-1: run async 0=not async',
+    config text NULL COMMENT 'locale event handler config',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
     FOREIGN KEY(type) REFERENCES api_event_type(id),
@@ -420,7 +494,7 @@ CREATE TABLE IF NOT EXISTS api_ui_app(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ALTER TABLE api_ui_app AUTO_INCREMENT=1000000;
 
-INSERT IGNORE INTO api_ui_app (id, name,description,home_url,solution_id) 
+INSERT IGNORE INTO api_ui_app (id, name,description,home_url,solution_id)
 VALUES (
 1,'Default','System Verwaltungs App','/ui/v1.0/data/view/api_user/default?app_id=1',1);
 
@@ -464,6 +538,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (8,1,'Contents','/ui/v1.0/data/view/api_portal_content/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (9,1,'Settings','/ui/v1.0/data/view/api_setting/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (10,1,'Portal Hosts','/ui/v1.0/data/view/api_portal_host/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (11,1,'Fields','/ui/v1.0/data/view/api_table_field/default',1,1);
 
 /*
 End APP
@@ -532,7 +607,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 3,'LISTVIEW','default',7,'id',1,'<restapi type="select">
 <table name="api_session" alias="s"/>
 <filter type="and">
-            <condition field="session_values" alias="s" value="$$query$$" operator=" like "/>
+            <condition field="id" alias="s" value="$$query$$" operator=" like "/>
             <condition field="disabled" alias="s" value="0" operator=" like "/>
         </filter>
         <orderby>
@@ -804,7 +879,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 25,'LISTVIEW','default',19,'id',1,'<restapi type="select">
     <table name="api_portal_content" alias="t"/>
     <filter type="or">
-        <condition field="name" alias="t" value="$$query$$" operator=" like "/>
+        <condition field="name" alias="t" value="$$query$$" operator="$$operator$$"/>
     </filter>
     <joins>
         <join type="inner" table="api_portal" alias="p" condition="t.portal_id=p.id"/>
@@ -893,3 +968,22 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </select>
 </restapi>');
 
+
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+33,'LISTVIEW','default',13,'id',1,'<restapi type="select">
+    <table name="api_table_field" alias="f"/>
+    <joins>
+        <join type="inner" table="api_table" alias="t" condition="t.id=f.table_id"/>
+    </joins>
+    <filter type="or">
+        <condition field="alias" alias="t" value="$$query$$" operator="$$operator$$"/>
+    </filter>
+    <select>
+        <field name="id" table_alias="f" alias="id"/>
+        <field name="alias" table_alias="t" alias="Tablealias"/>
+        <field name="label" table_alias="f" alias="Label"/>
+        <field name="name" table_alias="f" alias="Fieldname"/>
+    </select>
+</restapi>');

@@ -9,4 +9,7 @@ plugins/*
 wwwroot/*
 !wwwroot/index.htm
 !wwwroot/templates/
+venv
+init.d/*
+!init.d/001_main.sh
 
