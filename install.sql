@@ -21,30 +21,43 @@ CREATE TABLE IF NOT EXISTS api_table_field_control(
     id int NOT NULL,
     name varchar(50) NOT NULL,
     control varchar(250) NOT NULL DEFAULT 'INPUT',
-    control_config text NOT NULL DEFAULT '{}',
+    control_config text NOT NULL,
     PRIMARY KEY(id),
     UNIQUE KEY(name)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (1,'Input','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (2,'Dropdown','SELECT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (3,'Date','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (4,'Time','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (5,'DateTime (do not use)','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (6,'Checkbox','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (7,'Button','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (8,'Color','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (9,'Datetime (local)','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (10,'Email','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (11,'Password','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (12,'URL','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (13,'Monat','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (14,'Number','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (16,'Telephone','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (17,'Week','INPUT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (18,'Multiline','TEXTAREA');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (100,'nicEdit','NIC-EDIT');
-INSERT IGNORE INTO api_table_field_control(id,name,control) VALUES (101,'ace Edit','ACE-EDIT');
+DROP TRIGGER IF EXISTS api_table_field_control_before_insert;
+delimiter //
+create trigger api_table_field_control_before_insert before insert on api_table_field_control
+for each row
+begin
+   if (NEW.control_config is null or NEW.control_config='' ) then
+      set NEW.control_config = '{}';
+   end if;
+end
+//
+delimiter ;
+
+
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (1,'Input','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (2,'Dropdown','SELECT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (3,'Date','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (4,'Time','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (5,'DateTime (do not use)','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (6,'Checkbox','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (7,'Button','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (8,'Color','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (9,'Datetime (local)','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (10,'Email','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (11,'Password','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (12,'URL','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (13,'Monat','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (14,'Number','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (16,'Telephone','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (17,'Week','INPUT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (18,'Multiline','TEXTAREA','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (100,'nicEdit','NIC-EDIT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (101,'ace Edit','ACE-EDIT','{}');
 
 UPDATE api_table_field_control SET control_config='{"type": "text"}' WHERE id=1;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=2;
@@ -74,7 +87,7 @@ CREATE TABLE IF NOT EXISTS api_table_field_type(
     PRIMARY KEY(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE api_table_field_type ADD COLUMN IF NOT EXISTS control_id int NOT NULL DEFAULT '0' COMMENT '';
+ALTER TABLE api_table_field_type ADD COLUMN IF NOT EXISTS control_id int NOT NULL DEFAULT '1' COMMENT '';
 ALTER TABLE api_table_field_type ADD CONSTRAINT FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control (id);
 
 
@@ -201,7 +214,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     referenced_table_id int NULL COMMENT 'api_table id',
     referenced_field_name varchar(250) NULL COMMENT 'Field from the referenced table',
     control_id int NULL COMMENT 'control_id',
-    control_config text NOT NULL DEFAULT '{}' COMMENT 'Overwrite the type config',
+    control_config text NOT NULL COMMENT 'Overwrite the type config',
     UNIQUE KEY(table_id, name),
     FOREIGN KEY(table_id) REFERENCES api_table(id),
     FOREIGN KEY(type_id) REFERENCES api_table_field_type(id),
@@ -211,8 +224,23 @@ CREATE TABLE IF NOT EXISTS api_table_field(
 
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS referenced_table_id int NULL COMMENT 'api_table id' AFTER referenced_table_name;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_id int NULL COMMENT 'control_id';
-ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NULL DEFAULT '{}' COMMENT 'Overwrite the type config';
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NULL COMMENT 'Overwrite the type config';
 ALTER TABLE api_table_field ADD FOREIGN KEY(control_id) REFERENCES api_table_field_control(id);
+
+UPDATE api_table_field SET control_config='{}' WHERE control_config='' or control_config IS NULL;
+
+DROP TRIGGER IF EXISTS api_table_field_before_insert;
+delimiter //
+create trigger api_table_field_before_insert before insert on api_table_field
+for each row
+begin
+   if (NEW.control_config is null or NEW.control_config='' ) then
+      set NEW.control_config = '{}';
+   end if;
+end
+//
+delimiter ;
+
 /* */
 
 CREATE TABLE IF NOT EXISTS api_user (
@@ -317,6 +345,8 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
     INDEX (publisher, event),
     INDEX (publisher, event, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL DEFAULT '0' COMMENT '-1: run async 0=not async' AFTER solution_id;
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
