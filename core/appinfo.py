@@ -236,7 +236,7 @@ class AppInfo:
 
         # create a server session
         session_id=str(uuid.uuid4())
-        session_values={"tag": "DK9MBS"}
+        session_values={}
 
         sql=f"""
             INSERT INTO api_session set id=%s,session_values=%s,user_id=%s

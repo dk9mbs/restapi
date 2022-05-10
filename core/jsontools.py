@@ -20,3 +20,10 @@ def json_serial(obj):
         return base64_message
     raise TypeError ("Type %s not serializable" % type(obj))
 
+
+def merge(json1, json2):
+    for key in json2:
+        json1[key]=json2[key]
+
+    return json1
+

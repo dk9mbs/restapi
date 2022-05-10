@@ -18,10 +18,12 @@ from services.jinjatemplate import JinjaTemplate
 
 from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
-from core.jsontools import json_serial
+from core.jsontools import json_serial, merge
 from core import log
 from core.exceptions import RestApiNotAllowed, ConfigNotValid
-from core.meta import read_table_meta
+from core.meta import read_table_meta, read_table_field_meta
+from core.permission import Permission
+
 
 logger=log.create_logger(__name__)
 
@@ -38,23 +40,39 @@ class DataFormInsert(Resource):
         try:
             create_parser().parse_args()
             context=g.context
+            data={}
 
-            from core.permission import Permission
             if not Permission().validate(context, "create", context.get_username(), table):
                 raise RestApiNotAllowed("")
 
             table_meta=read_table_meta(context, alias=table)
+            fields_meta=read_table_field_meta(context, table_alias=table)
             solution_id=table_meta['solution_id']
+
+            for field in fields_meta:
+                json1=json.loads(field['control_config'])
+                json2=json.loads(field['overwrite_control_config'])
+                cfg=merge(json1, json2)
+                field['control_config']=cfg
+                if "default_value" in cfg:
+                    data[field['name']]=cfg['default_value']
+            #print(data)
 
             if solution_id==1:
                 file=f"templates/{table}_insert.htm"
             else:
                 file=f"solutions/{solution_id}/{table}_insert.htm"
-
-            logger.info(f"Redirect : {next}")
+            file=f"templates/base/dataform.htm"
 
             template=JinjaTemplate.create_file_template(context,file)
-            response = make_response(template.render({"table": table, "pagemode": "dataforminsert", "context": context }))
+            response = make_response(template.render({"table": table,
+                    "pagemode": "dataforminsert",
+                    "id": "", "data": data, "context": context, "fields": fields_meta }))
+
+            #response = make_response(template.render({"table": table,
+            #"pagemode": "dataformupdate",
+            #"id": id, "data": rs.get_result(), "context": context, "fields": fields_meta  }))
+
             response.headers['content-type'] = 'text/html'
 
             return response

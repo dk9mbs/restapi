@@ -52,6 +52,15 @@ class Context:
     def get_session_values(self):
         return self.__session_values
 
+    def get_session_value(self, name, default=None):
+        if name in self.__session_values:
+            return self.__session_values[name]
+
+        return default
+
+    def set_session_value(self, name, value):
+        self.__session_values[name]=value
+
     def get_session_id(self):
         return self.__session_id
 

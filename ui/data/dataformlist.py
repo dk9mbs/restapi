@@ -41,27 +41,49 @@ class EntityList(Resource):
             parser=create_parser().parse_args()
             context=g.context
 
-            logger.info(f"app_id: {request.url}")
             file=f"templates/base/datalist.htm"
-            query="%"
-            if 'query' in request.args:
-                query=f"%{request.args.get('query')}%"
+            query_key=f"dataformlist_query_{table}"
+            operator_key=f"dataformlist_op_{table}"
+
+            query=context.get_arg('query', default=None)
+            operator=context.get_arg('operator', None)
+
+            if query==None:
+                query=context.get_session_value(query_key, None)
+            else:
+                context.set_session_value(query_key, query)
+
+            if query==None:
+                query=""
+
+            query=query.replace("*","%")
+
+            if operator==None:
+                operator="like"
+
+            if operator=="like":
+                query=f"{query}%"
 
             table_meta=read_table_meta(context,alias=table)
             view_meta=read_table_view_meta(context, table_meta['id'], view, 'LISTVIEW')
 
             fetch=view_meta['fetch_xml']
-            #columns=json.loads(view_meta['col_definition'])
 
             fetch=fetch.replace("$$query$$", query)
+            fetch=fetch.replace("$$operator$$", operator)
 
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
 
             template=JinjaTemplate.create_file_template(context, file)
             response = make_response(template.render({"data": rs.get_result(),
-                        "columns": fetchparser.get_columns(), "table": table, "table_meta": table_meta,
-                        "view_meta": view_meta, "pagemode": "dataformlist", "context": context }))
+                        "columns": fetchparser.get_columns(),
+                        "table": table,
+                        "table_meta": table_meta,
+                        "view_meta": view_meta,
+                        "pagemode": "dataformlist",
+                        "context": context,
+                        "query": query.replace("%","") }))
 
             response.headers['content-type'] = 'text/html'
 

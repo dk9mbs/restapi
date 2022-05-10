@@ -11,6 +11,7 @@ logger=log.create_logger(__name__)
 
 class JinjaEnvironment:
     _template_functions={}
+    _filters={}
 
     def __init__(self, context, loader):
         self._context=context
@@ -30,16 +31,23 @@ class JinjaEnvironment:
         for key, fn in JinjaEnvironment._template_functions.items():
             jenv.globals[key]=fn
 
+        for key,fn in JinjaEnvironment._filters.items():
+            jenv.filters[key]=fn
+
+
         params={"environment": jenv, "loader": loader}
         handler=Plugin(context, "jinja_environment","create")
         handler.execute('after', params)
 
         return jenv
 
-
     @classmethod
     def register_template_function(cls, alias, fn):
         cls._template_functions[alias]=fn
+
+    @classmethod
+    def register_filter_function(cls, alias, fn):
+        cls._filters[alias]=fn
 
     @staticmethod
     def __data_combo_view():

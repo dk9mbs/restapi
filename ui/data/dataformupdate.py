@@ -18,10 +18,10 @@ from services.jinjatemplate import JinjaTemplate
 
 from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
-from core.jsontools import json_serial
+from core.jsontools import json_serial,merge
 from core import log
 from core.exceptions import RestApiNotAllowed, ConfigNotValid
-from core.meta import read_table_meta
+from core.meta import read_table_meta, read_table_field_meta
 
 logger=log.create_logger(__name__)
 
@@ -42,11 +42,19 @@ class DataFormUpdate(Resource):
 
             table_meta=read_table_meta(context, alias=table)
             solution_id=table_meta['solution_id']
+            fields_meta=read_table_field_meta(context, table_alias=table)
+
+            for field in fields_meta:
+                json1=json.loads(field['control_config'])
+                json2=json.loads(field['overwrite_control_config'])
+                cfg=merge(json1, json2)
+                field['control_config']=cfg
 
             if solution_id==1:
                 file=f"templates/{table}_update.htm"
             else:
                 file=f"solutions/{solution_id}/{table}_update.htm"
+            file=f"templates/base/dataform.htm"
 
             fetch=build_fetchxml_by_alias(context, table, id, type="select")
             fetchparser=FetchXmlParser(fetch, context)
@@ -61,7 +69,7 @@ class DataFormUpdate(Resource):
             template=JinjaTemplate.create_file_template(context,file)
             response = make_response(template.render({"table": table,
                     "pagemode": "dataformupdate",
-                    "id": id, "data": rs.get_result(), "context": context }))
+                    "id": id, "data": rs.get_result(), "context": context, "fields": fields_meta  }))
             response.headers['content-type'] = 'text/html'
 
             return response
