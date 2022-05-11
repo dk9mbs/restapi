@@ -3,6 +3,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        var table="{{ table }}";
+        var id="{{ id }}";
+        var queryString="{{ build_query_string(context) }}";
+    </script>
+
+    <script>
+    function deleteRecord(table, id) {
+        if (confirm("Delete record?") == true) {
+            text = "You pressed OK!";
+            axios.delete('/api/v1.0/data/{{ table }}/{{ id }}')
+              .then(function (response) {
+                window.location='/ui/v1.0/data/view/{{ table }}/default{{ build_query_string(context) }}'
+                console.log(response);
+              })
+              .catch(function (error) {
+                alert('cannot delete the record');
+                console.log(error);
+              })
+              .then(function () {
+                // always executed
+              });
+        }
+    }
+    </script>
+
     {% block head %}
     <title>{% block title %}{% endblock title %} - {{ app_id }}</title>
 
@@ -19,6 +45,10 @@
     <script type="text/javascript" src="//js.nicedit.com/nicEdit-latest.js"></script>
     <!-- End nicEdit -->
 
+    <!-- axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js" integrity="sha512-u9akINsQsAkG9xjc1cnGF4zw5TFDwkxuc9vUp5dltDWYCSmyd0meygbvgXrlc/z7/o4a19Fb5V0OUE58J7dcyw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- End axios -->
+
     <!-- Start add on styles -->
     <style>
     body {
@@ -31,6 +61,8 @@
 
 </head>
 <body>
+
+
 
 <!-- start navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
@@ -52,6 +84,9 @@
         </li>
         <li class="nav-item active">
             <a class="nav-link" href="#" onclick="window.location='/ui/v1.0/data/view/{{ table }}/default{{ build_query_string(context) }}';return false;">List <span class="sr-only"></span></a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="#" onclick="deleteRecord(table,id);return false;">Delete <span class="sr-only"></span></a>
         </li>
         {% endif %}
 
