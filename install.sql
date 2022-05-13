@@ -56,6 +56,7 @@ INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUE
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (16,'Telephone','INPUT','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (17,'Week','INPUT','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (18,'Multiline','TEXTAREA','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (19,'Yes No','BOOLEAN','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (100,'nicEdit','NIC-EDIT','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (101,'ace Edit','ACE-EDIT','{}');
 
@@ -76,6 +77,7 @@ UPDATE api_table_field_control SET control_config='{"type": "number"}' WHERE id=
 UPDATE api_table_field_control SET control_config='{"type": "tel"}' WHERE id=16;
 UPDATE api_table_field_control SET control_config='{"type": "week"}' WHERE id=17;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=18;
+UPDATE api_table_field_control SET control_config='{"true_value": -1}' WHERE id=19;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=100;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=101;
 

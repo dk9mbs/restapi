@@ -1,4 +1,6 @@
-{% macro input(name, label='', placeholder='', value='', type='text', size=20, disabled=False) -%}
+{% macro input(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
+    {% set disabled=config | value_from_json("disabled", false) %}
+
     {% if disabled %}
         {% set show="disabled" %}
     {% else %}
@@ -24,7 +26,9 @@
     {{ caller() }}
 {%- endmacro %}
 
-{% macro input_multiline(name, label='', placeholder='', value='', type='text', size=20, disabled=False) -%}
+{% macro input_multiline(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
+    {% set disabled=config | value_from_json("disabled", false) %}
+
     {% if disabled %}
         {% set show="disabled" %}
     {% else %}
@@ -46,7 +50,9 @@
     {{ caller() }}
 {%- endmacro %}
 
-{% macro data_select(name,label, value, table_alias, view_name, query='', disabled=False) -%}
+{% macro data_select(name,label, value, table_alias, view_name, query='', config={}) -%}
+    {% set disabled=config | value_from_json("disabled", false) %}
+
     {% if disabled %}
         {% set show="disabled" %}
     {% else %}
@@ -114,7 +120,9 @@
 
 
 
-{% macro input_nicedit(name, label='', placeholder='', value='', type='text', size=20, disabled=False) -%}
+{% macro input_nicedit(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
+    {% set disabled=config | value_from_json("disabled", false) %}
+
     {% if disabled %}
         {% set show="disabled" %}
     {% else %}
@@ -150,4 +158,95 @@
     <!-- end of enbale nicEdit -->
 
     {{ caller() }}
+{%- endmacro %}
+
+
+
+
+{% macro input_aceedit(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
+    {% set disabled=config | value_from_json("disabled", false) %}
+
+    {% if disabled %}
+        {% set show="disabled" %}
+    {% else %}
+        {% set show="" %}
+    {% endif %}
+        
+
+    {% if label!='' %}
+        <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+        {% set col=10 %}
+    {% else %}
+        {% set col=12 %}
+    {% endif %}
+
+
+
+    <style type="text/css" media="screen">
+    #editor { 
+        height: 250px;
+        width: 100%;
+    }
+    </style>
+
+    <div class="col-sm-{{ col }}">
+    <div id="editor">{{ value }}</div>
+    <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" 
+        placeholder="{{ placeholder }}" hidden>{{ value }}</textarea>
+    </div>
+
+    <!-- Enable nic-Edit -->
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/json");
+        editor.resize()
+
+        editor.getSession().on("change", function () {
+            document.getElementById('{{ name }}').value = editor.getSession().getValue();
+        });
+    </script>
+    <!-- end of enbale nicEdit -->
+
+    {{ caller() }}
+{%- endmacro %}
+
+
+{% macro boolean(name, label='', placeholder='', value='', config={}) -%}
+    {% set disabled=config | value_from_json("disabled", false) %}
+
+    {% if disabled %}
+        {% set show="disabled" %}
+    {% else %}
+        {% set show="" %}
+    {% endif %}
+
+    {% set true_value=config | value_from_json("true_value",-1) %}
+
+    {% if label!='' %}
+        <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+        {% set col=10 %}
+    {% else %}
+        {% set col=12 %}
+    {% endif %}
+
+    <div class="col-sm-{{ col }}">
+    <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
+
+        {% if value==0 or value==None %}
+            <option selected value="0">No</option>
+        {% else %}
+            <option value="0">No</option>
+        {% endif %}
+
+        {% if value==1 or value==-1 or value==true_value %}
+            <option selected value="{{ true_value }}">Yes</option>
+        {% else %}
+            <option value="{{ true_value }}">Yes</option>
+        {% endif %}
+
+
+    {{ caller() }}
+    </select>
+    </div>
 {%- endmacro %}
