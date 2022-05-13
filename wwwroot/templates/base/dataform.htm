@@ -9,54 +9,68 @@
 {% block content %}
 
     {% call forms.record_form( table, id, context=context ) %}
-    {% for field in fields %}
-        {% set config=field['control_config'] %}
+        {% for field in fields %}
+            {% set config=field['control_config'] %}
 
-        {% call forms.row() %}
-
-            {% if field['control']=="INPUT" %}
-
-                {% call forms.input(field['name'], field['label'], field['label'], data | value_from_json(field['name']) ,
-                                type=config | value_from_json("type","text") , 
-                                disabled=config | value_from_json("disabled", false )) %}
-                {% endcall %}
-
-            {% endif %}
-
-            {% if field['control']=="NIC-EDIT" %}
-
-                {% call forms.input_nicedit(field['name'], field['label'], '', data | value_from_json(field['name'])    ) %}
-                {% endcall %}
-
-            {% endif %}
-
-            {% if field['control']=="TEXTAREA" %}
-
-                {% call forms.input_multiline(field['name'], field['label'], '', data | value_from_json(field['name']) ) %}
-                {% endcall %}
-
-            {% endif %}
-
-            {% if field['control']=="SELECT" %}
-                {% set value=data | value_from_json(field['name']) %}
-
-                {% call forms.data_select(field['name'],field['label'], value, 
-                                field['referenced_table_name'] , 'default','%' , 
-                                disabled=config | value_from_json("disabled", false) ) %}
-                {% endcall %}
+            {% call forms.row() %}
 
 
-            {% endif %}
+                {% if field['control']=="SELECT" %}
+                    {% set value=data | value_from_json(field['name']) %}
+
+                    {% call forms.data_select(field['name'],field['label'], value,
+                                    field['referenced_table_name'] , 'default','%' ,
+                                    config=config ) %}
+                    {% endcall %}
 
 
-        {% endcall %}
+                {% endif %}
 
 
-    {% endfor %}
+               {% if field['control']=="BOOLEAN" %}
 
+                    {% call forms.boolean(field['name'], field['label'], '', data | value_from_json(field['name']), config=config ) %}
+                    {% endcall %}
+
+                {% endif %}
+
+                {% if field['control']=="TEXTAREA" %}
+
+                    {% call forms.input_multiline(field['name'], field['label'], '', data | value_from_json(field['name']), config=config ) %}
+                    {% endcall %}
+
+                {% endif %}
+
+                {% if field['control']=="ACE-EDIT" %}
+
+                    {% call forms.input_aceedit(field['name'], field['label'], '', data | value_from_json(field['name']), config=config    ) %}
+                    {% endcall %}
+
+                {% endif %}
+
+
+                {% if field['control']=="NIC-EDIT" %}
+
+                    {% call forms.input_nicedit(field['name'], field['label'], '', data | value_from_json(field['name']), config=config    ) %}
+                    {% endcall %}
+
+                {% endif %}
+
+
+                {% if field['control']=="INPUT" %}
+
+                    {% call forms.input(field['name'], field['label'], field['label'], data | value_from_json(field['name']) ,
+                                    type=config | value_from_json("type","text") ,
+                                    config=config) %}
+                    {% endcall %}
+
+                {% endif %}
+
+            {% endcall %}
+
+        {% endfor %}
 
     {% endcall %}
-
 
 {% endblock %}
 
