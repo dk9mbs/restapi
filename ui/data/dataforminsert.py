@@ -56,7 +56,9 @@ class DataFormInsert(Resource):
                 field['control_config']=cfg
                 if "default_value" in cfg:
                     data[field['name']]=cfg['default_value']
-            #print(data)
+
+                if not context.get_arg(f"param_{field['name']}", None)==None:
+                    data[field['name']]=context.get_arg(f"param_{field['name']}", None)
 
             if solution_id==1:
                 file=f"templates/{table}_insert.htm"
@@ -68,10 +70,6 @@ class DataFormInsert(Resource):
             response = make_response(template.render({"table": table,
                     "pagemode": "dataforminsert",
                     "id": "", "data": data, "context": context, "fields": fields_meta }))
-
-            #response = make_response(template.render({"table": table,
-            #"pagemode": "dataformupdate",
-            #"id": id, "data": rs.get_result(), "context": context, "fields": fields_meta  }))
 
             response.headers['content-type'] = 'text/html'
 

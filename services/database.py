@@ -73,6 +73,11 @@ class DatabaseServices:
         cursor.execute(sql, paras)
         inserted_id=context.get_connection().insert_id()
 
+        if not id_field_name in params['data']:
+            params["data"][id_field_name]={}
+            params["data"][id_field_name]['value']=inserted_id
+            params["data"][id_field_name]['value_old']=None
+
         handler.execute('after', params)
 
         if command_builder.get_auto_commit()==1 or command_builder.get_auto_commit()==True:
@@ -87,7 +92,7 @@ class DatabaseServices:
             if inserted_id==0 or inserted_id==None:
                 rs.set_inserted_id(command_builder.get_sql_fields()[id_field_name]['value'])
             else:
-                rs.set_inserted_id(context.get_connection().insert_id())
+                rs.set_inserted_id(inserted_id)
         return rs
 
     @staticmethod
