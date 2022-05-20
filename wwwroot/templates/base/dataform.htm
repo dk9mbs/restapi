@@ -7,6 +7,7 @@
 {% endblock %}
 
 {% block content %}
+    <div style="font-weight: bold;font-size:2em;color: silver">{{ title }}</div>
 
     {% call forms.record_form( table, id, context=context ) %}
         {% for field in fields %}
@@ -14,9 +15,8 @@
 
             {% call forms.row() %}
 
-
                 {% if field['control']=="SELECT" %}
-                    {% set value=data | value_from_json(field['name']) %}
+                    {% set value=data | value_from_json(field['name'], "") %}
 
                     {% call forms.data_select(field['name'],field['label'], value,
                                     field['referenced_table_name'] , 'default','%' ,
@@ -29,21 +29,21 @@
 
                {% if field['control']=="BOOLEAN" %}
 
-                    {% call forms.boolean(field['name'], field['label'], '', data | value_from_json(field['name']), config=config ) %}
+                    {% call forms.boolean(field['name'], field['label'], '', data | value_from_json(field['name'],false), config=config ) %}
                     {% endcall %}
 
                 {% endif %}
 
                 {% if field['control']=="TEXTAREA" %}
 
-                    {% call forms.input_multiline(field['name'], field['label'], '', data | value_from_json(field['name']), config=config ) %}
+                    {% call forms.input_multiline(field['name'], field['label'], '', data | value_from_json(field['name'],""), config=config ) %}
                     {% endcall %}
 
                 {% endif %}
 
                 {% if field['control']=="ACE-EDIT" %}
 
-                    {% call forms.input_aceedit(field['name'], field['label'], '', data | value_from_json(field['name']), config=config    ) %}
+                    {% call forms.input_aceedit(field['name'], field['label'], '', data | value_from_json(field['name'],""), config=config    ) %}
                     {% endcall %}
 
                 {% endif %}
@@ -51,7 +51,7 @@
 
                 {% if field['control']=="NIC-EDIT" %}
 
-                    {% call forms.input_nicedit(field['name'], field['label'], '', data | value_from_json(field['name']), config=config    ) %}
+                    {% call forms.input_nicedit(field['name'], field['label'], '', data | value_from_json(field['name'],""), config=config    ) %}
                     {% endcall %}
 
                 {% endif %}
@@ -59,7 +59,7 @@
 
                 {% if field['control']=="INPUT" %}
 
-                    {% call forms.input(field['name'], field['label'], field['label'], data | value_from_json(field['name']) ,
+                    {% call forms.input(field['name'], field['label'], field['label'], data | value_from_json(field['name'],"") ,
                                     type=config | value_from_json("type","text") ,
                                     config=config) %}
                     {% endcall %}

@@ -69,7 +69,9 @@ class DataFormInsert(Resource):
             template=JinjaTemplate.create_file_template(context,file)
             response = make_response(template.render({"table": table,
                     "pagemode": "dataforminsert",
-                    "id": "", "data": data, "context": context, "fields": fields_meta }))
+                    "id": "", "data": data, "context": context, "fields": fields_meta,
+                    "table_meta": table_meta,
+                    "title": f"{table_meta['name']} - new record"  }))
 
             response.headers['content-type'] = 'text/html'
 

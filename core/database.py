@@ -45,7 +45,18 @@ class Recordset:
             return []
         else:
             tmp=json.dumps(self._result, default=json_serial)
-            return json.loads(tmp)
+            data=json.loads(tmp)
+
+            if data==None:
+                return None
+
+            if type(data) is dict:
+                self.__replace_none(data, None, "")
+            else:
+                for item in data:
+                    self.__replace_none(item, None, "")
+
+            return data
 
     def get_cursor(self):
         return self._cursor
@@ -85,6 +96,12 @@ class Recordset:
             self._cursor.fetchall()
 
 
+    def __replace_none(self, data_dict,v,rv):
+        for key in data_dict.keys():
+            if data_dict[key] == v:
+                data_dict[key] = rv
+            elif type(data_dict[key]) is dict:
+                self.__replace_none(data_dict[key],v,rv)
 
 """
 Base Commandbuilder Class

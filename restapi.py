@@ -62,13 +62,16 @@ def before_request():
     logger.info(f"Endpoint: {request.endpoint}")
 
     if request.endpoint!='api.login' and request.endpoint!='ui.login':
+        login=False
         if 'session_id' in session:
             try:
                 g.context=AppInfo.create_context(session['session_id'])
+                login=True
             except NameError as err:
-                abort(400, f"Session_id found in session context: error raised: {err}")
-                pass
-        else:
+                logger.warning(f"Session_id found in session context: error raised: {err}")
+                #abort(400, f"Session_id found in session context: error raised: {err}")
+
+        if not login:
             #do not set session['session_id'] because the
             #guest session will be automaticly deactivated.
             username=""
