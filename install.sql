@@ -108,6 +108,7 @@ INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('lookup','
 
 CREATE TABLE IF NOT EXISTS api_table (
     id int NOT NULL AUTO_INCREMENT,
+    name varchar(250) NOT NULL DEFAULT '',
     alias varchar(250) NOT NULL,
     table_name varchar(250) NOT NULL,
     id_field_name varchar(250) NOT NULL,
@@ -121,6 +122,8 @@ CREATE TABLE IF NOT EXISTS api_table (
     UNIQUE KEY(alias),
     UNIQUE KEY(table_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAULT '' AFTER id;
 
 INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (1,'dummy','dummy','id','int','name',-1);
@@ -199,6 +202,7 @@ INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,des
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
 UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
 
+UPDATE api_table set name=alias WHERE name IS NULL OR name='';
 
 /* */
 

@@ -69,7 +69,10 @@ class DataFormUpdate(Resource):
             template=JinjaTemplate.create_file_template(context,file)
             response = make_response(template.render({"table": table,
                     "pagemode": "dataformupdate",
-                    "id": id, "data": rs.get_result(), "context": context, "fields": fields_meta  }))
+                    "id": id, "data": rs.get_result(), "context": context, "fields": fields_meta,
+                    "table_meta": table_meta,
+                    "title": f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}"
+                    }))
             response.headers['content-type'] = 'text/html'
 
             return response

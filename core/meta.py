@@ -3,6 +3,9 @@ from core.database import Recordset
 
 def build_table_fields_meta(context):
     connection=context.get_connection()
+    sql=f"UPDATE api_table SET name=alias WHERE name IS NULL OR name='';"
+    cur_tables=connection.cursor()
+    cur_tables.execute(sql)
 
     sql=f"""
     SELECT id, table_name FROM api_table ORDER BY id;
