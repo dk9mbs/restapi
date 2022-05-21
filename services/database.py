@@ -56,7 +56,7 @@ class DatabaseServices:
                         #logger.info(command_builder.get_sql_fields())
 
         params={"data": command_builder.get_sql_fields()}
-        handler=Plugin(context, command_builder.get_main_table(),command_builder.get_sql_type())
+        handler=Plugin(context, command_builder.get_main_alias(),command_builder.get_sql_type())
         handler.execute('before', params)
 
         sql, paras =command_builder.get_sql()
