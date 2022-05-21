@@ -19,6 +19,7 @@ class FetchXmlParser:
         self._sql_type=""
         self._sql_where=""
         self._sql_table=""
+        self._main_alias=""
         self._sql_table_alias=""
         self._sql_table_join=""
         self._sql_select="*"
@@ -41,6 +42,7 @@ class FetchXmlParser:
         self._sql_type=""
         self._sql_where=""
         self._sql_table=""
+        self._main_alias=""
         self._sql_table_alias=""
         self._sql_table_join=""
         self._sql_select="*"
@@ -85,6 +87,9 @@ class FetchXmlParser:
     """
     def get_main_table(self):
         return self._sql_table
+
+    def get_main_alias(self):
+        return self._main_alias
 
     def get_sql(self):
 
@@ -292,6 +297,7 @@ class FetchXmlParser:
 
     def _build_table(self,node):
         #table=node.attrib['name']
+        self._main_alias=node.attrib['name']
         table=self._validate_table_alias(self._context,node.attrib['name'])
         alias=table
 
