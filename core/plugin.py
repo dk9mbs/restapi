@@ -29,7 +29,7 @@ class SyncWrapper(object):
             self._fn(self._context,self._plugin_context, self._params)
         except Exception as err:
             logger.exception(f"Exception: {err}")
-            self._plugin_context=['response']['error_text']=str(err)
+            self._plugin_context['response']['error_text']=str(err)
             status_id=20
 
         ProcessTools.set_process_status(self._context,self._plugin_context,status_id)
@@ -127,6 +127,9 @@ class ProcessTools(object):
     def set_process_status(context,plugin_context, status_id):
         connection=context.get_connection()
         cursor=connection.cursor()
+
+        if str(plugin_context['response']['status_code'])!="0" and str(plugin_context['response']['status_code'])!="200":
+            status_id=20
 
         sql=f"UPDATE api_process_log SET response_code=%s,response_msg=%s,status_id=%s,error_text=%s,response_on=NOW() WHERE id=%s"
         cursor.execute(sql,[plugin_context['response']['status_code'],plugin_context['response']['payload'],
