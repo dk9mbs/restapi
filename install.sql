@@ -125,77 +125,77 @@ CREATE TABLE IF NOT EXISTS api_table (
 
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAULT '' AFTER id;
 
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (1,'dummy','dummy','id','int','name',-1);
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (1,'Dummy','dummy','dummy','id','int','name',-1);
 
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (2,'api_user','api_user','id','int','username',-1);
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (2,'Benutzer','api_user','api_user','id','int','username',-1);
 
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name, enable_audit_log)
-    VALUES (3,'api_group','api_group','id','int','groupname',-1);
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name, enable_audit_log)
+    VALUES (3,'Gruppe','api_group','api_group','id','int','groupname',-1);
 
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (4,'api_user_group','api_user_group','id','int','user_id',-1);
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (4,'Benutzerzuordnung','api_user_group','api_user_group','id','int','user_id',-1);
 
-INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (5,'api_group_permission','api_group_permission','id','int','group_id',-1);
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (5,'Berechtigung','api_group_permission','api_group_permission','id','int','group_id',-1);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (7,'api_session', 'api_session','id','int','id',-1);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (7,'Sitzung','api_session', 'api_session','id','int','id',-1);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (8,'api_portal', 'api_portal','id','string','name',-1);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (8,'Portal','api_portal', 'api_portal','id','string','name',-1);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (9,'api_event_handler', 'api_event_handler','id','int','table_name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (9,'Eventhandler','api_event_handler', 'api_event_handler','id','int','table_name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (10,'api_table', 'api_table','id','int','table_name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (10,'Tabelle','api_table', 'api_table','id','int','table_name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (11,'api_table_view_type', 'api_table_view_type','id','string','name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (11,'Ansichten Type','api_table_view_type', 'api_table_view_type','id','string','name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (12,'api_table_view', 'api_table_view','id','string','name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (12,'Ansicht','api_table_view', 'api_table_view','id','string','name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (13,'api_table_field', 'api_table_field','id','int','name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (13,'Feld','api_table_field', 'api_table_field','id','int','name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (14,'api_table_field_type', 'api_table_field_type','id','string','name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (14,'Feldtyp','api_table_field_type', 'api_table_field_type','id','string','name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (15,'api_ui_app', 'api_ui_app','id','int','name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (15,'App','api_ui_app', 'api_ui_app','id','int','name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (16,'api_ui_app_nav_item_type', 'api_ui_app_nav_item_type','id','int','name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (16,'Navigations Itemtyp','api_ui_app_nav_item_type', 'api_ui_app_nav_item_type','id','int','name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (17,'api_ui_app_nav_item', 'api_ui_app_nav_item','id','int','name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (17,'Navigations Item','api_ui_app_nav_item', 'api_ui_app_nav_item','id','int','name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (18,'api_portal_content_type', 'api_portal_content_type','id','int','name',-1);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (18,'Inhaltstyp','api_portal_content_type', 'api_portal_content_type','id','int','name',-1);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (19,'api_portal_content', 'api_portal_content','id','int','name',-1);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (19,'Inhalt','api_portal_content', 'api_portal_content','id','int','name',-1);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (20,'api_file', 'api_file','id','int','name',-1);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (20,'Datei','api_file', 'api_file','id','int','name',-1);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (21,'api_setting', 'api_setting','id','int','setting',-1);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (21,'Einstellung','api_setting', 'api_setting','id','int','setting',-1);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (22,'api_portal_host', 'api_portal_host','id','int','host',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (22,'WWW Host','api_portal_host', 'api_portal_host','id','int','host',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (23,'api_process_log', 'api_process_log','id','string','id',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (23,'Log','api_process_log', 'api_process_log','id','string','id',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (24,'api_table_field_control', 'api_table_field_control','id','int','name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (24,'Feld Element','api_table_field_control', 'api_table_field_control','id','int','name',0);
 
-INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (25,'api_solution', 'api_solution','id','int','name',0);
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (25,'Lösung','api_solution', 'api_solution','id','int','name',0);
 
 
 /* Bugfixing */
