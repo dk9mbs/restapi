@@ -141,7 +141,7 @@ INSERT IGNORE INTO api_table (id,alias,table_name,id_field_name,id_field_type,de
     VALUES (5,'api_group_permission','api_group_permission','id','int','group_id',-1);
 
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (7,'api_session', 'api_session','id','int','user_id',-1);
+    VALUES (7,'api_session', 'api_session','id','int','id',-1);
 
 INSERT IGNORE INTO api_table(id,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (8,'api_portal', 'api_portal','id','string','name',-1);
