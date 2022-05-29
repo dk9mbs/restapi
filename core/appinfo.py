@@ -254,17 +254,11 @@ class AppInfo:
     @classmethod
     def logoff(cls, context):
         sql=f"""
-        UPDATE api_session SET disabled=-1 WHERE id=%s
+        DELETE FROM api_session WHERE id=%s
         """
         connection=cls.create_connection()
         cursor=connection.cursor()
         cursor.execute(sql,[context.get_session_id()])
-
-        sql=f"""
-        DELETE FROM api_session WHERE (DATEDIFF(last_access_on, now())<-1) OR disabled=-1;
-        """
-        cursor=connection.cursor()
-        cursor.execute(sql)
 
         cls.__username=None
 

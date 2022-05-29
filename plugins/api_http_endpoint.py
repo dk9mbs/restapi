@@ -1,9 +1,10 @@
 import datetime
 import requests
+import json
 
 from core.fetchxmlparser import FetchXmlParser
 from services.database import DatabaseServices
-from core import log
+from core import log, jsontools
 
 logger=log.create_logger(__name__)
 
@@ -21,8 +22,8 @@ def execute(context, plugin_context, params):
     else:
         payload={}
 
-    payload={"payload": payload,
-        "plugin_context": plugin_context}
+    payload=json.loads(json.dumps({"payload": payload,
+        "plugin_context": plugin_context}, default=jsontools.json_serial))
 
     url=url.replace("$publisher", plugin_context['publisher'])
     url=url.replace("$trigger", plugin_context['trigger'])

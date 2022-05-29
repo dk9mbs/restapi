@@ -52,7 +52,11 @@ class Portal(Resource):
 
             logged_on=False
             if 'session_id' in session:
-                logged_on=True
+                try:
+                    g.context=AppInfo.create_context(session['session_id'])
+                    logged_on=True
+                except NameError as err:
+                    logged_on=False
 
             template=JinjaTemplate.create_file_template(context, path)
 

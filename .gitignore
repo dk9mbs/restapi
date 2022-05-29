@@ -5,6 +5,7 @@ config.py
 plugins/*
 !plugins/api_http_endpoint.py
 !plugins/api_clear_log.py
+!plugins/api_clear_session.py
 3thparty
 wwwroot/*
 !wwwroot/index.htm
