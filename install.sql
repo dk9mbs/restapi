@@ -361,6 +361,7 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type)
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (5,'api_http_endpoint','dummy','insert','after',-1);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (6,'api_http_endpoint','dummy','update','after',-1);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (7,'api_clear_log','$timer_every_ten_minutes','execute','after',0);
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (8,'api_clear_session','$timer_every_hour','execute','after',0);
 
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL default '0' COMMENT '-1: run async 0=not async';
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS config text NULL COMMENT 'locale event handler config';
@@ -391,6 +392,8 @@ CREATE TABLE IF NOT EXISTS api_process_log (
     config text NULL COMMENT 'Locale config from api_event_handler',
     event_handler_id int NOT NULL COMMENT 'Event handler id',
     run_async smallint NOT NULL DEFAULT '0',
+    retries int NOT NULL default '0' COMMENT 'Number of retries in case of async processes',
+    last_retry_on datetime NULL,
     PRIMARY KEY(id),
     FOREIGN KEY(status_id) REFERENCES api_process_log_status(id),
     FOREIGN KEY(event_handler_id) REFERENCES api_event_handler(id)
