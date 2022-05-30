@@ -344,6 +344,7 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
     sorting int NOT NULL DEFAULT '100' COMMENT 'Sorting',
     solution_id int NOT NULL DEFAULT '1',
     run_async smallint NOT NULL DEFAULT '0' COMMENT '-1: run async 0=not async',
+    is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled',
     config text NULL COMMENT 'locale event handler config',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
@@ -353,6 +354,7 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL DEFAULT '0' COMMENT '-1: run async 0=not async' AFTER solution_id;
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled' AFTER run_async;
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
@@ -578,6 +580,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (9,1,'Settings','/ui/v1.0/data/view/api_setting/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (10,1,'Portal Hosts','/ui/v1.0/data/view/api_portal_host/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (11,1,'Fields','/ui/v1.0/data/view/api_table_field/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (12,1,'Eventhandler','/ui/v1.0/data/view/api_event_handler/default',1,1);
 
 /*
 End APP
@@ -1024,5 +1027,19 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="alias" table_alias="t" alias="Tablealias"/>
         <field name="label" table_alias="f" alias="Label"/>
         <field name="name" table_alias="f" alias="Fieldname"/>
+    </select>
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+34,'LISTVIEW','default',13,'id',1,'<restapi type="select">
+    <table name="api_event_handler" alias="e"/>
+    <filter type="or">
+        <condition field="publisher" alias="e" value="$$query$$" operator="$$operator$$"/>
+    </filter>
+    <select>
+        <field name="id" table_alias="e" alias="id"/>
+        <field name="publisher" table_alias="e" alias="Publisher"/>
+        <field name="event" table_alias="e" alias="Event"/>
+        <field name="type" table_alias="e" alias="Type"/>
     </select>
 </restapi>');

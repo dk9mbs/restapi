@@ -83,7 +83,7 @@ class Plugin:
                 null AS process_id
                 from api_event_handler p
                 WHERE
-                p.publisher=%s AND p.event=%s
+                p.publisher=%s AND p.event=%s AND p.is_enabled=-1
                 ORDER BY sorting,id
             """
             params=[self._publisher, self._trigger]
@@ -95,7 +95,7 @@ class Plugin:
                 from api_event_handler p
                 INNER JOIN api_process_log l ON p.id=l.event_handler_id
                 WHERE
-                l.id=%s
+                l.id=%s AND p.is_enabled=-1
                 ORDER BY sorting,p.id
             """
             params=[self._process_id]
