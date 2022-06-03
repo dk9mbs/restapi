@@ -49,11 +49,11 @@ def __ui_app_info(context):
 
     return (rs_app, rs_items)
 
-def __build_query_string(context, **kwargs):
+def __build_query_string(context, append_args={}, **kwargs):
     if context==None:
         logger.warning(f"Deprecated!Using build_query_string with context==None! I will use g.context!")
         context=g.context
-    return httphelper.build_query_string(context)
+    return httphelper.build_query_string(context, append_args)
 
 def __datacomboview(table_alias, viewname, query):
     context=g.context

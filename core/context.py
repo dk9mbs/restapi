@@ -21,6 +21,9 @@ class Context:
         else:
             return default
 
+    def get_args(self):
+        return self.__args
+
     def get_username(self):
         if self.__userinfo==None:
             raise NameError('there is no userinfo object in this context!')

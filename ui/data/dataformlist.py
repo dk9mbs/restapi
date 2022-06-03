@@ -16,6 +16,7 @@ from core.exceptions import RestApiNotAllowed, DataViewNotFound
 from core import log
 from core.exceptions import RestApiNotAllowed, ConfigNotValid
 from core.meta import read_table_meta, read_table_view_meta
+from core.setting import Setting
 
 from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
@@ -45,6 +46,13 @@ class EntityList(Resource):
             query_key=f"dataformlist_query_{table}"
             operator_key=f"dataformlist_op_{table}"
 
+            page=int(context.get_arg('page', default=0))
+            #page_size=int(context.get_arg('page_size', default=0))
+            page_size=int(Setting.get_value(context, "datalist.page_size","10"))
+
+            if page==0:
+                page=0
+
             query=context.get_arg('query', default=None)
             operator=context.get_arg('operator', None)
 
@@ -72,7 +80,7 @@ class EntityList(Resource):
             fetch=fetch.replace("$$query$$", query)
             fetch=fetch.replace("$$operator$$", operator)
 
-            fetchparser=FetchXmlParser(fetch, context)
+            fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
 
             template=JinjaTemplate.create_file_template(context, file)
@@ -83,7 +91,9 @@ class EntityList(Resource):
                         "view_meta": view_meta,
                         "pagemode": "dataformlist",
                         "context": context,
-                        "query": query.replace("%","") }))
+                        "query": query.replace("%",""),
+                        "page": page,
+                        "page_size": page_size }))
 
             response.headers['content-type'] = 'text/html'
 

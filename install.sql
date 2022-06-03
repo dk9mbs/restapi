@@ -614,6 +614,7 @@ CREATE TABLE IF NOT EXISTS api_setting (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('portal.default_portal','default','Default portal_id',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('datalist.page_size','10','Page Size',1);
 
 
 /* Dataviews */

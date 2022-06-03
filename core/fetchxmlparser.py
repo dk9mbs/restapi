@@ -11,7 +11,7 @@ logger=log.create_logger(__name__)
 """
 class FetchXmlParser:
 
-    def __init__(self, fetch_xml, context):
+    def __init__(self, fetch_xml, context, page=0, page_size=0):
         self._logger=log.create_logger(__name__)
         self._fetch_xml=fetch_xml
         self._context=context
@@ -34,8 +34,8 @@ class FetchXmlParser:
         self._sql_parameters_groupby=[]
         self._table_aliases={}
         self._columns_desc=[]
-        self._limit=0
-        self._limit_offset=0
+        self._limit=page_size
+        self._limit_offset=page*page_size
         self.parse()
 
     def __init_properties(self):
@@ -57,8 +57,8 @@ class FetchXmlParser:
         self._sql_parameters_groupby=[]
         self._table_aliases={}
         self._columns_desc=[]
-        self._limit=0
-        self._limit_offset=0
+        #self._limit=0
+        #self._limit_offset=0
 
     def get_columns(self):
         return self._columns_desc
@@ -137,6 +137,7 @@ class FetchXmlParser:
             sql.append(f" LIMIT {self._limit_offset}, {self._limit} ")
 
         sql.append(f"{self._sql_comment}")
+
         return (''.join(sql),params)
 
     def get_insert(self):
