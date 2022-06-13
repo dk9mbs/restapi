@@ -443,6 +443,11 @@ UPDATE api_portal SET template='<!DOCTYPE HTML5>
 
 <title>Demo Portal</title>
 
+<!-- Start Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
+<!-- End Bootstrap -->
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
@@ -479,8 +484,10 @@ CREATE TABLE IF NOT EXISTS api_portal_content(
     id int NOT NULL AUTO_INCREMENT,
     portal_id varchar(100) NOT NULL,
     name varchar(50) NOT NULL,
+    title varchar(250) NOT NULL,
     type_id int NOT NULL,
     content text NULL COMMENT 'Please fill here your page content',
+    is_active smallint NOT NULL DEFAULT '-1',
     solution_id int NOT NULL,
     created_on datetime NOT NULL DEFAULT current_timestamp,
     PRIMARY KEY(id),
@@ -491,6 +498,12 @@ CREATE TABLE IF NOT EXISTS api_portal_content(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_portal_content AUTO_INCREMENT=1000000;
+
+ALTER TABLE api_portal_content ADD COLUMN IF NOT EXISTS is_active smallint NOT NULL DEFAULT '-1' AFTER content;
+ALTER TABLE api_portal_content ADD COLUMN IF NOT EXISTS title varchar(250) NOT NULL AFTER name;
+
+UPDATE api_portal_content SET title=name WHERE title='';
+
 
 /* end portal */
 

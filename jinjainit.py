@@ -92,9 +92,9 @@ def __image_by_path(context, path, **kwargs):
     return html
 
 
-def __execute_fetch_xml(context, fetch_xml):
+def __execute_fetch_xml(context, fetch_xml, run_as_system=False):
     fetchparser=FetchXmlParser(fetch_xml, context)
-    rs=DatabaseServices.exec(fetchparser, context, fetch_mode=0)
+    rs=DatabaseServices.exec(fetchparser, context, fetch_mode=0, run_as_system=run_as_system)
     return rs
 
 def __recordset_to_list(context, rs, fields, reverse=False):
