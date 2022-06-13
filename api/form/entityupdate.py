@@ -52,10 +52,11 @@ class Entity(Resource):
             return redirect(next, code=302)
 
         except RestApiNotAllowed as err:
-            logger.info(f"RestApiNotAllowed Exception: {err}")
+            logger.exception(f"RestApiNotAllowed Exception: {err}")
             return redirect(f"/ui/login?redirect=/ui/v1.0/data/{table}/{id}", code=302)
         except Exception as err:
-           return make_response(JinjaTemplate.render_status_template(500, err), 500)
+            logger.exception(f"RestApiNotAllowed Exception: {err}")
+            return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
 
 
 def get_endpoint():
