@@ -87,6 +87,9 @@ class DatabaseServices:
         if fetch_mode != -1:
             rs.read(fetch_mode)
 
+        if command_builder.get_sql_type().upper()== "SELECT":
+            rs.execute_formatter(context, command_builder.get_columns())
+
         rs.get_columns()
         if command_builder.get_sql_type().upper() == "INSERT":
             if inserted_id==0 or inserted_id==None:

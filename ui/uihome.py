@@ -64,19 +64,19 @@ class AppHome(Resource):
 
         except ConfigNotValid as err:
             logger.exception(f"Config not valid {err}")
-            return make_response(JinjaTemplate.render_status_template(500, err), 500)
+            return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
         except jinja2.exceptions.TemplateNotFound as err:
             logger.exception(f"TemplateNotFound: {err}")
-            return make_response(JinjaTemplate.render_status_template(404, f"Template not found {err}"), 404)
+            return make_response(JinjaTemplate.render_status_template(context, 404, f"Template not found {err}"), 404)
         except FileNotFoundError as err:
             logger.exception(f"FileNotFound: {err}")
-            return make_response(JinjaTemplate.render_status_template(404, f"File not found {err}"), 404)
+            return make_response(JinjaTemplate.render_status_template(context, 404, f"File not found {err}"), 404)
         except RestApiNotAllowed as err:
             logger.exception(f"RestApiNotAllowed Exception: {err}")
             return redirect(f"/ui/login?redirect={request.url}", code=302)
         except Exception as err:
             logger.exception(f"Exception: {err}")
-            return make_response(JinjaTemplate.render_status_template(500, err), 500)
+            return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
 
 def get_endpoint():
     return AppHome

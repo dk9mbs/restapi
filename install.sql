@@ -677,7 +677,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
             <field name="username" table_alias="u"/>
             <field name="created_on" table_alias="s"/>
             <field name="last_access_on" table_alias="s"/>
-            <field name="disabled" table_alias="s"/>
+            <field name="disabled" table_alias="s" formatter="boolean"/>
         </select>
 </restapi>');
 
@@ -705,8 +705,8 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     <select>
         <field name="id" table_alias="u"/>
         <field name="username" table_alias="u" alias="name"/>
-        <field name="disabled" table_alias="u"/>
-        <field name="is_admin" table_alias="u"/>
+        <field name="disabled" table_alias="u" formatter="boolean"/>
+        <field name="is_admin" table_alias="u" formatter="boolean"/>
     </select>
 </restapi>');
 
@@ -942,6 +942,8 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </joins>
     <select>
         <field name="id" table_alias="t" alias="id"/>
+        <field name="is_active" table_alias="t" alias="Aktiviert"/>
+        <field name="title" table_alias="t" alias="Titel"/>
         <field name="name" table_alias="t" alias="Name"/>
         <field name="name" table_alias="p" alias="Portal"/>
     </select>
@@ -1055,5 +1057,28 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="publisher" table_alias="e" alias="Publisher"/>
         <field name="event" table_alias="e" alias="Event"/>
         <field name="type" table_alias="e" alias="Type"/>
+    </select>
+</restapi>');
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+35,'LISTVIEW','active',19,'id',1,'<restapi type="select">
+    <table name="api_portal_content" alias="t"/>
+    <filter type="and">
+        <filter type="or">
+            <condition field="name" alias="t" value="$$query$$" operator="$$operator$$"/>
+            <condition field="name" alias="t" value="$$query$$" operator="$$operator$$"/>
+        </filter>
+        <condition field="is_active" alias="t" value="-1" operator="="/>
+    </filter>
+    <joins>
+        <join type="inner" table="api_portal" alias="p" condition="t.portal_id=p.id"/>
+    </joins>
+    <select>
+        <field name="id" table_alias="t" alias="id"/>
+        <field name="is_active" table_alias="t" alias="Aktiviert"/>
+        <field name="title" table_alias="t" alias="Titel"/>
+        <field name="name" table_alias="t" alias="Name"/>
+        <field name="name" table_alias="p" alias="Portal"/>
     </select>
 </restapi>');

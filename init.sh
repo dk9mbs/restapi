@@ -4,6 +4,7 @@ SCRIPTNAME=$BASH_SOURCE
 BASEDIR=$(realpath $SCRIPTNAME)
 BASEDIR=$(dirname $BASEDIR)
 PLUGINPATH=$BASEDIR/plugins
+FORMATTERPATH=$BASEDIR/formatter
 VENV=$BASEDIR/venv/restapi
 
 mkdir -p "$VENV"
@@ -43,9 +44,9 @@ echo "Plugindir........:$PLUGINPATH"
 echo "=============================================================="
 
 mkdir -p "$PLUGINPATH"
+mkdir -p "$FORMATTERPATH"
 
-
-export PYTHONPATH=$BASEDIR:$PLUGINPATH:../:$(python $BASEDIR/cfgreader.py plugin root)
+export PYTHONPATH=$BASEDIR:$PLUGINPATH:$FORMATTERPATH:../:$(python $BASEDIR/cfgreader.py plugin root)
 export RESTAPIPATH=$BASEDIR
 
 echo "=============================================================="

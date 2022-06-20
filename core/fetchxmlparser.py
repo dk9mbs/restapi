@@ -431,6 +431,7 @@ class FetchXmlParser:
         alias=name
         table=self._sql_table
         table_alias=""
+        formatter=None
 
         if 'table_alias' in field.attrib:
             table_alias=self._escape_string(field.attrib['table_alias'])
@@ -443,7 +444,10 @@ class FetchXmlParser:
         if 'header' in field.attrib:
             column_header=field.attrib['header']
 
-        column_desc={"table": table, "database_field": name, "label": column_header, "alias": alias}
+        if 'formatter' in field.attrib:
+            formatter=field.attrib['formatter']
+
+        column_desc={"table": table, "database_field": name, "label": column_header, "alias": alias, "formatter": formatter}
         self._columns_desc.append(column_desc)
 
 
