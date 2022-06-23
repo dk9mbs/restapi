@@ -32,6 +32,7 @@ echo "metadata cache builded!"
 echo "------------------------------------------------------------"
 
 mkdir -p $BASEDIR/plugins
+mkdir -p $BASEDIR/formatter
 mkdir -p $BASEDIR/3thparty
 mkdir -p $BASEDIR/wwwroot/portal
 mkdir -p $BASEDIR/wwwroot/templates/solutions
@@ -57,6 +58,7 @@ module = restapi:app
 
 pythonpath = $BASEDIR
 pythonpath = $PLUGINPATH
+pythonpath = $FORMATTERPATH
 pythonpath = $(python $BASEDIR/cfgreader.py plugin root)
 chdir = $BASEDIR
 home = $VENV

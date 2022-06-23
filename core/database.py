@@ -8,6 +8,7 @@ from core.fetchxmlparser import FetchXmlParser
 from core.permission import Permission
 from core import log
 from core.jsontools import json_serial
+from core.formatter_factory import FormatterFactory
 
 logger=log.create_logger(__name__)
 
@@ -33,6 +34,28 @@ class Recordset:
             self._result=self._cursor.fetchone()
         else:
             raise NameError(f"wrong fetch_mode: {fetch_mode}")
+
+    def execute_formatter(self,context, columns):
+        formatters={}
+
+        if self.get_eof():
+            return
+
+        for col in columns:
+            if col['formatter'] != None and col['formatter'] != "":
+                name=col['formatter']
+                if not name in formatters:
+                    factory=FormatterFactory(context, name)
+                    formatter=factory.create()
+                    formatters[name]=formatter
+
+        for rec in self._result:
+            for col in columns:
+                if col['formatter'] != None and col['formatter'] != "":
+                    field=col['database_field']
+                    name=col['formatter']
+                    formatter=formatters[name]
+                    rec[field]=formatter.output(context, rec[field])
 
     def get_eof(self):
         if self._result==None or self._result==[] or self._result=={} or self._result==():

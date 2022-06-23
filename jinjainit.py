@@ -73,22 +73,22 @@ def __datacomboview(table_alias, viewname, query):
 
 
 def __image_by_path(context, path, **kwargs):
-    width=100
-    unit="%"
+    width=""
+    css_class="restapi_image"
 
-    if 'width' in kwargs:
-        width=kwargs['width']
+    if 'width' in kwargs and 'unit' in kwargs:
+        width=f"width: {kwargs['width']}{kwargs['unit']}"
 
-    if 'unit' in kwargs:
-        unit=kwargs['unit']
+    if 'css_class' in kwargs:
+        css_class=kwargs['css_class']
 
-    html=f"""<!-- start of jinja image(img_by_path|{path}|width:{width}{unit};)-->
-    <a target="_blank" style="width:{width}{unit};"
-    href="/api/v1.0/file/{path}">
-    <img style="width:{width}{unit};" src="/api/v1.0/file/{path}"></img>
+    html=f"""<!-- start of jinja image(img_by_path|{path}|{width}|class:{css_class};)-->
+    <a target="_blank" href="/api/v1.0/file/{path}">
+    <img style="{width};" class="{css_class}" src="/api/v1.0/file/{path}"></img>
     </a>
-    <!-- end of placeholder -->
+    <!-- end of jinja image -->
     """
+
     return html
 
 
