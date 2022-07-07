@@ -82,6 +82,9 @@ def before_request():
             elif 'username' in request.headers:
                 username=request.headers['username']
                 password=request.headers['password']
+            elif 'username' in request.args:
+                username=request.args['username']
+                password=request.args['password']
             else:
                 guest=AppInfo.guest_credentials()
                 username=guest['username']
