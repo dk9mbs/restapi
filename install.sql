@@ -485,6 +485,7 @@ CREATE TABLE IF NOT EXISTS api_portal_content(
     portal_id varchar(100) NOT NULL,
     name varchar(50) NOT NULL,
     title varchar(250) NOT NULL,
+    file_path text NULL,
     type_id int NOT NULL,
     content text NULL COMMENT 'Please fill here your page content',
     is_active smallint NOT NULL DEFAULT '-1',
@@ -501,6 +502,7 @@ ALTER TABLE api_portal_content AUTO_INCREMENT=1000000;
 
 ALTER TABLE api_portal_content ADD COLUMN IF NOT EXISTS is_active smallint NOT NULL DEFAULT '-1' AFTER content;
 ALTER TABLE api_portal_content ADD COLUMN IF NOT EXISTS title varchar(250) NOT NULL AFTER name;
+ALTER TABLE api_portal_content ADD COLUMN IF NOT EXISTS file_path text NULL AFTER title;
 
 UPDATE api_portal_content SET title=name WHERE title='';
 
