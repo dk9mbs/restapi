@@ -519,6 +519,7 @@ class FetchXmlParser:
                     operator=">="
                 elif operator=="leq":
                     operator="<="
+
                 if operator == "null":
                     sql=sql+field+" IS NULL"
                 elif operator == "notnull":
@@ -550,7 +551,7 @@ class FetchXmlParser:
                 elif operator == ">=":
                     sql=f"{sql}{field}>=%s"
                     self._sql_parameters_where.append(value)
-                elif operator == ">=":
+                elif operator == "<=":
                     sql=f"{sql}{field}<=%s"
                     self._sql_parameters_where.append(value)
                 elif operator == "like":
