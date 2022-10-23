@@ -8,9 +8,20 @@ class Context:
         self.__session_values=None
         self._auto_logoff=False
         self.__args={}
+        self.__userdata={}
 
     def __del__(self):
         pass
+
+    def set_userdata(self, key, data):
+        self.__userdata[key]=data
+
+    def get_userdata(self, key, default=None):
+        if not key in self.__userdata:
+            return default
+
+        return self.__userdata[key]
+
 
     def set_arg(self, name, value):
         self.__args[name]=value

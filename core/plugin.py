@@ -130,6 +130,19 @@ class Plugin:
 
 
 class ProcessTools(object):
+    #
+    # Set a user defined status text.
+    #
+    @staticmethod
+    def set_process_status_info(context, plugin_context, status_info):
+        connection=context.get_connection()
+        cursor=connection.cursor()
+
+        sql=f"""UPDATE api_process_log SET status_info=%s WHERE id=%s"""
+        cursor.execute(sql,[status_info, plugin_context['process_id']])
+
+        connection.commit()
+
     @staticmethod
     def create_process(context, plugin_context, params):
         connection=context.get_connection()

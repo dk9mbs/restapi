@@ -197,6 +197,9 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (25,'Lösung','api_solution', 'api_solution','id','int','name',0);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (26,'Log','api_process_log_status', 'api_process_log_status','id','int','name',0);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -386,9 +389,10 @@ CREATE TABLE IF NOT EXISTS api_process_log (
     id varchar(36) NOT NULL,
     created_on datetime NOT NULL DEFAULT current_timestamp,
     status_id int NOT NULL DEFAULT '0'  COMMENT '0=pending 10=ok 20=Error 30=Timeout',
+    status_info text NULL COMMENT 'Status info set by the plugin',
     error_text text NULL COMMENT 'in case of an exception',
     response_code int NULL COMMENT 'HTTP Code',
-    request_msg text NULL COMMENT 'HTTP Request body',
+    request_msg longtext NULL COMMENT 'HTTP Request body',
     response_msg text NULL COMMENT '',
     response_on datetime NULL COMMENT 'Response on',
     config text NULL COMMENT 'Locale config from api_event_handler',
@@ -400,6 +404,13 @@ CREATE TABLE IF NOT EXISTS api_process_log (
     FOREIGN KEY(status_id) REFERENCES api_process_log_status(id),
     FOREIGN KEY(event_handler_id) REFERENCES api_event_handler(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/* Bugfixing api_process_log */
+ALTER TABLE api_process_log MODIFY request_msg LONGTEXT;
+ALTER TABLE api_process_log ADD COLUMN IF NOT EXISTS status_info text NULL COMMENT 'Status info set by the plugin' AFTER status_id;
+
+/* Bugfixing api_process_log */
+
 
 CREATE TABLE IF NOT EXISTS api_audit_log(
     id INT NOT NULL AUTO_INCREMENT,
@@ -596,6 +607,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (10,1,'Portal Hosts','/ui/v1.0/data/view/api_portal_host/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (11,1,'Fields','/ui/v1.0/data/view/api_table_field/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (12,1,'Eventhandler','/ui/v1.0/data/view/api_event_handler/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (13,1,'Process Log','/ui/v1.0/data/view/api_process_log/default',1,1);
 
 /*
 End APP
@@ -1083,4 +1095,29 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="name" table_alias="t" alias="Name"/>
         <field name="name" table_alias="p" alias="Portal"/>
     </select>
+</restapi>');
+
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+36,'LISTVIEW','default',23,'id',1,'<restapi type="select">
+    <table name="api_process_log" alias="l"/>
+    <filter type="or">
+        <condition field="plugin_module_name" alias="e" value="$$query$$" operator="$$operator$$"/>
+    </filter>
+    <joins>
+        <join type="inner" table="api_event_handler" alias="e" condition="l.event_handler_id=e.id"/>
+        <join type="inner" table="api_process_log_status" alias="s" condition="l.status_id=s.id"/>
+    </joins>
+    <select>
+        <field name="id" table_alias="l" alias="id"/>
+        <field name="created_on" table_alias="l" alias="Created"/>
+        <field name="name" table_alias="s" alias="Status"/>
+        <field name="status_info" table_alias="l" alias="Info"/>
+        <field name="error_text" table_alias="l" alias="Error"/>
+        <field name="plugin_module_name" table_alias="e" alias="Module"/>
+    </select>
+    <orderby>
+        <field name="created_on" alias="l" sort="DESC"/>
+    </orderby>
 </restapi>');
