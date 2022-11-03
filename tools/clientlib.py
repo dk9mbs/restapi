@@ -11,8 +11,11 @@ class FileUploadException(Exception):
 class FileDownloadException(Exception):
     pass
 
+class NotFound404(Exception):
+    pass
+
 class RestApiClient:
-    def __init__(self, root_url="http://localhost:5001/api"):
+    def __init__(self, root_url="http://localhost:5000/api"):
         self.__session_id=None
         self.__cookies=None
         self.__root=f"{root_url}/v1.0"
@@ -83,7 +86,7 @@ class RestApiClient:
         url=f"{self.__root}/data/{table}/{id}"
         r=requests.get(url, cookies=self.__cookies)
         if r.status_code!=200:
-            raise NameError(f"{r.status_code} {r.text}")
+            raise NotFound404(f"{r.status_code} {r.text}")
 
         if json_out==True:
             return json.loads(r.text)
@@ -205,13 +208,13 @@ if __name__=='__main__':
     client=RestApiClient()
     print(client.login("root", "password"))
 
-    print(client.delete("dummy",99))
-    print(client.delete("dummy",100))
-    print(client.add("dummy", {'id':99,'name':'IC735', 'port':3306}))
-    print(client.add("dummy", {'id':100,'name':'TEST', 'port':3306}))
+    #print(client.delete("dummy",99))
+    #print(client.delete("dummy",100))
+    #print(client.add("dummy", {'id':99,'name':'IC735', 'port':3306}))
+    #print(client.add("dummy", {'id':100,'name':'TEST', 'port':3306}))
     print(client.read("dummy", 99))
-    print(client.update("dummy", 99, {'id':99,'name':'GD77', 'port':3307}))
-    print(client.read("dummy", 99))
+    #print(client.update("dummy", 99, {'id':99,'name':'GD77', 'port':3307}))
+    #print(client.read("dummy", 99))
     print(client.read_multible("dummy"))
 
 
