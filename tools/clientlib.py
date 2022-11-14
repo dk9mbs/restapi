@@ -14,6 +14,9 @@ class FileDownloadException(Exception):
 class NotFound404(Exception):
     pass
 
+class HTTPException(Exception):
+    pass
+
 class RestApiClient:
     def __init__(self, root_url="http://localhost:5000/api"):
         self.__session_id=None
@@ -34,7 +37,7 @@ class RestApiClient:
             session=None
 
         if r.status_code!=200:
-            raise NameError(f"{r.text}")
+            raise HTTPException(f"{r.text}")
 
         self.__cookies={"session": session}
         self.__session_id=session
@@ -44,7 +47,7 @@ class RestApiClient:
         r=requests.post(f'{self.__root}/core/logoff', cookies=self.__cookies)
         self.__session_id=None
         if r.status_code!=200:
-            raise NameError(f"{r.text}")
+            raise HTTPException(f"{r.text}")
         return r.text
 
     def delete(self, table, id,json_out=False):
@@ -52,7 +55,7 @@ class RestApiClient:
         r=requests.delete(url, cookies=self.__cookies)
         print(r.status_code)
         if r.status_code!=200:
-            raise NameError(f"{r.status_code} {r.text}")
+            raise HTTPException(f"{r.status_code} {r.text}")
 
         if json_out==True:
             return json.loads(r.text)
@@ -75,7 +78,7 @@ class RestApiClient:
         data=json.loads(data)
         r=requests.post(url, headers=headers, json=data, cookies=self.__cookies)
         if r.status_code!=200:
-            raise NameError(f"{r.status_code} {r.text}")
+            raise HTTPException(f"{r.status_code} {r.text}")
 
         if json_out==True:
             return json.loads(r.text)
@@ -100,27 +103,53 @@ class RestApiClient:
         data=json.loads(data)
         r=requests.put(url, headers=headers, json=data, cookies=self.__cookies)
         if r.status_code!=200:
-            raise NameError(f"{r.status_code} {r.text}")
+            raise HTTPException(f"{r.status_code} {r.text}")
 
         if json_out==True:
             return json.loads(r.text)
         else:
             return r.text
 
-    def read_multible(self, table, fetchxml=None,json_out=False):
+    def read_multible(self, table, fetchxml=None,json_out=False, none_if_eof=False):
         if fetchxml==None:
             url=f"{self.__root}/data/{table}"
             r=requests.get(url, cookies=self.__cookies)
+        elif type(fetchxml) is dict:
+            clause=""
+
+            for key, value in fetchxml.items():
+                clause=f"""
+                {clause}\n<condition field="{key}" value="{value}" operator="="/>
+                """
+
+            fetchxml=f"""
+                <restapi type="select">
+                <table name="{table}"/>
+                <comment text="from clientlib.py (read_multible)"/>
+                <filter type="AND">
+                    {clause}
+                </filter>
+                </restapi>
+                """
+
+            url=f"{self.__root}/data"
+            headers={"Content-Type":"application/xml"}
+            r=requests.post(url, cookies=self.__cookies, data=fetchxml, headers=headers)
         else:
             url=f"{self.__root}/data"
             headers={"Content-Type":"application/xml"}
             r=requests.post(url, cookies=self.__cookies, data=fetchxml, headers=headers)
 
         if r.status_code!=200:
-            raise NameError(f"{r.status_code} {r.text}")
+            raise HTTPException(f"{r.status_code} {r.text}")
+
+        json_obj=json.loads(r.text)
+
+        if none_if_eof and json_obj==[]:
+            return None
 
         if json_out==True:
-            return json.loads(r.text)
+            return json_obj
         else:
             return r.text
 
@@ -131,7 +160,7 @@ class RestApiClient:
         data=json.loads(data)
         r=requests.post(url, headers=headers, json=data, cookies=self.__cookies)
         if r.status_code!=200:
-            raise NameError(f"{r.status_code} {r.text}")
+            raise HTTPException(f"{r.status_code} {r.text}")
 
         if json_out==True:
             return json.loads(r.text)
@@ -212,11 +241,14 @@ if __name__=='__main__':
     #print(client.delete("dummy",100))
     #print(client.add("dummy", {'id':99,'name':'IC735', 'port':3306}))
     #print(client.add("dummy", {'id':100,'name':'TEST', 'port':3306}))
-    print(client.read("dummy", 99))
+    #print(client.read("dummy", 99))
     #print(client.update("dummy", 99, {'id':99,'name':'GD77', 'port':3307}))
     #print(client.read("dummy", 99))
-    print(client.read_multible("dummy"))
+    #print(client.read_multible("dummy"))
 
+
+    dummies=client.read_multible("dummy", {"id": 1, "name":"test"}, json_out=True)
+    print(dummies)
 
     fetch="""
     <restapi type="select">
@@ -228,12 +260,12 @@ if __name__=='__main__':
         </filter>
     </restapi>
     """
-    dummies=client.read_multible("dummy", fetch, json_out=True)
-    for dummy in dummies:
-        print(dummy)
+    #dummies=client.read_multible("dummy", fetch, json_out=True)
+    #for dummy in dummies:
+    #    print(dummy)
 
-    print("Executing a test action ...")
-    print(client.execute_action('test',{"id":"12345"}))
+    #print("Executing a test action ...")
+    #print(client.execute_action('test',{"id":"12345"}))
 
     print(client.logoff())
 
