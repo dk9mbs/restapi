@@ -147,7 +147,7 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
     VALUES (8,'Portal','api_portal', 'api_portal','id','string','name',-1);
 
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (9,'Eventhandler','api_event_handler', 'api_event_handler','id','int','table_name',0);
+    VALUES (9,'Eventhandler','api_event_handler', 'api_event_handler','id','int','publisher',0);
 
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (10,'Tabelle','api_table', 'api_table','id','int','table_name',0);
