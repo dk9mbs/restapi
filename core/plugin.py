@@ -11,12 +11,13 @@ from core.appinfo import AppInfo
 logger=log.create_logger(__name__)
 
 class SyncWrapper(object):
-    def __init__(self,fn, context, plugin_context, params):
+    def __init__(self,fn, context, plugin_context, params, config):
         super().__init__()
         self._fn=fn
         self._context=context
         self._plugin_context=plugin_context
         self._params=params
+        self._config=config
 
     def setDaemon(self, value):
         pass
@@ -33,17 +34,21 @@ class SyncWrapper(object):
             self._plugin_context['response']['error_text']=str(err)
             status_id=20
 
+            # only in sync implemented. After test it can be implemented into the async part of code
+            if self._config.get_value('raise_exception', False)==True:
+                raise err
+
         ProcessTools.set_process_status(self._context,self._plugin_context,status_id)
 
 
 class AsyncWrapper(threading.Thread):
-    def __init__(self,fn, context, plugin_context, params):
+    def __init__(self,fn, context, plugin_context, params, config):
         super().__init__()
         self._fn=fn
         self._origin__context=context
         self._plugin_context=plugin_context
         self._params=params
-
+        self._config=config
         credentials=AppInfo.system_credentials()
         session_id=AppInfo.login(credentials['username'],credentials['password'])
         self._context=AppInfo.create_context(session_id)
@@ -64,6 +69,23 @@ class AsyncWrapper(threading.Thread):
 
         AppInfo.save_context(self._context, True)
         AppInfo.logoff(self._context)
+
+
+class Config():
+    def __init__(self, module):
+        self._module=module
+        self._config={}
+
+        try:
+            self._config=self._module.config()
+        except Exception as err:
+            self._config={}
+
+    def get_value(self, key, default_value=''):
+        if key in self._config:
+            return self._config[key]
+
+        return default_value
 
 
 class Plugin:
@@ -115,15 +137,16 @@ class Plugin:
                                 plugin_config=p['config'], process_id=p['process_id'])
 
                 mod=importlib.import_module(p['plugin_module_name'])
+                config=Config(mod)
 
                 ProcessTools.create_process(self._context,plugin_context,params)
 
                 if p['run_async']==0:
-                    task=SyncWrapper(mod.execute, self._context, plugin_context, params)
+                    task=SyncWrapper(mod.execute, self._context, plugin_context, params, config)
                     task.setDaemon(False)
                     task.start()
                 else:
-                    task=AsyncWrapper(mod.execute, self._context, plugin_context, params)
+                    task=AsyncWrapper(mod.execute, self._context, plugin_context, params, config)
                     task.setDaemon(False)
                     task.start()
 

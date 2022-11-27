@@ -16,7 +16,7 @@ class TestFetchxmlParser(unittest.TestCase):
     def test_setting(self):
         value=Setting.get_value(self.context, 'portal.default_portal')
         print(value)
-        self.assertEqual(value, 'default')
+        self.assertEqual(value, 'iot')
 
 
     def tearDown(self):
