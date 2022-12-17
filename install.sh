@@ -80,13 +80,15 @@ uid = www-data
 gid = www-data
 die-on-term = true
 
-#spooler=/tmp/spool
-spooler=/var/restapi/$INSTANCE_ID/spool
-import = task
+# spooler is deprecated.
+# for periodic tasks use the timeservice
+#spooler=/var/restapi/$INSTANCE_ID/spool
+#import = task
+# end spooler
 
 EOF
 #
-# Create service
+# Create restapi uwsgi service
 #
 echo "... writing restapi.service ..."
 cat << EOF | sudo tee /etc/systemd/system/restapi.$INSTANCE_ID.service
@@ -110,7 +112,71 @@ NotifyAccess=all
 WantedBy=multi-user.target
 EOF
 
+
+#
+# Create restapi-dev
+#
+echo "... writing restapi-dev.service ..."
+cat << EOF | sudo tee /etc/systemd/system/restapi-dev.$INSTANCE_ID.service
+# do not change this file here!
+# auto created by $BASEDIR/install.sh
+[Unit]
+Description=Restapi timerservice
+After=syslog.target mysqld.service
+
+[Service]
+WorkingDirectory=$BASEDIR
+Environment="PYTHONPATH=$PYTHONPATH"
+ExecStart=$VENV/bin/python $BASEDIR/restapi.py
+Restart=always
+KillSignal=SIGQUIT
+Type=idle
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+
+#
+# Create timerservice
+#
+echo "... writing restapi-timer.service ..."
+cat << EOF | sudo tee /etc/systemd/system/restapi-timer.$INSTANCE_ID.service
+# do not change this file here!
+# auto created by $BASEDIR/install.sh
+[Unit]
+Description=Restapi timerservice
+After=syslog.target mysqld.service
+
+[Service]
+WorkingDirectory=$BASEDIR
+Environment="PYTHONPATH=$PYTHONPATH"
+ExecStart=$VENV/bin/python $BASEDIR/timerservice.py
+Restart=always
+KillSignal=SIGQUIT
+Type=idle
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 echo "...reloading systemctl ..."
 sudo systemctl daemon-reload
+echo "*****************************************************************"
+echo "start the services:"
+echo "-------------------"
+echo "systemctl start restapi-dev.$INSTANCE_ID.service"
+echo "systemctl start restapi-timer.$INSTANCE_ID.service"
+echo ""
+echo ""
+echo "autostart the services:"
+echo "-----------------------"
+echo "systemctl enable restapi-dev.$INSTANCE_ID.service"
+echo "systemctl enable restapi-timer.$INSTANCE_ID.service"
+echo "*****************************************************************"
 
 echo "ready!"
