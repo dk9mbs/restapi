@@ -1,5 +1,3 @@
-
-
 class Context:
     def __init__(self):
         self.__session_id=None
@@ -9,9 +7,19 @@ class Context:
         self._auto_logoff=False
         self.__args={}
         self.__userdata={}
+        self.__auto_commit=False
 
     def __del__(self):
         pass
+
+    def get_last_inserted_id(self):
+        return self.get_connection().insert_id()
+
+    def get_auto_commit(self):
+        return self.__auto_commit
+
+    def set_auto_commit(self,value):
+        self.__auto_commit=value
 
     def set_userdata(self, key, data):
         self.__userdata[key]=data
@@ -89,6 +97,9 @@ class Context:
 
     def set_session_id(self, session_id):
         self.__session_id=session_id
+
+    def commit(self):
+        self.__connection.commit()
 
     """
     Close the context for the moement and commit or rollback the db changes.

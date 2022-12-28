@@ -347,6 +347,7 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
     sorting int NOT NULL DEFAULT '100' COMMENT 'Sorting',
     solution_id int NOT NULL DEFAULT '1',
     run_async smallint NOT NULL DEFAULT '0' COMMENT '-1: run async 0=not async',
+    run_queue smallint NOT NULL DEFAULT '0' COMMENT '-1: enabled 0=disabled run via timerservice',
     is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled',
     config text NULL COMMENT 'locale event handler config',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
@@ -358,6 +359,7 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
 
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL DEFAULT '0' COMMENT '-1: run async 0=not async' AFTER solution_id;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled' AFTER run_async;
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_queue smallint NOT NULL DEFAULT '0' COMMENT '-1: enabled 0=disabled run via timerservice' AFTER run_async;
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
@@ -379,6 +381,7 @@ CREATE TABLE IF NOT EXISTS api_process_log_status(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (0,'Pending');
+INSERT IGNORE INTO api_process_log_status(id,name) VALUES (5,'Worker');
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (10,'Success');
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (20,'Error');
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (30,'Timeout');
