@@ -61,9 +61,6 @@ class DatabaseServices:
 
         sql, paras =command_builder.get_sql()
 
-        #logger.info(sql)
-        #logger.info(paras)
-
         tmp=sql
         for item in paras:
             tmp=tmp.replace("%s", f"'{item}'", 1)
@@ -71,7 +68,8 @@ class DatabaseServices:
 
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
-        inserted_id=context.get_connection().insert_id()
+        #inserted_id=context.get_connection().insert_id()
+        inserted_id=context.get_last_inserted_id()
 
         if not id_field_name in params['data']:
             params["data"][id_field_name]={}
@@ -81,7 +79,9 @@ class DatabaseServices:
         handler.execute('after', params)
 
         if command_builder.get_auto_commit()==1 or command_builder.get_auto_commit()==True:
-            context.get_connection().commit()
+            context.commit()
+        elif  context.get_auto_commit()==1 or context.get_auto_commit()==True:
+            context.commit()
 
         rs=Recordset(cursor)
         if fetch_mode != -1:

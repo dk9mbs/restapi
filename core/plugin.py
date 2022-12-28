@@ -7,6 +7,7 @@ import datetime
 
 from core import log
 from core.appinfo import AppInfo
+from core.database import Recordset
 
 logger=log.create_logger(__name__)
 
@@ -102,7 +103,7 @@ class Plugin:
             sql=f"""
             select p.plugin_module_name,p.type,
                 p.run_async,p.id,p.run_async,p.config,
-                null AS process_id
+                null AS process_id, p.run_queue
                 from api_event_handler p
                 WHERE
                 p.publisher=%s AND p.event=%s AND p.is_enabled=-1
@@ -113,7 +114,7 @@ class Plugin:
             sql=f"""
             select p.plugin_module_name,p.type,
                 p.run_async,p.id,p.run_async,p.config,
-                l.id AS process_id
+                l.id AS process_id, 0 AS run_queue
                 from api_event_handler p
                 INNER JOIN api_process_log l ON p.id=l.event_handler_id
                 WHERE
@@ -146,9 +147,10 @@ class Plugin:
                     task.setDaemon(False)
                     task.start()
                 else:
-                    task=AsyncWrapper(mod.execute, self._context, plugin_context, params, config)
-                    task.setDaemon(False)
-                    task.start()
+                    if p['run_queue']==0:
+                        task=AsyncWrapper(mod.execute, self._context, plugin_context, params, config)
+                        task.setDaemon(False)
+                        task.start()
 
 
 
@@ -172,10 +174,10 @@ class ProcessTools(object):
         cursor=connection.cursor()
         sql=f"""INSERT INTO api_process_log (id,request_msg,event_handler_id,run_async,config)
         VALUES (%s,%s,%s,%s,%s)
-        ON DUPLICATE KEY UPDATE status_id=0, retries=retries+1;
+        ON DUPLICATE KEY UPDATE status_id=status_id, retries=retries+1;
         """
         cursor.execute(sql,[plugin_context['process_id'],
-                    str(params), plugin_context['event_handler_id'],
+                    json.dumps(params), plugin_context['event_handler_id'],
                     plugin_context['run_async'], str(plugin_context['config'])
                 ])
         connection.commit()

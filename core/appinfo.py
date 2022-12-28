@@ -88,15 +88,16 @@ class AppInfo:
 
     @classmethod
     def create_connection(cls, database_id=1):
+        cnn=None
         if database_id==0:
-            return cls._mysql.connect()
+            cnn=cls._mysql.connect()
         elif database_id==1:
-            return pymysql.connect(host=cls._app.config['MYSQL_DATABASE_HOST'],
+            cnn=pymysql.connect(host=cls._app.config['MYSQL_DATABASE_HOST'],
                         user=cls._app.config['MYSQL_DATABASE_USER'],
                         password=cls._app.config['MYSQL_DATABASE_PASSWORD'],
                         db=cls._app.config['MYSQL_DATABASE_DB'],
                         charset='utf8mb4',cursorclass=pymysql.cursors.DictCursor)
-
+        return cnn
 
     @classmethod
     def get_server_port(cls):
@@ -133,7 +134,7 @@ class AppInfo:
     Create a context object after start_session.
     """
     @classmethod
-    def create_context(cls, session_id, auto_logoff=False):
+    def create_context(cls, session_id, auto_logoff=False, auto_commit=False):
         connection=cls.create_connection()
 
         sql=f"""
@@ -163,6 +164,7 @@ class AppInfo:
         ctx.set_userinfo({"user_id": system_user['id'], "username": system_user['username']})
         ctx.set_session_id(session_id)
         ctx.set_auto_logoff(auto_logoff)
+        ctx.set_auto_commit(auto_commit)
 
         connection.commit()
         connection.close()
@@ -186,6 +188,8 @@ class AppInfo:
 
         if close_context:
             context.close()
+        else:
+            context.commit()
 
     """
     Return the guest credentials

@@ -1,13 +1,21 @@
 import time
+import json
+import threading
 from datetime import datetime
 
 from core.appinfo import AppInfo
 from core.plugin import Plugin
 from core.log import create_logger
 from config import CONFIG
+from core.fetchxmlparser import FetchXmlParser
+from services.database import DatabaseServices
+from core.plugin import ProcessTools
 
 class Session:
-    def __init__(self):
+    def __init__(self, name="default", init_timer=True):
+        self._init_timer=init_timer
+        self._name=name
+
         AppInfo.init(__name__, CONFIG['default'])
         user=AppInfo.system_credentials()
         self.session_id=AppInfo.login(user['username'],user['password'])
@@ -21,60 +29,189 @@ class Session:
 
 
     def __del__(self):
-        print("bye bye to restapi context")
+        print(f"bye bye to restapi context: {self._name}")
 
-def execute_plugin(context, publisher, params):
-    create_logger(__name__).info(publisher)
-    plugin=Plugin(context, publisher, 'execute')
-    plugin.execute('after', {'input': params, 'output': {}})
+class TaskQueueWorker():
+    def __init__(self, session_id):
+        self._context=None
+        self._run=True
+        self._session_id=session_id
+
+    def __set_process_status(self, process_id, status_id):
+        fetch=f"""
+        <restapi type="update">
+            <table name="api_process_log"/>
+            <fields>
+                <field name="status_id" value="{status_id}"/>
+            </fields>
+            <filter type="and">
+                <condition field="id" value="{process_id}" operator="="/>
+            </filter>
+        </restapi>
+        """
+        fetchparser=FetchXmlParser(fetch, self._context)
+        rs=DatabaseServices.exec(fetchparser, self._context,run_as_system=True, fetch_mode=0)
+
+    def __is_process_waiting(self, process_id):
+        return True
+        fetch=f"""
+        <restapi type="select">
+            <table name="api_process_log" alias="p"/>
+            <select>
+                <field name="status_id" table_alias="p" />
+            </select>
+            <filter type="and">
+                <condition field="id" value="{process_id}" operator="="/>
+            </filter>
+        </restapi>
+        """
+        fetchparser=FetchXmlParser(fetch, self._context)
+        rs=DatabaseServices.exec(fetchparser, self._context,run_as_system=True, fetch_mode=0)
+
+        if rs.get_eof():
+            return False
+
+        if rs.get_result()[0]['status_id']==0:
+            return True
+        else:
+            return False
+
+    def run_waiting_tasks(self):
+        fetch=f"""
+        <restapi type="select">
+            <table name="api_process_log" alias="a"/>
+            <select>
+                <field name="id" table_alias="a"/>
+                <field name="request_msg" table_alias="a"/>
+                <field name="event" table_alias="e"/>
+                <field name="type" table_alias="e"/>
+                <field name="publisher" table_alias="e"/>
+                <field name="event_handler_id" table_alias="a"/>
+            </select>
+            <joins>
+                <join type="inner" table="api_event_handler" alias="e" condition="e.id=a.event_handler_id"/>
+            </joins>
+            <filter type="and">
+                <condition field="status_id" value="0" alias="a" operator="="/>
+                <condition field="run_async" value="-1" alias="a" operator="="/>
+                <condition field="run_queue" value="-1" alias="e" operator="="/>
+            </filter>
+        </restapi>
+        """
+        fetchparser=FetchXmlParser(fetch, self._context)
+        rs=DatabaseServices.exec(fetchparser, self._context,run_as_system=True, fetch_mode=0)
+        for proc in rs.get_result():
+            if self.__is_process_waiting(proc['id']):
+                self.__set_process_status(proc['id'], 5)
+                create_logger(__name__).info(f"executing plugin from process list: {proc['id']}")
+                params=json.loads(proc['request_msg'])
+                plugin=Plugin(self._context, proc['publisher'], proc['event'], process_id=proc['id'])
+                plugin.execute(proc['type'], params)
+
+    def execute(self):
+        self._context=AppInfo.create_context(self._session_id, auto_commit=False)
+        self.run_waiting_tasks()
+        AppInfo.save_context(self._context, close_context=True)
 
 
+class TimerWorker():
+    def __init__(self, session_id):
+        self._context=None
+        self._run=True
+        self._session_id=session_id
+
+    def kill(self):
+        self._run=False
+
+    def _execute_plugin(self,context, publisher, params):
+        create_logger(__name__).info(publisher)
+        plugin=Plugin(context, publisher, 'execute')
+        plugin.execute('after', {'input': params, 'output': {}})
+
+    def _every_minute(self):
+        context=AppInfo.create_context(self._session_id)
+        interval=int(context.get_session_values()['timer_interval'])+1
+        context.get_session_values()['timer_interval']=interval
+        unit=context.get_session_values()['timer_unit']
+        create_logger(__name__).info(f"Interval: {interval}")
+        AppInfo.save_context(context, close_context=False)
+
+        #every minute
+        self._execute_plugin(context, "$timer_every_minute", {})
+
+        # every ten minutes
+        if interval % 10 == 0:
+            self._execute_plugin(context, "$timer_every_ten_minutes", {})
+
+        # every hour
+        if interval % 60 == 0:
+            self._execute_plugin(context, "$timer_every_hour", {})
+
+        # every day
+        if datetime.now().minute==1 and datetime.now().hour==0:
+            self._execute_plugin(context, "$timer_every_day", {})
+
+        AppInfo.save_context(context)
+
+    def execute(self):
+        self._every_minute()
 
 
+class Wait(threading.Thread):
+    def __init__(self, timeout, session_id, callback):
+        super().__init__()
+        self._callback=callback
+        self._timeout=timeout
+        self._run=True
+        self._session_id=session_id
 
-def every_minute():
-    context=AppInfo.create_context(session.session_id)
+    def kill(self):
+        self._run=False
 
-    interval=int(context.get_session_values()['timer_interval'])+1
-    context.get_session_values()['timer_interval']=interval
-    unit=context.get_session_values()['timer_unit']
-    create_logger(__name__).info(f"Interval: {interval}")
-    AppInfo.save_context(context, close_context=False)
-
-    #every minute
-    execute_plugin(context, "$timer_every_minute", {})
-
-    # every ten minutes
-    if interval % 10 == 0:
-        execute_plugin(context, "$timer_every_ten_minutes", {})
-
-    # every hour
-    if interval % 60 == 0:
-        execute_plugin(context, "$timer_every_hour", {})
-
-    # every day
-    if datetime.now().minute==1 and datetime.now().hour==0:
-        execute_plugin(context, "$timer_every_day", {})
+    def run(self):
+        last=datetime.now()
+        while self._run:
+            current=datetime.now()
+            delta = current - last
+            if delta.total_seconds()>=self._timeout:
+                last = datetime.now()
+                self._callback(self._session_id)
+            time.sleep(0.1)
 
 
-    AppInfo.save_context(context)
+def execute_timer(session_id):
+    t=TimerWorker(session_id)
+    t.execute()
 
-
+def execute_queue(session_id):
+    t=TaskQueueWorker(session_id)
+    t.execute()
 
 def main():
-    global session
+    session={}
+    session['timer']=Session(name="timer")
+    session['queue']=Session(name="queue")
 
-    create_logger(__name__).info("logging in as system")
-    session=Session()
-    create_logger(__name__).info(f"logged in as system with sessionid: {session.session_id}")
+    create_logger(__name__).info(f"timer logged in as system with sessionid: {session['timer'].session_id}")
+    create_logger(__name__).info(f"queue logged in as system with sessionid: {session['timer'].session_id}")
 
-    while True:
-        try:
-            create_logger(__name__).info(f"starting interval (1 minute) ...")
-            every_minute()
-            create_logger(__name__).info(f"end of interval")
-            time.sleep(60)
-        except Exception as err:
-            create_logger(__name__).exception(err)
+    tasks=[]
+    w_timer=Wait(60, session['timer'].session_id, execute_timer)
+    w_timer.start()
+
+    w_queue=Wait(5, session['queue'].session_id, execute_queue)
+    w_queue.start()
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt as err:
+        create_logger(__name__).info("Waiting for shutdown threads...")
+
+    w_timer.kill()
+    w_queue.kill()
+
+    w_timer.join()
+    w_queue.join()
 
 main()
