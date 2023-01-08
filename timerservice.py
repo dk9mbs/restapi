@@ -199,7 +199,7 @@ def main():
     w_timer=Wait(60, session['timer'].session_id, execute_timer)
     w_timer.start()
 
-    w_queue=Wait(5, session['queue'].session_id, execute_queue)
+    w_queue=Wait(30, session['queue'].session_id, execute_queue)
     w_queue.start()
 
     try:

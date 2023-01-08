@@ -17,6 +17,7 @@ from core.exceptions import RestApiNotAllowed
 from core import log
 from core.file import File
 from core.plugin import Plugin
+from core.file_system_tools import get_file_content
 
 logger=log.create_logger(__name__)
 
@@ -35,7 +36,22 @@ class TextImport(Resource):
             connection=context.get_connection()
 
             for f in request.files.getlist('file'):
-                content=str(f.read(),'UTF-8')
+                import os
+                import uuid
+                from werkzeug.utils import secure_filename
+                from core.setting import Setting
+
+                filename = secure_filename(f"restapi_{uuid.uuid4()}-{f.filename}")
+                path=Setting.get_value(context, 'upload.file.path', '/tmp/')
+                file_full_name=os.path.join(path, filename)
+                f.save(file_full_name)
+
+                plugin=Plugin(context, f"textfileimport2_{format}", "post")
+                plugin.execute("before", {"data": {"file_full_name": file_full_name}})
+                plugin.execute("after", {"data": {"file_full_name": file_full_name}})
+
+                #deprecated!!!
+                content=get_file_content(file_full_name)
                 plugin=Plugin(context, f"textfileimport_{format}", "post")
                 plugin.execute("before", {"data": {"content": content}})
                 plugin.execute("after", {"data": {"content": content}})
