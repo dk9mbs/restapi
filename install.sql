@@ -1,3 +1,38 @@
+
+
+DROP PROCEDURE IF EXISTS api_proc_create_table_field_instance;
+DROP PROCEDURE IF EXISTS api_proc_logger;
+delimiter //
+
+CREATE PROCEDURE api_proc_logger(IN title varchar(100), IN msg text)
+BEGIN
+    SELECT concat(title,'\n| =======================\n| ',msg) AS logger;
+END//
+
+
+CREATE PROCEDURE api_proc_create_table_field_instance(IN pitable_id int,
+                                                    IN piname varchar(250),
+                                                    IN pitype_id varchar(50),
+                                                    IN picontrol_id int,
+                                                    IN picontrol_config text,
+                                                    OUT poid int)
+BEGIN
+    set poid = -1;
+
+    IF EXISTS (SELECT * FROM api_table_field WHERE table_id=pitable_id AND name=piname) THEN
+        call api_proc_logger("Field instance exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
+        SELECT id INTO poid FROM api_table_field WHERE table_id=pitable_id AND name=piname LIMIT 1;
+    ELSE
+        call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
+        INSERT INTO api_table_field (table_id,name,label,type_id,control_id,control_config)
+            VALUES
+            (pitable_id, piname, piname, pitype_id, picontrol_id, picontrol_config);
+        SELECT LAST_INSERT_ID() INTO poid;
+    END IF;
+END//
+delimiter ;
+
+
 CREATE TABLE IF NOT EXISTS dummy (
     id int NOT NULL auto_increment,
     name varchar(50) NOT NULL,
@@ -127,6 +162,13 @@ ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAUL
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (1,'Dummy','dummy','dummy','id','int','name',-1);
+
+call api_proc_create_table_field_instance(1, 'id','int',14,null, @out_value);
+update api_table_field set control_config='{"disabled": true}' where id=@out_value;
+call api_proc_create_table_field_instance(1, 'name','string',1,null, @out_value);
+update api_table_field set control_config='{"disabled": false}' where id=@out_value;
+call api_proc_create_table_field_instance(1, 'Port','int',14,null, @out_value);
+update api_table_field set control_config='{"disabled": false}' where id=@out_value;
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (2,'Benutzer','api_user','api_user','id','int','username',-1);
