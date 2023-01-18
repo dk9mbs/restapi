@@ -11,6 +11,7 @@ END//
 
 
 CREATE PROCEDURE api_proc_create_table_field_instance(IN pitable_id int,
+                                                    IN pipos int,
                                                     IN piname varchar(250),
                                                     IN pilabel varchar(50),
                                                     IN pitype_id varchar(50),
@@ -25,9 +26,9 @@ BEGIN
         SELECT id INTO poid FROM api_table_field WHERE table_id=pitable_id AND name=piname LIMIT 1;
     ELSE
         call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
-        INSERT INTO api_table_field (table_id,name,label,type_id,control_id,control_config)
+        INSERT INTO api_table_field (pos, table_id,name,label,type_id,control_id,control_config)
             VALUES
-            (pitable_id, piname, pilabel, pitype_id, picontrol_id, picontrol_config);
+            (pipos, pitable_id, piname, pilabel, pitype_id, picontrol_id, picontrol_config);
         SELECT LAST_INSERT_ID() INTO poid;
     END IF;
 END//
@@ -164,11 +165,11 @@ ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAUL
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (1,'Dummy','dummy','dummy','id','int','name',-1);
 
-call api_proc_create_table_field_instance(1, 'id','ID','int',14,null, @out_value);
+call api_proc_create_table_field_instance(1,10, 'id','ID','int',14,null, @out_value);
 update api_table_field set control_config='{"disabled": true}' where id=@out_value;
-call api_proc_create_table_field_instance(1, 'name','Name','string',1,null, @out_value);
+call api_proc_create_table_field_instance(1,20, 'name','Name','string',1,null, @out_value);
 update api_table_field set control_config='{"disabled": false}' where id=@out_value;
-call api_proc_create_table_field_instance(1, 'Port','Port','int',14,null, @out_value);
+call api_proc_create_table_field_instance(1,30, 'Port','Port','int',14,null, @out_value);
 update api_table_field set control_config='{"disabled": false}' where id=@out_value;
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
@@ -254,6 +255,7 @@ UPDATE api_table set name=alias WHERE name IS NULL OR name='';
 
 CREATE TABLE IF NOT EXISTS api_table_field(
     id int NOT NULL AUTO_INCREMENT,
+    pos int NOT NULL DEFAULT '10' COMMENT 'Position for ui forms',
     table_id int NOT NULL COMMENT 'ID from the sourcetable',
     label varchar(50) NOT NULL COMMENT 'Label/Columnheader for listviews and forms',
     name varchar(250) NOT NULL COMMENT 'Fieldname (source)',
@@ -275,6 +277,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS referenced_table_id int NULL COMMENT 'api_table id' AFTER referenced_table_name;
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS pos int NOT NULL DEFAULT '10' COMMENT 'Position for ui forms' AFTER id;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_id int NULL COMMENT 'control_id';
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NULL COMMENT 'Overwrite the type config';
 ALTER TABLE api_table_field ADD FOREIGN KEY(control_id) REFERENCES api_table_field_control(id);
