@@ -110,9 +110,11 @@ AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(),"/v1.0/data/<ta
 
 # file handling
 AppInfo.get_api().add_resource(api.data.file.get_endpoint(), "/v1.0/file/<path:path>", methods=['POST','GET','PUT'])
+AppInfo.get_api().add_resource(api.data.file.get_endpoint(), "/v1.0/file", methods=['POST','PUT'])
 
 # Textfile import like xml, json, csv ...
 AppInfo.get_api().add_resource(api.imports.textimport.get_endpoint(), "/v1.0/import/<format>", methods=['POST'])
+AppInfo.get_api().add_resource(api.imports.textimport.get_endpoint(), "/v1.0/import", methods=['POST'])
 
 # user defined actions
 AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>")

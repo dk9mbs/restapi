@@ -3,14 +3,14 @@
 import sys
 import json
 from flask import Flask, g, session, make_response
-from flask import abort
-#from flask import Blueprint
-from flask import request
+from flask import request, redirect, abort
 from flask_restplus import Resource, Api, reqparse
 
 from core.appinfo import AppInfo
 from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
+from services.httprequest import HTTPRequest
+
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core.exceptions import RestApiNotAllowed
@@ -30,10 +30,16 @@ class TextImport(Resource):
     api=AppInfo.get_api()
 
     @api.doc(parser=create_parser_post())
-    def post(self, format):
+    def post(self, format=None):
         try:
             context=g.context
             connection=context.get_connection()
+
+            if format==None:
+                format=request.form['type_id']
+
+            logger.info(f"Format detected: {format}")
+            next = HTTPRequest.redirect(request)
 
             for f in request.files.getlist('file'):
                 import os
@@ -56,7 +62,10 @@ class TextImport(Resource):
                 plugin.execute("before", {"data": {"content": content}})
                 plugin.execute("after", {"data": {"content": content}})
 
-            return make_response(dict({"results": "" ,"status":"ok"}) ,200)
+            if next==None:
+                return make_response(dict({"results": "" ,"status":"ok"}) ,200)
+            else:
+                return redirect(next, code=302)
 
         except RestApiNotAllowed as err:
             abort(400, f"{err}")
