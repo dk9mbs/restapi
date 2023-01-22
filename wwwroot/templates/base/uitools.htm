@@ -51,34 +51,41 @@
 {%- endmacro %}
 
 {% macro data_select(name,label, value, table_alias, view_name, query='', config={}) -%}
-    {% set disabled=config | value_from_json("disabled", false) %}
-
-    {% if disabled %}
-        {% set show="disabled" %}
+    {% if table_alias==None %}
+        <div style="background-color: #FFCCCB;font-weight:bold;border-radius: 18px">
+        Missing table_alias for field {{ name }} ({{ label }}). Set table_alias or use another ui control for this field!
+        </div>        
     {% else %}
-        {% set show="" %}
-    {% endif %}
+        {% set disabled=config | value_from_json("disabled", false) %}
 
-    {% if label!='' %}
-        <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
-        {% set col=10 %}
-    {% else %}
-        {% set col=12 %}
-    {% endif %}
-
-    <div class="col-sm-{{ col }}">
-    <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
-    <option value=""></option>
-    {% for option in datacomboview(table_alias,view_name,query) %}
-        {% if option['id']==value %}
-            <option selected value="{{ option['id'] }}">{{ option['name'] }}</option>
+        {% if disabled %}
+            {% set show="disabled" %}
         {% else %}
-            <option value="{{ option['id'] }}">{{ option['name'] }}</option>
+            {% set show="" %}
         {% endif %}
-    {% endfor %}
-    {{ caller() }}
-    </select>
-    </div>
+
+        {% if label!='' %}
+            <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+            {% set col=10 %}
+        {% else %}
+            {% set col=12 %}
+        {% endif %}
+
+        <div class="col-sm-{{ col }}">
+        <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
+        <option value=""></option>
+        {% for option in datacomboview(table_alias,view_name,query) %}
+            {% if option['id']==value %}
+                <option selected value="{{ option['id'] }}">{{ option['name'] }}</option>
+            {% else %}
+                <option value="{{ option['id'] }}">{{ option['name'] }}</option>
+            {% endif %}
+        {% endfor %}
+        {{ caller() }}
+        </select>
+        </div>
+    {% endif %}
+
 {%- endmacro %}
 
 {% macro row_form_group () %}

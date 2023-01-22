@@ -24,6 +24,10 @@ BEGIN
     IF EXISTS (SELECT * FROM api_table_field WHERE table_id=pitable_id AND name=piname) THEN
         call api_proc_logger("Field instance exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
         SELECT id INTO poid FROM api_table_field WHERE table_id=pitable_id AND name=piname LIMIT 1;
+
+        UPDATE api_table_field set pos=pipos,name=piname,label=pilabel,control_id=picontrol_id,control_config=picontrol_config
+            WHERE id=poid AND provider_id='MANUFACTURER';
+
     ELSE
         call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
         INSERT INTO api_table_field (pos, table_id,name,label,type_id,control_id,control_config)
@@ -165,12 +169,9 @@ ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAUL
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (1,'Dummy','dummy','dummy','id','int','name',-1);
 
-call api_proc_create_table_field_instance(1,10, 'id','ID','int',14,null, @out_value);
-update api_table_field set control_config='{"disabled": true}' where id=@out_value;
-call api_proc_create_table_field_instance(1,20, 'name','Name','string',1,null, @out_value);
-update api_table_field set control_config='{"disabled": false}' where id=@out_value;
-call api_proc_create_table_field_instance(1,30, 'Port','Port','int',14,null, @out_value);
-update api_table_field set control_config='{"disabled": false}' where id=@out_value;
+call api_proc_create_table_field_instance(1,10, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(1,20, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(1,30, 'Port','Port','int',14,'{"disabled": false}', @out_value);
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (2,'Benutzer','api_user','api_user','id','int','username',-1);
@@ -244,14 +245,27 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (26,'Log','api_process_log_status', 'api_process_log_status','id','int','name',0);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (27,'Provider','api_provider', 'api_provider','id','string','name',-1);
+
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (28,'Datei-Import-Definition','api_file_import_definition', 'api_file_import_definition','id','string','name',-1);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
 UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
-
 UPDATE api_table set name=alias WHERE name IS NULL OR name='';
-
 /* */
+
+CREATE TABLE IF NOT EXISTS api_provider(
+    id varchar(50) NOT NULL,
+    name varchar(50) NOT NULL,
+    PRIMARY KEY(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_provider (id, name) VALUES ('MANUFACTURER','Manufacturer');
+INSERT IGNORE INTO api_provider (id, name) VALUES ('SELF','Self');
 
 CREATE TABLE IF NOT EXISTS api_table_field(
     id int NOT NULL AUTO_INCREMENT,
@@ -269,20 +283,44 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     referenced_field_name varchar(250) NULL COMMENT 'Field from the referenced table',
     control_id int NULL COMMENT 'control_id',
     control_config text NOT NULL COMMENT 'Overwrite the type config',
+    provider_id varchar(50) NOT NULL DEFAULT 'MANUFACTURER',
     UNIQUE KEY(table_id, name),
     FOREIGN KEY(table_id) REFERENCES api_table(id),
     FOREIGN KEY(type_id) REFERENCES api_table_field_type(id),
     FOREIGN KEY(control_id) REFERENCES api_table_field_control(id),
+    FOREIGN KEY(provider_id) REFERENCES api_provider(id),
     PRIMARY KEY(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS referenced_table_id int NULL COMMENT 'api_table id' AFTER referenced_table_name;
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS provider_id varchar(50) NOT NULL DEFAULT 'MANUFACTURER' COMMENT 'overwrite with updates' AFTER control_config;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS pos int NOT NULL DEFAULT '10' COMMENT 'Position for ui forms' AFTER id;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_id int NULL COMMENT 'control_id';
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NULL COMMENT 'Overwrite the type config';
 ALTER TABLE api_table_field ADD FOREIGN KEY(control_id) REFERENCES api_table_field_control(id);
+ALTER TABLE api_table_field ADD FOREIGN KEY(provider_id) REFERENCES api_provider(id);
 
-UPDATE api_table_field SET control_config='{}' WHERE control_config='' or control_config IS NULL;
+call api_proc_create_table_field_instance(13,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,200, 'pos','Position','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,300, 'table_id','Tabellen ID','int',2,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,400, 'label','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,500, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,900, 'allow_null','Null Werte?','int',19,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,1000, 'default_value','Default','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,1100, 'referenced_table_name','Ref. Tabelle (Name)','string',1,'{"disabled": false}', @out_value);
+
+call api_proc_create_table_field_instance(13,1200, 'referenced_table_id','Ref. Tabelle (ID)','int',2,'{"disabled": false}', @out_value);
+UPDATE api_table_field SET referenced_table_name='api_table', referenced_table_id=10, referenced_field_name='table_name', is_lookup=-1 WHERE id=@out_value;
+
+
+call api_proc_create_table_field_instance(13,1300, 'referenced_field_name','Ref. Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1400, 'control_id','Control','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1500, 'control_config','Konfiguration','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1600, 'provider_id','Provider','string',2,'{"disabled": false}', @out_value);
+
 
 DROP TRIGGER IF EXISTS api_table_field_before_insert;
 delimiter //
@@ -313,6 +351,14 @@ CREATE TABLE IF NOT EXISTS api_user (
 INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (1,'root','password',0,-1);
 INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (99,'system','password',0,-1);
 INSERT IGNORE INTO api_user (id,username,password) VALUES (100,'guest','password');
+
+call api_proc_create_table_field_instance(2,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(2,200, 'username','Username','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(2,300, 'password','Password','string',11,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(2,400, 'disabled','Disabled','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(2,500, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(2,600, 'solution_id','Solution','int',2,'{"disabled": true,"update": {},"insert":{} }', @out_value);
+
 
 CREATE TABLE IF NOT EXISTS api_group (
     id int NOT NULL AUTO_INCREMENT,
@@ -407,6 +453,19 @@ ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NU
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled' AFTER run_async;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_queue smallint NOT NULL DEFAULT '0' COMMENT '-1: enabled 0=disabled run via timerservice' AFTER run_async;
 
+call api_proc_create_table_field_instance(9,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,200, 'plugin_module_name','Module','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,300, 'publisher','Publisher','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,400, 'event','Ereignis','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,500, 'type','Typ','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,600, 'sorting','Reihenfolge','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,700, 'solution_id','Lösung','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,800, 'run_async','Asynchron','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,900, 'run_queue','Queue','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,1000, 'is_enabled','Aktiv','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,1100, 'config','Configuration','int',14,'{"disabled": true}', @out_value);
+
+
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (3,'plugin_test','dummy','update','before');
@@ -474,6 +533,24 @@ CREATE TABLE IF NOT EXISTS api_audit_log(
     PRIMARY KEY(id),
     INDEX (table_name,record_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE IF NOT EXISTS api_file_import_definition(
+    id varchar(50) NOT NULL,
+    name varchar(100) NOT NULL,
+    file_type varchar(50) NOT NULL DEFAULT 'CSV',
+    charset varchar(50) NOT NULL DEFAULT 'UTF-8',
+    col_seperator NOT NULL DEFAULT ';',
+    row_seperator NOT NULL DEFAULT '\n',
+    col_header NOT NULL DEFAULT '-1',
+    root_node NOT NULL DEFAULT 'ROOT' COMMENT 'For XML files',
+    PRIMARY KEY(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+call api_proc_create_table_field_instance(28,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(28,100, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+
+
 
 /* portal */
 

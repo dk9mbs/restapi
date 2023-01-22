@@ -15,6 +15,7 @@ from services.database import DatabaseServices
 from services.httprequest import HTTPRequest
 from services.filesystemtools import FileSystemTools
 from services.jinjatemplate import JinjaTemplate
+from services.httprequest import HTTPRequest
 
 from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser

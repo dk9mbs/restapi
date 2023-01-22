@@ -88,13 +88,24 @@ def build_table_fields_meta(context):
                 filter=(table_id, field_name, field_name, type_id, size, referenced_table_name, referenced_field_name, is_lookup,
                         allow_null, default, referenced_table_id )
             else:
-                sql=f"""
-                UPDATE api_table_field SET type_id=%s,size=%s,referenced_table_name=%s,
-                referenced_field_name=%s,is_lookup=%s,allow_null=%s,default_value=%s,referenced_table_id=%s
-                WHERE table_id=%s AND name=%s;
-                """
-                filter=(type_id, size, referenced_table_name, referenced_field_name, is_lookup, allow_null, default,
+
+                if is_lookup==-1:
+                    sql=f"""
+                    UPDATE api_table_field SET type_id=%s,size=%s,referenced_table_name=%s,
+                    referenced_field_name=%s,is_lookup=%s,allow_null=%s,default_value=%s,referenced_table_id=%s
+                    WHERE table_id=%s AND name=%s;
+                    """
+                    filter=(type_id, size, referenced_table_name, referenced_field_name, is_lookup, allow_null, default,
                         referenced_table_id, int(table_id), field_name )
+                else:
+                    sql=f"""
+                    UPDATE api_table_field SET type_id=%s,size=%s,
+                    allow_null=%s,default_value=%s
+                    WHERE table_id=%s AND name=%s;
+                    """
+                    filter=(type_id, size, allow_null, default,
+                        int(table_id), field_name )
+
 
             cur_write=connection.cursor()
             cur_write.execute(sql, filter)
@@ -148,7 +159,7 @@ def read_table_field_meta(context, table_alias):
             INNER JOIN {meta_field_type['table_name']} type ON type.id=f.type_id
             INNER JOIN {meta_field_control['table_name']} control ON control.id=CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END
         WHERE t.alias=%s
-        ORDER BY f.id """
+        ORDER BY f.pos, f.id """
     cursor.execute(sql,[table_alias])
     meta=cursor.fetchall()
 

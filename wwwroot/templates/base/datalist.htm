@@ -21,7 +21,6 @@
                 <option {% if context.get_arg("operator")=="startsWith" %} selected {% endif %} value="startsWith">Beginnt mit</option>
                 <option {% if context.get_arg("operator")=="endsWith" %} selected {% endif %} value="endsWith">Endet mit</option>
                 <option {% if context.get_arg("operator")=="contains" %} selected {% endif %} value="contains">Enthält</option>
-                <option {% if context.get_arg("operator")=="test;" %} selected {% endif %} value="test;">Test</option>
             </select>
             <input type="hidden" id="app_id" name="app_id" value="{{ app_id }}"/>
         </div>
