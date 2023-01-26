@@ -1,4 +1,4 @@
-{% extends "templates/base/base.htm" %} {% import "templates/base/uitools.htm" as forms %}
+{% extends "templates/base/base.htm" %} {% import "templates/base/uitools.htm" as forms %} {% import "templates/base/uitable.htm" as table %}
 
 {% block title %}{{ table }}{% endblock %}
 
@@ -14,6 +14,12 @@
             {% set config=field['control_config'] %}
 
             {% call forms.row() %}
+
+                {% if field['control']=="SUB-TABLE" %}
+                    {% call table.sub_table(field['name'],field['label'],value=value, config=config) %}
+                    {% endcall %}
+                {% endif %}
+
 
                 {% if field['control']=="SELECT" %}
                     {% set value=data | value_from_json(field['name'], "") %}

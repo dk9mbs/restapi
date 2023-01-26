@@ -25,6 +25,7 @@ INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUE
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (19,'Yes No','BOOLEAN','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (100,'nicEdit','NIC-EDIT','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (101,'ace Edit','ACE-EDIT','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (200,'SubTable','SUB-TABLE','{}');
 
 UPDATE api_table_field_control SET control_config='{"type": "text"}' WHERE id=1;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=2;
@@ -46,6 +47,7 @@ UPDATE api_table_field_control SET control_config='{}' WHERE id=18;
 UPDATE api_table_field_control SET control_config='{"true_value": -1}' WHERE id=19;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=100;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=101;
+UPDATE api_table_field_control SET control_config='{}' WHERE id=200;
 
 
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('default','Default',1) ON DUPLICATE KEY UPDATE control_id=1;
@@ -63,10 +65,6 @@ INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('lookup','
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (1,'Dummy','dummy','dummy','id','int','name',-1);
-
-call api_proc_create_table_field_instance(1,10, 'id','ID','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(1,20, 'name','Name','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(1,30, 'Port','Port','int',14,'{"disabled": false}', @out_value);
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (2,'Benutzer','api_user','api_user','id','int','username',-1);
@@ -154,56 +152,22 @@ UPDATE api_table set name=alias WHERE name IS NULL OR name='';
 /* */
 
 
-call api_proc_create_table_field_instance(13,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(13,200, 'pos','Position','int',14,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(13,300, 'table_id','Tabellen ID','int',2,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(13,400, 'label','Bezeichnung','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(13,500, 'name','Name','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(13,900, 'allow_null','Null Werte?','int',19,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(13,1000, 'default_value','Default','string',1,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(13,1100, 'referenced_table_name','Ref. Tabelle (Name)','string',1,'{"disabled": false}', @out_value);
-
-call api_proc_create_table_field_instance(13,1200, 'referenced_table_id','Ref. Tabelle (ID)','int',2,'{"disabled": false}', @out_value);
-UPDATE api_table_field SET referenced_table_name='api_table', referenced_table_id=10, referenced_field_name='table_name', is_lookup=-1 WHERE id=@out_value;
-
-
-call api_proc_create_table_field_instance(13,1300, 'referenced_field_name','Ref. Feldname','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(13,1400, 'control_id','Control','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(13,1500, 'control_config','Konfiguration','string',18,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(13,1600, 'provider_id','Provider','string',2,'{"disabled": false}', @out_value);
-
-
-
 INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (1,'root','password',0,-1);
 INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (99,'system','password',0,-1);
 INSERT IGNORE INTO api_user (id,username,password) VALUES (100,'guest','password');
 
-call api_proc_create_table_field_instance(2,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(2,200, 'username','Username','string',1,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(2,300, 'password','Password','string',11,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(2,400, 'disabled','Disabled','int',19,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(2,500, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(2,600, 'solution_id','Solution','int',2,'{"disabled": true,"update": {},"insert":{} }', @out_value);
-
-
-
 INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (1,'sysadmin',-1);
 INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (100,'guest',0);
 
-
 INSERT IGNORE INTO api_user_group (user_id,group_id) VALUES (100,100);
-
 
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (100,1,-1);
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (100,8,-1);
 
-
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
 
+/* api_event_handler */
 call api_proc_create_table_field_instance(9,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(9,200, 'plugin_module_name','Module','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(9,300, 'publisher','Publisher','int',14,'{"disabled": true}', @out_value);
@@ -215,6 +179,50 @@ call api_proc_create_table_field_instance(9,800, 'run_async','Asynchron','int',1
 call api_proc_create_table_field_instance(9,900, 'run_queue','Queue','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(9,1000, 'is_enabled','Aktiv','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(9,1100, 'config','Configuration','int',14,'{"disabled": true}', @out_value);
+
+/* user */
+call api_proc_create_table_field_instance(2,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(2,200, 'username','Username','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(2,300, 'password','Password','string',11,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(2,400, 'disabled','Disabled','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(2,500, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(2,600, 'solution_id','Solution','int',2,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(2,600, '__sessions','Sitzungen','string',200,'{"table_id":"7", "field_name":"user_id"}', @out_value);
+UPDATE api_table_field SET is_virtual=-1 WHERE id=@out_value;
+
+/* dummy */
+call api_proc_create_table_field_instance(1,10, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(1,20, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(1,30, 'Port','Port','int',14,'{"disabled": false}', @out_value);
+
+/* api_table_field */
+call api_proc_create_table_field_instance(13,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,200, 'pos','Position','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,300, 'table_id','Tabellen ID','int',2,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,400, 'label','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,500, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,900, 'allow_null','Null Werte?','int',19,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,1000, 'default_value','Default','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,1100, 'referenced_table_name','Ref. Tabelle (Name)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1200, 'referenced_table_id','Ref. Tabelle (ID)','int',2,'{"disabled": false}', @out_value);
+UPDATE api_table_field SET referenced_table_name='api_table', referenced_table_id=10, referenced_field_name='table_name', is_lookup=-1 WHERE id=@out_value;
+call api_proc_create_table_field_instance(13,1300, 'referenced_field_name','Ref. Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1400, 'control_id','Control','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1500, 'control_config','Konfiguration','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1600, 'provider_id','Provider','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1600, 'is_virtual','Virtuelles Feld','int',2,'{"disabled": false}', @out_value);
+
+/* session */
+call api_proc_create_table_field_instance(7,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(7,200, 'user_id','Benutzer','int',2,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(7,300, 'session_values','Werte','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(7,400, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(7,500, 'last_access_on','Letzter Zugriff','datetime',9,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(7,600, 'disabled','Disabled','int',19,'{"disabled": false}', @out_value);
+
 
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');

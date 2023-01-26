@@ -1,0 +1,29 @@
+{% macro sub_table(name, label='', placeholder='', value='', config={}) -%}
+    {% set disabled=config | value_from_json("disabled", false) %}
+
+    {% if disabled %}
+        {% set show="disabled" %}
+    {% else %}
+        {% set show="" %}
+    {% endif %}
+        
+
+    {% if label!='' %}
+        <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+        {% set col=10 %}
+    {% else %}
+        {% set col=12 %}
+    {% endif %}
+
+    <table border="1">
+        <tr>
+            <td>ID</td>
+            <td>Benutzer</td>
+            <td>Werte</td>
+        </tr>
+    </table>
+
+
+    {{ caller() }}
+{%- endmacro %}
+
