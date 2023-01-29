@@ -34,7 +34,7 @@
         <div class="card-body">
             <h5 class="card-title">{{ app['name'] }}</h5>
             <p class="card-text">{{ app['description'] }}</p>
-            <a href="{{ app['home_url'] }}" class="btn btn-primary"> Start </a>
+            <a href="{{ app['home_url'] }}" class="btn btn-sm btn-primary"> Start </a>
         </div>
     </div>
  </div>
@@ -44,8 +44,8 @@
 <div class="col">
     <div class="card" style="width: 18rem;height: 12rem;">
         <div class="card-body">
-            <p class="card-text">
             <h5 class="card-title">Daten Import</h5>
+            <p class="card-text">
             <form method="POST" name="formfileimport" id="formfileimport" action="/api/v1.0/import?redirect=/ui/home" enctype = "multipart/form-data">
             <select  id="type_id" name="type_id" class="form-select form-select-sm" aria-label=".form-select-sm example">
                     <option selected value=""></option>
@@ -53,9 +53,10 @@
                     <option value="adif">ADIF Datei (HAM)</option>
                     <option value="csvmt940">CSVMT940 Bank Datei</option>
             </select>
-
+            <p></p>
             <input class="form-control form-control-sm" id="file" name="file" type="file" />
-            <input class="btn btn-primary" type="submit" value="Import">
+            <p></p>
+            <input class="btn btn-sm btn-primary" type="submit" value="Import">
             </form>
 
             </p>
@@ -66,13 +67,13 @@
 <div class="col">
     <div class="card" style="width: 18rem;height: 12rem;">
         <div class="card-body">
-            <p class="card-text">
             <h5 class="card-title">Datei Upload</h5>
+            <p class="card-text">
             <form method="POST" name="formfileupload" id="formfileupload" action="/api/v1.0/file/test/bild?redirect=/ui/home" enctype = "multipart/form-data">
             <input class="form-control form-control-sm" id="file" name="file" type="file" />
-            <input class="btn btn-primary" type="submit" value="Import">
+            <p></p>
+            <input class="btn btn-sm btn-primary" type="submit" value="Import">
             </form>
-
             </p>
         </div>
     </div>

@@ -1,4 +1,5 @@
-{% extends "templates/base/base.htm" %} {% import "templates/base/uitools.htm" as forms %} {% import "templates/base/uitable.htm" as table %}
+{% extends "templates/base/base.htm" %} {% import "templates/base/uitools.htm" as forms %} 
+{% import "templates/base/uitable.htm" as uitable %}
 
 {% block title %}{{ table }}{% endblock %}
 
@@ -16,7 +17,7 @@
             {% call forms.row() %}
 
                 {% if field['control']=="SUB-TABLE" %}
-                    {% call table.sub_table(field['name'],field['label'],value=value, config=config) %}
+                    {% call uitable.sub_table(field['name'],field['label'],value=value, config=config) %}
                     {% endcall %}
                 {% endif %}
 

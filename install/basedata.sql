@@ -223,6 +223,17 @@ call api_proc_create_table_field_instance(7,400, 'created_on','Erstellt am','dat
 call api_proc_create_table_field_instance(7,500, 'last_access_on','Letzter Zugriff','datetime',9,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(7,600, 'disabled','Disabled','int',19,'{"disabled": false}', @out_value);
 
+/* api_portal_content */
+call api_proc_create_table_field_instance(19,100, 'id','ID','int',14,'{"disabled": true, "insert": {"disabled":false}}', @out_value);
+call api_proc_create_table_field_instance(19,200, 'portal_id','Portal','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(19,300, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(19,400, 'title','Titel','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(19,600, 'type_id','Typ','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(19,700, 'content','Inhalt','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(19,800, 'is_active','Aktiviert','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(19,900, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(19,1000, 'file_path','Bild Pfad','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(19,1100, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');

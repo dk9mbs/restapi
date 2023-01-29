@@ -1,13 +1,6 @@
 {% macro sub_table(name, label='', placeholder='', value='', config={}) -%}
     {% set disabled=config | value_from_json("disabled", false) %}
 
-    {% if disabled %}
-        {% set show="disabled" %}
-    {% else %}
-        {% set show="" %}
-    {% endif %}
-        
-
     {% if label!='' %}
         <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
         {% set col=10 %}
@@ -15,15 +8,30 @@
         {% set col=12 %}
     {% endif %}
 
-    <table border="1">
-        <tr>
-            <td>ID</td>
-            <td>Benutzer</td>
-            <td>Werte</td>
-        </tr>
-    </table>
 
+    <div class="col-sm-{{ col }} table-responsive" id="div_sub_table_{{ name }}" name="div_sub_table_{{ name }}">
+        <table class="table table-sm table-hover" id="table">
+        </table>
+    </div>
+
+
+    <script lang="javascript">
+
+    axios.get('/api/v1.0/data/api_session/8b62cb5e-5874-454b-8d5b-c66a14fdd5fc')
+      .then(function (response) {
+        document.getElementById("div_sub_table_{{ name }}").innerHTML=response.data;
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        alert('cannot delete the record');
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
+
+    </script>
 
     {{ caller() }}
-{%- endmacro %}
 
+{%- endmacro %}
