@@ -76,7 +76,6 @@ end
 //
 delimiter ;
 
-
 CREATE TABLE IF NOT EXISTS api_table_field_type(
     id varchar(50) NOT NULL,
     name varchar(50) NOT NULL,
@@ -108,6 +107,30 @@ CREATE TABLE IF NOT EXISTS api_table (
 
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAULT '' AFTER id;
 
+/* formatter */
+CREATE TABLE IF NOT EXISTS api_data_formatter_type(
+    id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS api_data_formatter(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    name varchar(100) NOT NULL COMMENT '',
+    table_id int NULL COMMENT '',
+    template_header text NULL COMMENT 'Jinja header template',
+    template_line text NULL COMMENT 'Jinja body template',
+    template_footer text NULL COMMENT 'Jinja footer template',
+    type_id int NOT NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(type_id) REFERENCES api_data_formatter_type(id),
+    FOREIGN KEY(table_id) REFERENCES api_table(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+/* api_provider */
 CREATE TABLE IF NOT EXISTS api_provider(
     id varchar(50) NOT NULL,
     name varchar(50) NOT NULL,
@@ -121,6 +144,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     label varchar(50) NOT NULL COMMENT 'Label/Columnheader for listviews and forms',
     name varchar(250) NOT NULL COMMENT 'Fieldname (source)',
     is_lookup smallint NOT NULL DEFAULT '0' COMMENT '0=No 1=YES',
+    is_virtual smallint NOT NULL DEFAULT '0' COMMENT 'Virtual field not exists on the database',
     type_id varchar(50) NOT NULL COMMENT 'type of field',
     size int NOT NULL DEFAULT '0' COMMENT 'the size in case of string',
     allow_null smallint NOT NULL DEFAULT '0',
@@ -140,6 +164,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS referenced_table_id int NULL COMMENT 'api_table id' AFTER referenced_table_name;
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_virtual smallint NOT NULL DEFAULT '0' COMMENT 'Virtual field not exists on the database' AFTER is_lookup;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS provider_id varchar(50) NOT NULL DEFAULT 'MANUFACTURER' COMMENT 'overwrite with updates' AFTER control_config;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS pos int NOT NULL DEFAULT '10' COMMENT 'Position for ui forms' AFTER id;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_id int NULL COMMENT 'control_id';

@@ -9,7 +9,7 @@
         
 
     {% if label!='' %}
-        <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+        <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm">{{ label }}</label>
         {% set col=10 %}
     {% else %}
         {% set col=12 %}
@@ -17,9 +17,9 @@
 
     <div class="col-sm-{{ col }}">
         {% if type=='checkbox' %}
-            <input type="checkbox" class="form-check-input" id="{{ name }}" name="{{ name }}" value="1">
+            <input type="checkbox" class="form-check-input form-check-input-sm" id="{{ name }}" name="{{ name }}" value="1">
         {% else %}      
-            <input {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
+            <input {{ show }} type="{{ type }}" class="form-control form-control-sm" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}">
         {% endif %}
     </div>
 
@@ -65,7 +65,7 @@
         {% endif %}
 
         {% if label!='' %}
-            <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
+            <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm">{{ label }}</label>
             {% set col=10 %}
         {% else %}
             {% set col=12 %}
