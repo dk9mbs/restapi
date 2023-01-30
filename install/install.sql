@@ -76,7 +76,6 @@ end
 //
 delimiter ;
 
-
 CREATE TABLE IF NOT EXISTS api_table_field_type(
     id varchar(50) NOT NULL,
     name varchar(50) NOT NULL,
@@ -108,6 +107,30 @@ CREATE TABLE IF NOT EXISTS api_table (
 
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAULT '' AFTER id;
 
+/* formatter */
+CREATE TABLE IF NOT EXISTS api_data_formatter_type(
+    id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS api_data_formatter(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    name varchar(100) NOT NULL COMMENT '',
+    table_id int NULL COMMENT '',
+    template_header text NULL COMMENT 'Jinja header template',
+    template_line text NULL COMMENT 'Jinja body template',
+    template_footer text NULL COMMENT 'Jinja footer template',
+    type_id int NOT NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(type_id) REFERENCES api_data_formatter_type(id),
+    FOREIGN KEY(table_id) REFERENCES api_table(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+/* api_provider */
 CREATE TABLE IF NOT EXISTS api_provider(
     id varchar(50) NOT NULL,
     name varchar(50) NOT NULL,

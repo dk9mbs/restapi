@@ -4,6 +4,9 @@ INSERT IGNORE INTO api_solution(id,name) VALUES (2,'customizing');
 INSERT IGNORE INTO api_provider (id, name) VALUES ('MANUFACTURER','Manufacturer');
 INSERT IGNORE INTO api_provider (id, name) VALUES ('SELF','Self');
 
+INSERT IGNORE INTO api_data_formatter_type (id,name) VALUES (1,'Record');
+INSERT IGNORE INTO api_data_formatter_type (id,name) VALUES (2,'Recordset');
+
 
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (1,'Input','INPUT','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (2,'Dropdown','SELECT','{}');
@@ -144,6 +147,12 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (28,'Datei-Import-Definition','api_file_import_definition', 'api_file_import_definition','id','string','name',-1);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (29,'Daten Formatierungs Typen','api_data_formatter_type', 'api_data_formatter_type','id','int','name',-1);
+
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (30,'Daten Formatierungen','api_data_formatter', 'api_data_formatter','id','int','name',-1);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -166,6 +175,23 @@ INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (1
 
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
+
+
+/* api_data_formatter_type */
+call api_proc_create_table_field_instance(29,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(29,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(29,300, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
+/* api_data_formatter */
+call api_proc_create_table_field_instance(30,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(30,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,300, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,400, 'template_header','Kopf Bereich','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,400, 'template_line','Daten Bereich','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,400, 'template_footer','Fuss Bereich','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,500, 'type_id','Typ','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,600, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
 
 /* api_event_handler */
 call api_proc_create_table_field_instance(9,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
@@ -325,6 +351,9 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (11,1,'Fields','/ui/v1.0/data/view/api_table_field/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (12,1,'Eventhandler','/ui/v1.0/data/view/api_event_handler/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (13,1,'Process Log','/ui/v1.0/data/view/api_process_log/default',1,1);
+
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (14,1,'Daten Formatierungs Type','/ui/v1.0/data/view/api_data_formatter_type/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (15,1,'Daten Formatierungen','/ui/v1.0/data/view/api_data_formatter/default',1,1);
 
 /*
 End APP
@@ -810,4 +839,31 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     <orderby>
         <field name="created_on" alias="l" sort="DESC"/>
     </orderby>
+</restapi>');
+
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+37,'LISTVIEW','default',29,'id',1,'<restapi type="select">
+    <table name="api_data_formatter_type" alias="t"/>
+    <filter type="or">
+        <condition field="name" alias="t" value="$$query$$" operator="$$operator$$"/>
+    </filter>
+    <select>
+        <field name="id" table_alias="t" alias="id"/>
+        <field name="name" table_alias="t" alias="Name"/>
+    </select>
+</restapi>');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+38,'LISTVIEW','default',30,'id',1,'<restapi type="select">
+    <table name="api_data_formatter" alias="f"/>
+    <filter type="or">
+        <condition field="name" alias="f" value="$$query$$" operator="$$operator$$"/>
+    </filter>
+    <select>
+        <field name="id" table_alias="f" alias="id"/>
+        <field name="name" table_alias="f" alias="Name"/>
+        <field name="type_id" table_alias="f" alias="Type"/>
+    </select>
 </restapi>');
