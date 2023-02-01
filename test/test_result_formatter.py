@@ -15,7 +15,31 @@ class TestPluginExecution(unittest.TestCase):
         self.context=AppInfo.create_context(session_id)
 
     def test_formatter(self):
-        formatter=DataFormatter(self.context, {"id": "12", "name": "Markus"}, "Meine ID lautet: {{ id }} Hallo Welt")
+        from services.jinjatemplate import JinjaTemplate
+        from core.fetchxmlparser import FetchXmlParser
+        from services.database import DatabaseServices
+        from core.meta import read_table_meta
+
+        fetch=f"""
+        <restapi type="select">
+            <table name="api_session"/>
+            <select>
+                <field name="id"/>
+                <field name="user_id"/>
+                <field name="session_values"/>
+                <field name="created_on"/>
+                <field name="last_access_on"/>
+                <field name="disabled"/>
+            </select>
+            <filter type="and">
+                <condition field="disabled" value="0" operator="="/>
+            </filter>
+        </restapi>
+        """
+        fetchparser=FetchXmlParser(fetch, self.context)
+        rs=DatabaseServices.exec(fetchparser, self.context,run_as_system=True, fetch_mode=0)
+
+        formatter=DataFormatter(self.context,"test","api_session", rs.get_result())
         result = formatter.render()
 
         print(f"Result: {result}")
