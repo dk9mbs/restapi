@@ -186,11 +186,12 @@ call api_proc_create_table_field_instance(29,300, 'created_on','Erstellt am','da
 call api_proc_create_table_field_instance(30,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(30,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,300, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(30,400, 'template_header','Kopf Bereich','string',18,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(30,400, 'template_line','Daten Bereich','string',18,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(30,400, 'template_footer','Fuss Bereich','string',18,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(30,500, 'type_id','Typ','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(30,600, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(30,300, 'type_id','Typ','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,400, 'mime_type','Mime Typ','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,500, 'template_header','Kopf Bereich','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,600, 'template_line','Daten Bereich','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,700, 'template_footer','Fuss Bereich','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,800, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
 
 /* api_event_handler */
