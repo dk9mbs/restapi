@@ -123,12 +123,16 @@ CREATE TABLE IF NOT EXISTS api_data_formatter(
     template_line text NULL COMMENT 'Jinja body template',
     template_footer text NULL COMMENT 'Jinja footer template',
     type_id int NOT NULL,
+    mime_type varchar(100) NOT NULL DEFAULT 'application/text',
     created_on datetime NOT NULL DEFAULT current_timestamp,
     PRIMARY KEY(id),
     FOREIGN KEY(type_id) REFERENCES api_data_formatter_type(id),
-    FOREIGN KEY(table_id) REFERENCES api_table(id)
+    FOREIGN KEY(table_id) REFERENCES api_table(id),
+    UNIQUE KEY(name, table_id, type_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE api_data_formatter ADD UNIQUE KEY(name, table_id, type_id);
+ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  mime_type varchar(100) NOT NULL DEFAULT 'application/text' AFTER type_id;
 
 /* api_provider */
 CREATE TABLE IF NOT EXISTS api_provider(

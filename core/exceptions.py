@@ -36,3 +36,6 @@ class MissingArgumentInFetchXml(Exception):
 
 class OperatorNotAllowedInFetchXml(Exception):
     pass
+
+class DataFormatterNotFound(Exception):
+    pass
