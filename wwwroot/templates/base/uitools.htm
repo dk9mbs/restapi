@@ -1,3 +1,13 @@
+{% macro debug(title, text, debug_level=0) -%}
+    {% set context=get_context() %}
+    {% if debug_level>=get_debug_level(context) %}
+        <div style="margin-top:2px;padding-left:10px;background-color: #FFCCCB;font-weight:bold;border-radius: 18px">
+        {{ title }}: {{ text }}
+        {{ caller() }}
+        </div>        
+    {% endif %}
+{%- endmacro %}
+
 {% macro input(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
     {% set disabled=config | value_from_json("disabled", false) %}
 

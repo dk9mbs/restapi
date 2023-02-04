@@ -176,6 +176,12 @@ INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (1
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
 
+/* setting */
+call api_proc_create_table_field_instance(21,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(21,200, 'setting','Einstellung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(21,300, 'value','Wert','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(21,400, 'description','Beschreibung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(21,500, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
 
 /* api_data_formatter_type */
 call api_proc_create_table_field_instance(29,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
@@ -192,6 +198,7 @@ call api_proc_create_table_field_instance(30,500, 'template_header','Kopf Bereic
 call api_proc_create_table_field_instance(30,600, 'template_line','Daten Bereich','string',18,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,700, 'template_footer','Fuss Bereich','string',18,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,800, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(30,900, 'provider_id','Besitzer','string',2,'{"disabled": false}', @out_value);
 
 
 /* api_event_handler */
@@ -214,7 +221,8 @@ call api_proc_create_table_field_instance(2,300, 'password','Password','string',
 call api_proc_create_table_field_instance(2,400, 'disabled','Disabled','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,500, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,600, 'solution_id','Solution','int',2,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(2,600, '__sessions','Sitzungen','string',200,'{"table_id":"7", "field_name":"user_id"}', @out_value);
+call api_proc_create_table_field_instance(2,600, '__sessions','Sitzungen','string',200,
+        '{"referenced_table_alias":"api_session","referenced_field_name":"user_id","field_name":"id"}', @out_value);
 UPDATE api_table_field SET is_virtual=-1 WHERE id=@out_value;
 
 /* dummy */
@@ -868,3 +876,30 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="type_id" table_alias="f" alias="Type"/>
     </select>
 </restapi>');
+
+
+
+/* out_data_formatter */
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (1,'api_session_bootstrap_table',7,2);
+UPDATE api_data_formatter SET mime_type='text/html',
+template_header='<div class="table-responsive">
+<table class="table table-hover table-sm">
+<thead>
+<th>ID</th>
+<th>User</th>
+<th>Letzter Zugriff</th>
+<th>Erstellt am</th>
+</thead>
+<tbody>
+',
+template_line='<tr onclick="url=\'/ui/v1.0/data/{{ table_meta[\'alias\'] }}/{{ data[table_meta[\'id_field_name\']] }}{{ build_query_string(context) }}\';alert(url); ">
+<td>{{ data[\'id\'] }}</td>
+<td>{{ data[\'user_id\'] }}</td>
+<td>{{ data[\'last_access_on\'] }}</td>
+<td>{{ data[\'created_on\'] }}</td>
+</td>',
+template_footer='</tbody>
+</table>
+</div>'
+WHERE id=1 AND provider_id='MANUFACTURER';
+
