@@ -221,9 +221,10 @@ call api_proc_create_table_field_instance(2,300, 'password','Password','string',
 call api_proc_create_table_field_instance(2,400, 'disabled','Disabled','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,500, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,600, 'solution_id','Solution','int',2,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(2,600, '__sessions','Sitzungen','string',200,
-        '{"referenced_table_alias":"api_session","referenced_field_name":"user_id","field_name":"id"}', @out_value);
-UPDATE api_table_field SET is_virtual=-1 WHERE id=@out_value;
+call api_proc_create_table_field_instance(2,600, '__sessions','Sitzungen','string',200,'{}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_session',referenced_table_id=7,referenced_field_name='user_id'
+    WHERE id=@out_value;
 
 /* dummy */
 call api_proc_create_table_field_instance(1,10, 'id','ID','int',14,'{"disabled": true}', @out_value);
@@ -236,6 +237,7 @@ call api_proc_create_table_field_instance(13,200, 'pos','Position','int',14,'{"d
 call api_proc_create_table_field_instance(13,300, 'table_id','Tabellen ID','int',2,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,400, 'label','Bezeichnung','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,500, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,510, 'field_name','Feldname','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
@@ -248,7 +250,7 @@ call api_proc_create_table_field_instance(13,1300, 'referenced_field_name','Ref.
 call api_proc_create_table_field_instance(13,1400, 'control_id','Control','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1500, 'control_config','Konfiguration','string',18,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1600, 'provider_id','Provider','string',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(13,1600, 'is_virtual','Virtuelles Feld','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1600, 'is_virtual','Virtuelles Feld','int',19,'{"disabled": false}', @out_value);
 
 /* session */
 call api_proc_create_table_field_instance(7,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
@@ -290,7 +292,7 @@ INSERT IGNORE INTO api_process_log_status(id,name) VALUES (30,'Timeout');
 call api_proc_create_table_field_instance(28,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(28,100, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
 
-
+UPDATE api_table_field SET field_name=name WHERE field_name IS NULL;
 
 INSERT IGNORE INTO api_portal(id,name,solution_id) VALUES ('default', 'default',1);
 UPDATE api_portal SET template='<!DOCTYPE HTML5>
