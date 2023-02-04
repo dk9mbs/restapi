@@ -21,9 +21,10 @@
 
             {% call forms.row() %}
                 {% if field['control']=="SUB-TABLE" %}
-                    {% set value=data | value_from_json(config['field_name'],"") %}
-
-                    {% call uitable.sub_table(field['name'],field['label'],'Sessions', value, config=config) %}
+                    {% set value=data | value_from_json(field['field_name'],"") %}
+                    {% call forms.debug("id",field['field_name']) %}{% endcall %}
+                    {% call forms.debug("data",data) %}{% endcall %}
+                    {% call uitable.sub_table(field['name'],field['label'],'Sessions', value,field=field, config=config) %}
                     {% endcall %}
                 {% endif %}
 

@@ -1,5 +1,7 @@
-{% macro sub_table(name, label='', placeholder='', value='', config={}) -%}
+{% macro sub_table(name, label='', placeholder='', value='',field={}, config={}) -%}
     {% set disabled=config | value_from_json("disabled", false) %}
+    {% set referenced_table_alias=field | value_from_json("referenced_table_name", "") %}
+    {% set referenced_field_name=field | value_from_json("referenced_field_name", "") %}
 
     {% if label!='' %}
         <label for="{{ name }}" class="col-sm-2 col-form-label">{{ label }}</label>
@@ -7,31 +9,23 @@
     {% else %}
         {% set col=12 %}
     {% endif %}
-
-
     <div class="col-sm-{{ col }} table-responsive" id="div_sub_table_{{ name }}" name="div_sub_table_{{ name }}">
         <table class="table table-sm table-hover" id="table">
         </table>
     </div>
-
-
     <script lang="javascript">
-
-    axios.get('/api/v1.0/data/api_session?view=api_session_bootstrap_table&filter_field_name=user_id&filter_value={{ value }}')
+    axios.get('/api/v1.0/data/{{ referenced_table_alias }}?view=api_session_bootstrap_table&filter_field_name={{ referenced_field_name }}&filter_value={{ value }}')
       .then(function (response) {
         document.getElementById("div_sub_table_{{ name }}").innerHTML=response.data;
         console.log(response.data);
       })
       .catch(function (error) {
-        alert('error load listdata');
+        document.getElementById("div_sub_table_{{ name }}").innerHTML=error;
         console.log(error);
       })
       .then(function () {
         // always executed
       });
-
     </script>
-
     {{ caller() }}
-
 {%- endmacro %}
