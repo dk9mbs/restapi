@@ -10,6 +10,7 @@ from services.fetchxml import build_fetchxml_by_alias
 from ui.core import httphelper
 from core import log
 from core.jsontools import merge
+from core.setting import Setting
 
 logger=log.create_logger(__name__)
 #
@@ -106,6 +107,13 @@ def __merge_json(json1, json2):
 def __log_info(text):
     logger.info(text)
 
+def __get_debug_level(context):
+    level=int(Setting.get_value(context,"core.debug.level",0))
+    return level
+
+def __get_context():
+    return g.context
+
 # Filter
 def __filter_from_json(value):
     import json
@@ -128,6 +136,8 @@ def init():
     JinjaEnvironment.register_template_function('recordset_to_list', __recordset_to_list)
     JinjaEnvironment.register_template_function('merge_json', __merge_json)
     JinjaEnvironment.register_template_function('log_info', __log_info)
+    JinjaEnvironment.register_template_function('get_debug_level', __get_debug_level)
+    JinjaEnvironment.register_template_function('get_context', __get_context)
 
     JinjaEnvironment.register_filter_function('from_json', __filter_from_json)
     JinjaEnvironment.register_filter_function('value_from_json', __filter_value_from_json)

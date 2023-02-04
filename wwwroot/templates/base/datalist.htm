@@ -16,11 +16,11 @@
         <div class="col">
             <input type="text" class="form-control form-control-sm" id="query" name="query" placeholder="Enter search here" value="{{ query }}">
             <select id="operator" class="form-select form-select-sm" name="operator">
+                <option {% if context.get_arg("operator")=="contains" %} selected {% endif %} value="contains">Enthält</option>
                 <option {% if context.get_arg("operator")=="eq" %} selected {% endif %} value="eq">Gleich</option>
                 <option {% if context.get_arg("operator")=="like" %} selected {% endif %} value="like">Like</option>
                 <option {% if context.get_arg("operator")=="startsWith" %} selected {% endif %} value="startsWith">Beginnt mit</option>
                 <option {% if context.get_arg("operator")=="endsWith" %} selected {% endif %} value="endsWith">Endet mit</option>
-                <option {% if context.get_arg("operator")=="contains" %} selected {% endif %} value="contains">Enthält</option>
             </select>
             <input type="hidden" id="app_id" name="app_id" value="{{ app_id }}"/>
         </div>

@@ -12,13 +12,17 @@ def build_fetchxml_by_table_name(context,table_name,id=None,data=None,auto_commi
 def build_fetchxml_by_alias(context,alias,id=None,data=None,auto_commit=0, type="select", **kwargs):
     return __build_fetchxml_by(context,alias,None,None,id,data,auto_commit, type)
 
+def build_fetchxml_lookup(context,alias,auto_commit=0, filter_field_name=None, filter_value=None):
+    return __build_fetchxml_by(context,alias,None,None,None,None,auto_commit,"select",filter_field_name,filter_value)
+
 def build_fetchxml_by_id(context,table_id,id=None,data=None,auto_commit=0, type="select", **kwargs):
     return __build_fetchxml_by(context,None,None,table_id,id,data,auto_commit, type)
 
 """
 data: in case of insert or update the uploadet data as an json object
 """
-def __build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,auto_commit=0, type="select", **kwargs):
+def __build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,auto_commit=0,
+        type="select",filter_field_name=None, filter_value=None, **kwargs):
     meta=read_table_meta(context,alias=alias,table_name=table_name,table_id=table_id)
     if meta==None:
         raise NameError("%s not exists in api_table (%s)" %  (alias,id))
@@ -26,6 +30,11 @@ def __build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None
     tmp=[]
     tmp.append(f"<restapi type=\"{type}\">\n")
     tmp.append(f"<table name=\"{meta['table_name']}\"/>\n")
+
+    if filter_field_name!=None:
+        tmp.append("<filter type=\"and\">\n")
+        tmp.append(f"<condition field=\"{filter_field_name}\" value=\"{filter_value}\" operator=\"=\"/>\n")
+        tmp.append("</filter>\n")
 
     if id!=None:
         tmp.append("<filter type=\"and\">\n")

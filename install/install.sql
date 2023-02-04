@@ -46,6 +46,14 @@ CREATE TABLE IF NOT EXISTS dummy (
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+/* api_provider */
+CREATE TABLE IF NOT EXISTS api_provider(
+    id varchar(50) NOT NULL,
+    name varchar(50) NOT NULL,
+    PRIMARY KEY(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 CREATE TABLE IF NOT EXISTS api_solution(
     id int NOT NULL,
     name varchar(50)NOT NULL,
@@ -124,22 +132,19 @@ CREATE TABLE IF NOT EXISTS api_data_formatter(
     template_footer text NULL COMMENT 'Jinja footer template',
     type_id int NOT NULL,
     mime_type varchar(100) NOT NULL DEFAULT 'application/text',
+    provider_id varchar(50) NOT NULL DEFAULT 'MANUFACTURER',
     created_on datetime NOT NULL DEFAULT current_timestamp,
     PRIMARY KEY(id),
     FOREIGN KEY(type_id) REFERENCES api_data_formatter_type(id),
     FOREIGN KEY(table_id) REFERENCES api_table(id),
+    FOREIGN KEY(provider_id) REFERENCES api_provider(id),
     UNIQUE KEY(name, table_id, type_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  mime_type varchar(100) NOT NULL DEFAULT 'text/html' AFTER type_id;
+ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  provider_id varchar(50) NOT NULL DEFAULT 'MANUFACTURER' AFTER type_id;
+ALTER TABLE api_data_formatter ADD FOREIGN KEY(provider_id) REFERENCES api_provider(id);
 ALTER TABLE api_data_formatter ADD UNIQUE KEY(name, table_id, type_id);
-ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  mime_type varchar(100) NOT NULL DEFAULT 'application/text' AFTER type_id;
-
-/* api_provider */
-CREATE TABLE IF NOT EXISTS api_provider(
-    id varchar(50) NOT NULL,
-    name varchar(50) NOT NULL,
-    PRIMARY KEY(id)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS api_table_field(
     id int NOT NULL AUTO_INCREMENT,

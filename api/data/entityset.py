@@ -1,19 +1,22 @@
 #!/usr/bin/python3
 import sys
 import json
-from flask import Flask,request,abort, g, session
-from flask import Blueprint
+import datetime
+from flask import Flask,request,abort, g, session, make_response, Blueprint
 from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from datetime import date, datetime
 
 from core.appinfo import AppInfo
-from services.fetchxml import build_fetchxml_by_alias
-from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core.exceptions import RestApiNotAllowed
 from core import log
+
+from services.fetchxml import build_fetchxml_by_alias, build_fetchxml_lookup
+from services.database import DatabaseServices
+from services.outdataformatter import OutDataFormatter
+from services.httpresponse import HTTPResponse
 
 logger=log.create_logger(__name__)
 
@@ -38,10 +41,33 @@ class EntitySet(Resource):
         try:
             create_parser().parse_args()
             context=g.context
-            fetch=build_fetchxml_by_alias(context,table,None, None,type="select")
+            args={}
+            args['filter_field_name']=context.get_arg("filter_field_name", None)
+            args['filter_value']=context.get_arg("filter_value", None)
+
+            fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),context.get_arg("filter_value",None))
+
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
-            return rs.get_result()
+
+            result=rs.get_result()
+            view=context.get_arg("view", None)
+
+            if not view==None:
+                from core.meta import read_table_meta
+
+                formatter=OutDataFormatter(context,view,2, table, rs.get_result())
+                formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
+                formatter.add_template_var("context", context)
+
+                httpresponse=HTTPResponse(formatter.render())
+                httpresponse.disable_client_cache()
+                httpresponse.add_header('content-type', formatter.get_mime_type())
+
+                result=httpresponse.create_response()
+
+
+            return result
         except RestApiNotAllowed as err:
             logger.info(f"{err}")
             abort(400, f"{err}")
