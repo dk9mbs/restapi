@@ -14,7 +14,7 @@
         </table>
     </div>
     <script lang="javascript">
-    axios.get('/api/v1.0/data/{{ referenced_table_alias }}?view=api_session_bootstrap_table&filter_field_name={{ referenced_field_name }}&filter_value={{ value }}')
+    axios.get('/api/v1.0/data/{{ referenced_table_alias }}?view=$api_sub-table&filter_field_name={{ referenced_field_name }}&filter_value={{ value }}')
       .then(function (response) {
         document.getElementById("div_sub_table_{{ name }}").innerHTML=response.data;
         console.log(response.data);
