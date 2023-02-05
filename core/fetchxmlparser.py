@@ -554,6 +554,9 @@ class FetchXmlParser:
                 elif operator == "<=":
                     sql=f"{sql}{field}<=%s"
                     self._sql_parameters_where.append(value)
+                elif operator == "<>":
+                    sql=f"{sql}{field}<>%s"
+                    self._sql_parameters_where.append(value)
                 elif operator == "like":
                     sql=f"{sql}{field} like %s"
                     self._sql_parameters_where.append(value)

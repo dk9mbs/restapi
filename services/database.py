@@ -11,6 +11,7 @@ from core.fetchxmlparser import FetchXmlParser
 from core.meta import read_table_meta
 from core.audit import AuditLog
 from core.exceptions import RestApiNotAllowed
+from core.setting import Setting
 
 logger=log.create_logger(__name__)
 
@@ -64,7 +65,9 @@ class DatabaseServices:
         tmp=sql
         for item in paras:
             tmp=tmp.replace("%s", f"'{item}'", 1)
-        #logger.info(tmp)
+
+        if int(Setting.get_value(context, "core.debug.level", 0))==0:
+            logger.info(tmp)
 
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
