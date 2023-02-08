@@ -13,11 +13,14 @@ from core.formatter_factory import FormatterFactory
 logger=log.create_logger(__name__)
 
 class Recordset:
-    def __init__(self, cursor):
+    def __init__(self, cursor, page=0, page_size=0, number_of_rows_absolute=0):
         self._cursor=cursor
         self._result=None
         self._fetch_mode=0
         self._inserted_id="" # in case of insert statements
+        self._page=page
+        self._page_size=page_size
+        self._number_of_rows_absolute=number_of_rows_absolute
 
     def __del__(self):
         self.close()

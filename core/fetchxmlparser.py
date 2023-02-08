@@ -91,7 +91,7 @@ class FetchXmlParser:
     def get_main_alias(self):
         return self._main_alias
 
-    def get_sql(self):
+    def get_sql(self, ignore_limit=False):
 
         if self._sql_type=="insert":
             return self.get_insert()
@@ -100,7 +100,7 @@ class FetchXmlParser:
         elif self._sql_type=="update":
             return self.get_update()
         elif self._sql_type=="select":
-            return self.get_select()
+            return self.get_select(ignore_limit)
         elif self._sql_type=="read":
             return self.get_select()
         elif self._sql_type=="delete":
@@ -109,7 +109,7 @@ class FetchXmlParser:
             logger.warning(self.get_select())
             raise NameError(f"unknown type in fetchxml: {self._sql_type} {self._fetch_xml}")
 
-    def get_select(self):
+    def get_select(self, ignore_limit=False):
         params=[]
         sql=[]
         row_count_option=""
@@ -133,7 +133,7 @@ class FetchXmlParser:
             sql.append(f" ORDER BY {self._sql_order}")
             params=params+self._sql_paramaters_order
 
-        if self._limit > 0:
+        if self._limit > 0 and ignore_limit==False:
             sql.append(f" LIMIT {self._limit_offset}, {self._limit} ")
 
         sql.append(f"{self._sql_comment}")

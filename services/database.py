@@ -60,13 +60,19 @@ class DatabaseServices:
         handler=Plugin(context, command_builder.get_main_alias(),command_builder.get_sql_type())
         handler.execute('before', params)
 
+        # start
+        sql, paras =command_builder.get_sql(True)
+        cursor=context.get_connection().cursor()
+        cursor.execute(sql, paras)
+        number_of_records=len(cursor.fetchall())
+        # end
+
         sql, paras =command_builder.get_sql()
 
-        tmp=sql
-        for item in paras:
-            tmp=tmp.replace("%s", f"'{item}'", 1)
-
         if int(Setting.get_value(context, "core.debug.level", 0))==0:
+            tmp=sql
+            for item in paras:
+                tmp=tmp.replace("%s", f"'{item}'", 1)
             logger.info(tmp)
 
         cursor=context.get_connection().cursor()
