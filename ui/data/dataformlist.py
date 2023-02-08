@@ -93,7 +93,7 @@ class EntityList(Resource):
                         "context": context,
                         "query": query.replace("%",""),
                         "page": page,
-                        "page_size": page_size }))
+                        "page_size": page_size, "page_count": rs.get_page_count() }))
 
             response.headers['content-type'] = 'text/html'
 

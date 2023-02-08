@@ -60,13 +60,19 @@ class DatabaseServices:
         handler=Plugin(context, command_builder.get_main_alias(),command_builder.get_sql_type())
         handler.execute('before', params)
 
+        # start
+        sql, paras =command_builder.get_sql(True)
+        cursor=context.get_connection().cursor()
+        cursor.execute(sql, paras)
+        row_count=len(cursor.fetchall())
+        # end
+
         sql, paras =command_builder.get_sql()
 
-        tmp=sql
-        for item in paras:
-            tmp=tmp.replace("%s", f"'{item}'", 1)
-
         if int(Setting.get_value(context, "core.debug.level", 0))==0:
+            tmp=sql
+            for item in paras:
+                tmp=tmp.replace("%s", f"'{item}'", 1)
             logger.info(tmp)
 
         cursor=context.get_connection().cursor()
@@ -86,7 +92,9 @@ class DatabaseServices:
         elif  context.get_auto_commit()==1 or context.get_auto_commit()==True:
             context.commit()
 
-        rs=Recordset(cursor)
+        rs=Recordset(cursor, command_builder.get_page_size(), row_count)
+
+        #logger.info(f"******* Pages: {rs.get_page_count()} {sql}")
         if fetch_mode != -1:
             rs.read(fetch_mode)
 
