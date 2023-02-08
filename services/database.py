@@ -64,7 +64,7 @@ class DatabaseServices:
         sql, paras =command_builder.get_sql(True)
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
-        number_of_records=len(cursor.fetchall())
+        row_count=len(cursor.fetchall())
         # end
 
         sql, paras =command_builder.get_sql()
@@ -92,7 +92,9 @@ class DatabaseServices:
         elif  context.get_auto_commit()==1 or context.get_auto_commit()==True:
             context.commit()
 
-        rs=Recordset(cursor)
+        rs=Recordset(cursor, command_builder.get_page_size(), row_count)
+
+        #logger.info(f"******* Pages: {rs.get_page_count()} {sql}")
         if fetch_mode != -1:
             rs.read(fetch_mode)
 

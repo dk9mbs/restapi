@@ -60,6 +60,9 @@ class FetchXmlParser:
         #self._limit=0
         #self._limit_offset=0
 
+    def get_page_size(self):
+        return self._limit
+
     def get_columns(self):
         return self._columns_desc
 
