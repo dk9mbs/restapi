@@ -50,7 +50,7 @@ class EntityList(Resource):
             #page_size=int(context.get_arg('page_size', default=0))
             page_size=int(Setting.get_value(context, "datalist.page_size","10"))
 
-            if page==0:
+            if page<=0:
                 page=0
 
             query=context.get_arg('query', default=None)
