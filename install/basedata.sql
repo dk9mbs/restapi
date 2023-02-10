@@ -176,6 +176,22 @@ INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (1
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
 
+/* api_process_log */
+call api_proc_create_table_field_instance(23,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,300, 'status_id','Status','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,400, 'status_info','Status Info','string',18,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,500, 'error_text','Fehler Text','string',18,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,600, 'response_code','Antwort Code','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,700, 'request_msg','Request','string',18,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,800, 'response_on','Response um','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,900, 'response_msg','Response','int',18,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,1000, 'config','Configuration','int',18,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,1100, 'event_handler_id','Event','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,1200, 'run_async','ID','Asynchron',19,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,1300, 'retries','Wiederholungen','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,1400, 'last_retry_on','Letzte Wiederholung um','int',9,'{"disabled": true}', @out_value);
+
 /* setting */
 call api_proc_create_table_field_instance(21,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(21,200, 'setting','Einstellung','string',1,'{"disabled": false}', @out_value);

@@ -61,10 +61,12 @@ class DatabaseServices:
         handler.execute('before', params)
 
         # start
-        sql, paras =command_builder.get_sql(True)
-        cursor=context.get_connection().cursor()
-        cursor.execute(sql, paras)
-        row_count=len(cursor.fetchall())
+        row_count=0
+        if command_builder.get_sql_type().upper()== "SELECT":
+            sql, paras =command_builder.get_sql(True)
+            cursor=context.get_connection().cursor()
+            cursor.execute(sql, paras)
+            row_count=len(cursor.fetchall())
         # end
 
         sql, paras =command_builder.get_sql()
