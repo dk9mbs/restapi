@@ -114,6 +114,17 @@ def __get_debug_level(context):
 def __get_context():
     return g.context
 
+def __listitems(items_string):
+    result=[]
+    items=items_string.split('|')
+
+    for item in items:
+        key=item.split(';')[0]
+        value=item.split(';')[1]
+        result.append({"key": key, "value": value})
+
+    return result
+
 # Filter
 def __filter_from_json(value):
     import json
@@ -138,6 +149,7 @@ def init():
     JinjaEnvironment.register_template_function('log_info', __log_info)
     JinjaEnvironment.register_template_function('get_debug_level', __get_debug_level)
     JinjaEnvironment.register_template_function('get_context', __get_context)
+    JinjaEnvironment.register_template_function('listitems2json', __listitems)
 
     JinjaEnvironment.register_filter_function('from_json', __filter_from_json)
     JinjaEnvironment.register_filter_function('value_from_json', __filter_value_from_json)

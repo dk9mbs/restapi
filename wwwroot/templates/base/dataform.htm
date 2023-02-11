@@ -36,6 +36,14 @@
                                     config=config ) %}
                     {% endcall %}
                 {% endif %}
+                {% if field['control']=="SELECTLIST" %}
+                    {% set value=data | value_from_json(field['name'], "") %}
+
+                    {% call forms.data_select_list(field['name'],field['label'], value,
+                                    field['referenced_table_name'] , 'default','%' ,
+                                    config=config ) %}
+                    {% endcall %}
+                {% endif %}
                 {% if field['control']=="BOOLEAN" %}
                     {% call forms.boolean(field['name'], field['label'], '', data | value_from_json(field['name'],false), config=config ) %}
                     {% endcall %}
