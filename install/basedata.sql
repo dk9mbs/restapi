@@ -216,6 +216,11 @@ call api_proc_create_table_field_instance(30,400, 'mime_type','Mime Typ','string
 call api_proc_create_table_field_instance(30,500, 'template_header','Kopf Bereich','string',18,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,600, 'template_line','Daten Bereich','string',18,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,700, 'template_footer','Fuss Bereich','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,710, 'line_separator','Datensatz Trenner','string',20,
+    '{"disabled": false, "listitems":";Kein|@n;New Line(Unix)|@r@n;New Line (Windows)"}', @out_value);
+call api_proc_create_table_field_instance(30,720, 'file_name','Dateiname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,730, 'content_disposition','CONTENT_DISPOSITION','string',20,
+    '{"disabled": false, "listitems":"inline;inline|attachment;attachment"}', @out_value);
 call api_proc_create_table_field_instance(30,800, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(30,900, 'provider_id','Besitzer','string',2,'{"disabled": false}', @out_value);
 

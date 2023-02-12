@@ -64,6 +64,9 @@ class EntitySet(Resource):
                 httpresponse.disable_client_cache()
                 httpresponse.add_header('content-type', formatter.get_mime_type())
 
+                if formatter.get_content_disposition() != "":
+                    httpresponse.add_header('Content-Disposition',f"{formatter.get_content_disposition()};filename={formatter.get_file_name()}")
+
                 result=httpresponse.create_response()
 
 
