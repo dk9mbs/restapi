@@ -130,6 +130,9 @@ CREATE TABLE IF NOT EXISTS api_data_formatter(
     template_header text NULL COMMENT 'Jinja header template',
     template_line text NULL COMMENT 'Jinja body template',
     template_footer text NULL COMMENT 'Jinja footer template',
+    line_separator varchar(5) NULL COMMENT 'Line seperatur',
+    file_name varchar(250) NULL COMMENT 'Filename in case of download the file',
+    content_disposition varchar(50) NULL COMMENT 'Using in http header',
     type_id int NOT NULL,
     mime_type varchar(100) NOT NULL DEFAULT 'application/text',
     provider_id varchar(50) NOT NULL DEFAULT 'MANUFACTURER',
@@ -143,6 +146,10 @@ CREATE TABLE IF NOT EXISTS api_data_formatter(
 
 ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  mime_type varchar(100) NOT NULL DEFAULT 'text/html' AFTER type_id;
 ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  provider_id varchar(50) NOT NULL DEFAULT 'MANUFACTURER' AFTER type_id;
+ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  line_separator varchar(5) NULL COMMENT 'Line seperatur' AFTER template_footer;
+ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  file_name varchar(250) NULL COMMENT 'Filename in case of download the file' AFTER line_separator;
+ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  content_disposition varchar(50) NULL COMMENT 'Using in http header' AFTER file_name;
+
 ALTER TABLE api_data_formatter ADD FOREIGN KEY(provider_id) REFERENCES api_provider(id);
 ALTER TABLE api_data_formatter ADD UNIQUE KEY(name, table_id, type_id);
 
