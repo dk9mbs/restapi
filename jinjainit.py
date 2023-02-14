@@ -24,6 +24,17 @@ def __get_current_time(time_zone='MEZ', format='%H:%M'):
 def __get_current_date(time_zone='MEZ', format='%d.%m.%Y'):
     return datetime.today().strftime(format)
 
+"""
+datetime....:2023-02-10T00:00:00
+format......:%m
+"""
+def __format_date(date_time, format_out='%m', format_in='%Y-%m-%dT%H:%M:%S'):
+    d=datetime.strptime(date_time, format_in)
+    return d.strftime(format_out)
+
+def __replace (string, search, replace):
+    return string.replace(search, replace)
+
 def __ui_app_info(context):
     app_id=context.get_arg("app_id", 1)
     fetch=build_fetchxml_by_alias(context,"api_ui_app",app_id)
@@ -150,6 +161,8 @@ def init():
     JinjaEnvironment.register_template_function('get_debug_level', __get_debug_level)
     JinjaEnvironment.register_template_function('get_context', __get_context)
     JinjaEnvironment.register_template_function('listitems2json', __listitems)
+    JinjaEnvironment.register_template_function('format_date', __format_date)
+    JinjaEnvironment.register_template_function('replace', __replace)
 
     JinjaEnvironment.register_filter_function('from_json', __filter_from_json)
     JinjaEnvironment.register_filter_function('value_from_json', __filter_value_from_json)
