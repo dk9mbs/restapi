@@ -16,6 +16,8 @@ from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core.exceptions import RestApiNotAllowed
 from core import log
+from services.outdataformatter import OutDataFormatter
+from services.httpresponse import HTTPResponse
 
 logger=log.create_logger(__name__)
 
@@ -85,10 +87,50 @@ class Entity(Resource):
             if rs.get_result()==None:
                 abort(400, "Item not found => %s" % id)
 
+
             if field=="":
-                return rs.get_result()
+                result=rs.get_result()
             else:
-                return rs.get_result()[field]
+                result=rs.get_result()[field]
+
+
+            view=context.get_arg("view", None)
+
+            if not view==None:
+                from core.meta import read_table_meta, read_table_field_meta
+
+                fields_meta=read_table_field_meta(context, table_alias=table)
+                table_meta=read_table_meta(context, alias=table)
+
+                formatter=OutDataFormatter(context,view,1, table, rs.get_result())
+                formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
+                formatter.add_template_var("context", context)
+                formatter.add_template_var("table", table)
+                formatter.add_template_var("pagemode", "dataformupdate")
+                formatter.add_template_var("id", id)
+                formatter.add_template_var("data", rs.get_result())
+                formatter.add_template_var("fields", fields_meta)
+                formatter.add_template_var("title",  f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}")
+
+                #response = make_response(template.render({"table": table,
+                #        "pagemode": "dataformupdate",
+                #        "id": id, "data": rs.get_result(), "context": context, "fields": fields_meta,
+                #        "table_meta": table_meta,
+                #        "title": f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}"
+                #        }))
+
+                httpresponse=HTTPResponse(formatter.render())
+                httpresponse.disable_client_cache()
+                httpresponse.add_header('content-type', formatter.get_mime_type())
+
+                if formatter.get_content_disposition() != "":
+                    httpresponse.add_header('Content-Disposition',f"{formatter.get_content_disposition()};filename={formatter.get_file_name()}")
+
+                result=httpresponse.create_response()
+
+
+
+            return result
 
         except RestApiNotAllowed as err:
             abort(400, f"{err}")

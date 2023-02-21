@@ -142,6 +142,7 @@ def __filter_from_json(value):
     return json.loads(value)
 
 def __filter_value_from_json(json, name, default=None):
+    logger.info(json)
     if name in json:
         return json[name]
 

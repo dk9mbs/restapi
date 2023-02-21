@@ -8,7 +8,7 @@ class OutDataFormatter(object):
     def __init__(self, context,format_name, type_id, table_alias, data):
         self._context=context
         self._data=data
-        self._type_id=2
+        self._type_id=type_id
         self._template_data={}
 
         meta=read_table_meta(context, table_alias)
