@@ -954,7 +954,7 @@ template_line='<tr onclick="url=\'/ui/v1.0/data/{{ table_meta[\'alias\'] }}/{{ d
 <td>{{ data[\'user_id\'] }}</td>
 <td>{{ data[\'last_access_on\'] }}</td>
 <td>{{ data[\'created_on\'] }}</td>
-</td>',
+</tr>',
 template_footer='</tbody>
 </table>
 </div>'
