@@ -227,16 +227,18 @@ call api_proc_create_table_field_instance(30,900, 'provider_id','Besitzer','stri
 
 /* api_event_handler */
 call api_proc_create_table_field_instance(9,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,200, 'plugin_module_name','Module','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,300, 'publisher','Publisher','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,400, 'event','Ereignis','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,500, 'type','Typ','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,600, 'sorting','Reihenfolge','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,700, 'solution_id','Lösung','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,800, 'run_async','Asynchron','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,900, 'run_queue','Queue','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,1000, 'is_enabled','Aktiv','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(9,1100, 'config','Configuration','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(9,200, 'plugin_module_name','Module','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,300, 'publisher','Publisher','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,400, 'event','Ereignis','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,500, 'type','Typ','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,600, 'sorting','Reihenfolge','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,700, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+UPDATE api_table_field SET referenced_table_name='api_solution', referenced_table_id=25, referenced_field_name='id', is_lookup=-1 WHERE id=@out_value;
+call api_proc_create_table_field_instance(9,800, 'run_async','Asynchron','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,900, 'run_queue','Queue','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,1000, 'is_enabled','Aktiv','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,1100, 'config','Configuration','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,1100, 'inline_code','Inline Code','string',101,'{"disabled": false, "mode":"ace/mode/python"}', @out_value);
 
 /* user */
 call api_proc_create_table_field_instance(2,100, 'id','ID','int',14,'{"disabled": true}', @out_value);

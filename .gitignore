@@ -6,6 +6,7 @@ plugins/*
 !plugins/api_http_endpoint.py
 !plugins/api_clear_log.py
 !plugins/api_clear_session.py
+!plugins/api_exec_inline_code.py
 3thparty
 wwwroot/*
 !wwwroot/index.htm

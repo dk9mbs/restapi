@@ -103,7 +103,7 @@ class Plugin:
             sql=f"""
             select p.plugin_module_name,p.type,
                 p.run_async,p.id,p.run_async,p.config,
-                null AS process_id, p.run_queue
+                null AS process_id, p.run_queue, p.inline_code
                 from api_event_handler p
                 WHERE
                 p.publisher=%s AND p.event=%s AND p.is_enabled=-1
@@ -114,7 +114,7 @@ class Plugin:
             sql=f"""
             select p.plugin_module_name,p.type,
                 p.run_async,p.id,p.run_async,p.config,
-                l.id AS process_id, 0 AS run_queue
+                l.id AS process_id, 0 AS run_queue, p.inline_code
                 from api_event_handler p
                 INNER JOIN api_process_log l ON p.id=l.event_handler_id
                 WHERE
@@ -135,7 +135,7 @@ class Plugin:
             if p['type']==type:
                 plugin_context=ProcessTools.create_context(publisher=self._publisher, trigger=self._trigger,
                                 type=type, event_handler_id=p['id'], run_async=p['run_async'],
-                                plugin_config=p['config'], process_id=p['process_id'])
+                                plugin_config=p['config'], process_id=p['process_id'], inline_code=p['inline_code'])
 
                 mod=importlib.import_module(p['plugin_module_name'])
                 config=Config(mod)
@@ -201,7 +201,7 @@ class ProcessTools(object):
         connection.commit()
 
     @staticmethod
-    def create_context(publisher, trigger, type, event_handler_id, run_async, plugin_config, process_id, **kwargs):
+    def create_context(publisher, trigger, type, event_handler_id, run_async, plugin_config, process_id, inline_code, **kwargs):
         if process_id==None:
             process_id=str(uuid.uuid4())
 
@@ -222,7 +222,8 @@ class ProcessTools(object):
                 "run_async": run_async,
                 "config": config,
                 "created_on": datetime.datetime.now(),
-                "response": response }
+                "response": response,
+                "inline_code": inline_code }
 
 
 
