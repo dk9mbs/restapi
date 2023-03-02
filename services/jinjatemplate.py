@@ -15,17 +15,6 @@ class JinjaTemplate:
     def __create_environment(context, loader):
         jenv=JinjaEnvironment(context,loader)
 
-        #jenv = jinja2.Environment(
-        #    loader=loader,
-        #    extensions=['jinja2.ext.autoescape'],
-        #    autoescape=False)
-
-        #jenv.globals['datacomboview'] = JinjaTemplate.__data_combo_view
-
-        #params={"environment": jenv, "loader": loader}
-        #handler=Plugin(context, "jinja_environment","create")
-        #handler.execute('after', params)
-
         return jenv.get_environment()
 
 
@@ -33,7 +22,6 @@ class JinjaTemplate:
     def create_file_template(context, path):
         www_root=AppInfo.get_current_config("ui","wwwroot",exception=True)
         loader=jinja2.FileSystemLoader(www_root)
-
         jenv=JinjaTemplate.__create_environment(context, loader)
 
         template=jenv.get_template(path)
@@ -41,7 +29,11 @@ class JinjaTemplate:
 
     @staticmethod
     def create_string_template(context, template):
-        jenv=JinjaTemplate.__create_environment(context, loader=jinja2.BaseLoader())
+        www_root=AppInfo.get_current_config("ui","wwwroot",exception=True)
+        loader=jinja2.FileSystemLoader(www_root)
+        jenv=JinjaTemplate.__create_environment(context, loader)
+
+        #jenv=JinjaTemplate.__create_environment(context, loader=jinja2.BaseLoader())
 
         template=jenv.from_string(template)
         return template

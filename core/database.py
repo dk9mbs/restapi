@@ -77,6 +77,9 @@ class Recordset:
         else:
             return False
 
+    def set_result(self, result):
+        self._result=result
+
     def get_result(self):
         if(self._result==()):
             return []

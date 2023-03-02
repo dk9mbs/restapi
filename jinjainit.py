@@ -136,12 +136,17 @@ def __listitems(items_string):
 
     return result
 
+def __escape_html(text):
+    import html
+    return html.escape(text)
+
 # Filter
 def __filter_from_json(value):
     import json
     return json.loads(value)
 
 def __filter_value_from_json(json, name, default=None):
+    logger.info(json)
     if name in json:
         return json[name]
 
@@ -163,6 +168,7 @@ def init():
     JinjaEnvironment.register_template_function('listitems2json', __listitems)
     JinjaEnvironment.register_template_function('format_date', __format_date)
     JinjaEnvironment.register_template_function('replace', __replace)
+    JinjaEnvironment.register_template_function('escape_html', __escape_html)
 
     JinjaEnvironment.register_filter_function('from_json', __filter_from_json)
     JinjaEnvironment.register_filter_function('value_from_json', __filter_value_from_json)

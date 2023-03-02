@@ -215,6 +215,7 @@
 
 {% macro input_aceedit(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
     {% set disabled=config | value_from_json("disabled", false) %}
+    {% set mode=config | value_from_json("mode", "ace/mode/text") %}
 
     {% if disabled %}
         {% set show="disabled" %}
@@ -233,27 +234,27 @@
 
 
     <style type="text/css" media="screen">
-    #editor { 
+    #editor_{{ name }} { 
         height: 250px;
         width: 100%;
     }
     </style>
 
     <div class="col-sm-{{ col }}">
-    <div id="editor">{{ value }}</div>
+    <div id="editor_{{ name }}">{{ escape_html(value) }}</div>
     <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" 
-        placeholder="{{ placeholder }}" hidden>{{ value }}</textarea>
+        placeholder="{{ placeholder }}" hidden>{{ escape_html(value) }}</textarea>
     </div>
 
     <!-- Enable nic-Edit -->
     <script>
-        var editor = ace.edit("editor");
-        editor.setTheme("ace/theme/monokai");
-        editor.session.setMode("ace/mode/json");
-        editor.resize()
+        var editor_{{ name }} = ace.edit("editor_{{ name }}");
+        editor_{{ name }}.setTheme("ace/theme/monokai");
+        editor_{{ name }}.session.setMode("{{ mode }}");
+        editor_{{ name }}.resize()
 
-        editor.getSession().on("change", function () {
-            document.getElementById('{{ name }}').value = editor.getSession().getValue();
+        editor_{{ name }}.getSession().on("change", function () {
+            document.getElementById('{{ name }}').value = editor_{{ name }}.getSession().getValue();
         });
     </script>
     <!-- end of enbale nicEdit -->

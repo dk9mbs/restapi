@@ -43,7 +43,7 @@ class TestPluginExecution(unittest.TestCase):
         fetchparser=FetchXmlParser(fetch, self.context)
         rs=DatabaseServices.exec(fetchparser, self.context,run_as_system=True, fetch_mode=0)
 
-        formatter=OutDataFormatter(self.context,"api_session_bootstrap_table",2, "api_session", rs.get_result())
+        formatter=OutDataFormatter(self.context,"$api_sub-table",2, "api_session", rs.get_result())
         formatter.add_template_var("context", self.context)
         formatter.add_template_var("table_meta", {})
 

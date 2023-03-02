@@ -26,3 +26,8 @@ params: {}
 plugin_context:
 -response :outdata
 -config : config from api_event_handler
+
+control_config:
+- disabled:True
+- mode: ace/mode/html (aceEdit)
+

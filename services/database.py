@@ -87,7 +87,8 @@ class DatabaseServices:
             params["data"][id_field_name]['value']=inserted_id
             params["data"][id_field_name]['value_old']=None
 
-        handler.execute('after', params)
+        if command_builder.get_sql_type().upper()!= "SELECT":
+            handler.execute('after', params)
 
         if command_builder.get_auto_commit()==1 or command_builder.get_auto_commit()==True:
             context.commit()
@@ -96,12 +97,15 @@ class DatabaseServices:
 
         rs=Recordset(cursor, command_builder.get_page_size(), row_count)
 
-        #logger.info(f"******* Pages: {rs.get_page_count()} {sql}")
         if fetch_mode != -1:
             rs.read(fetch_mode)
 
         if command_builder.get_sql_type().upper()== "SELECT":
             rs.execute_formatter(context, command_builder.get_columns())
+            # execute plugin logic
+            params['data']=rs.get_result()
+            handler.execute('after', params)
+            rs.set_result(params['data'])
 
         rs.get_columns()
         if command_builder.get_sql_type().upper() == "INSERT":

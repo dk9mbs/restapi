@@ -288,6 +288,7 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
     run_queue smallint NOT NULL DEFAULT '0' COMMENT '-1: enabled 0=disabled run via timerservice',
     is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled',
     config text NULL COMMENT 'locale event handler config',
+    inline_code text NULL COMMENT 'inline python code to execute',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
     FOREIGN KEY(type) REFERENCES api_event_type(id),
@@ -298,9 +299,9 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL DEFAULT '0' COMMENT '-1: run async 0=not async' AFTER solution_id;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled' AFTER run_async;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_queue smallint NOT NULL DEFAULT '0' COMMENT '-1: enabled 0=disabled run via timerservice' AFTER run_async;
-
-ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL default '0' COMMENT '-1: run async 0=not async';
-ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS config text NULL COMMENT 'locale event handler config';
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL default '0' COMMENT '-1: run async 0=not async' AFTER solution_id;
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS config text NULL COMMENT 'locale event handler config' AFTER is_enabled;
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS inline_code text NULL COMMENT 'inline python code to execute' AFTER config;
 
 
 CREATE TABLE IF NOT EXISTS api_process_log_status(
