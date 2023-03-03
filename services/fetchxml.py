@@ -1,6 +1,6 @@
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
-from core.meta import read_table_meta
+from core.meta import read_table_meta, read_table_field_meta
 
 """
 Execute the SQL Command from a valid Cammand Builder Object
@@ -24,12 +24,26 @@ data: in case of insert or update the uploadet data as an json object
 def __build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,auto_commit=0,
         type="select",filter_field_name=None, filter_value=None, **kwargs):
     meta=read_table_meta(context,alias=alias,table_name=table_name,table_id=table_id)
+
     if meta==None:
         raise NameError("%s not exists in api_table (%s)" %  (alias,id))
 
     tmp=[]
     tmp.append(f"<restapi type=\"{type}\">\n")
     tmp.append(f"<table name=\"{meta['table_name']}\"/>\n")
+
+    if type.upper()=="SELECT":
+        meta_fields= read_table_field_meta(context, meta['table_name'])
+        tmp.append(f"<select>")
+        for field in meta_fields:
+            if field['is_virtual']==0:
+                tmp.append(f"<field name=\"{ field['name'] }\"/>")
+            if field['is_lookup']==-1:
+                tmp.append(f"<field name=\"{ field['name'] }\" alias=\"{ field['name'] }_name\" />")
+                tmp.append(f"<field name=\"{ field['name'] }\" alias=\"{ field['name'] }_url\" />")
+
+        tmp.append(f"</select>")
+
 
     if filter_field_name!=None:
         tmp.append("<filter type=\"and\">\n")

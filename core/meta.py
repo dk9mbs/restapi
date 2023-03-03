@@ -152,7 +152,7 @@ def read_table_field_meta(context, table_alias):
                 t.alias AS table_alias,
                 control.control AS control,
                 control.control_config AS control_config,
-                f.control_config AS overwrite_control_config,field_name,
+                f.control_config AS overwrite_control_config,field_name,f.is_virtual,
                 CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END AS control_id
             FROM {meta_field['table_name']} f
             INNER JOIN {meta_table['table_name']} t ON t.id=f.table_id
