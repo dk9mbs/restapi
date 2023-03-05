@@ -152,12 +152,14 @@ def read_table_field_meta(context, table_alias):
                 t.alias AS table_alias,
                 control.control AS control,
                 control.control_config AS control_config,
-                f.control_config AS overwrite_control_config,field_name,f.is_virtual,
+                f.control_config AS overwrite_control_config,field_name,f.is_virtual,rt.desc_field_name AS referenced_table_desc_field_name,
+                rt.alias AS referenced_table_alias,
                 CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END AS control_id
             FROM {meta_field['table_name']} f
             INNER JOIN {meta_table['table_name']} t ON t.id=f.table_id
             INNER JOIN {meta_field_type['table_name']} type ON type.id=f.type_id
             INNER JOIN {meta_field_control['table_name']} control ON control.id=CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END
+            LEFT JOIN api_table rt ON rt.id=referenced_table_id
         WHERE t.alias=%s
         ORDER BY f.pos, f.id """
     cursor.execute(sql,[table_alias])

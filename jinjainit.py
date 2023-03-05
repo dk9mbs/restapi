@@ -138,7 +138,7 @@ def __listitems(items_string):
 
 def __escape_html(text):
     import html
-    return html.escape(text)
+    return html.escape(str(text))
 
 # Filter
 def __filter_from_json(value):

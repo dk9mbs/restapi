@@ -60,15 +60,6 @@ class DatabaseServices:
         handler=Plugin(context, command_builder.get_main_alias(),command_builder.get_sql_type())
         handler.execute('before', params)
 
-        # start
-        row_count=0
-        if command_builder.get_sql_type().upper()== "SELECT":
-            sql, paras =command_builder.get_sql(True)
-            cursor=context.get_connection().cursor()
-            cursor.execute(sql, paras)
-            row_count=len(cursor.fetchall())
-        # end
-
         sql, paras =command_builder.get_sql()
 
         if int(Setting.get_value(context, "core.debug.level", 0))==0:
@@ -76,6 +67,15 @@ class DatabaseServices:
             for item in paras:
                 tmp=tmp.replace("%s", f"'{item}'", 1)
             logger.info(tmp)
+
+        # start
+        row_count=0
+        if command_builder.get_sql_type().upper()== "SELECT":
+            sql_count, paras_count =command_builder.get_sql(True)
+            cursor=context.get_connection().cursor()
+            cursor.execute(sql_count, paras_count)
+            row_count=len(cursor.fetchall())
+        # end
 
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)

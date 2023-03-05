@@ -32,19 +32,6 @@ def __build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None
     tmp.append(f"<restapi type=\"{type}\">\n")
     tmp.append(f"<table name=\"{meta['table_name']}\"/>\n")
 
-    if type.upper()=="SELECT":
-        meta_fields= read_table_field_meta(context, meta['table_name'])
-        tmp.append(f"<select>")
-        for field in meta_fields:
-            if field['is_virtual']==0:
-                tmp.append(f"<field name=\"{ field['name'] }\"/>")
-            if field['is_lookup']==-1:
-                tmp.append(f"<field name=\"{ field['name'] }\" alias=\"{ field['name'] }_name\" />")
-                tmp.append(f"<field name=\"{ field['name'] }\" alias=\"{ field['name'] }_url\" />")
-
-        tmp.append(f"</select>")
-
-
     if filter_field_name!=None:
         tmp.append("<filter type=\"and\">\n")
         tmp.append(f"<condition field=\"{filter_field_name}\" value=\"{filter_value}\" operator=\"=\"/>\n")

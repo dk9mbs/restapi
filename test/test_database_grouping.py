@@ -30,7 +30,7 @@ class TestFetchxmlParser(unittest.TestCase):
         fetch=FetchXmlParser(xml, self.context)
         dummy=DatabaseServices.exec(fetch,self.context, fetch_mode=1)
         #self.assertIsNone(dummy.get_result())
-        print(dummy)
+        #print(dummy)
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
