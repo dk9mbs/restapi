@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 from core import log
 from core.exceptions import TableAliasNotFoundInFetchXml, FieldNotFoundInMetaData, MissingFieldPermisson, TableMetaDataNotFound, FetchXmlFormat
 from core.exceptions import SpecialCharsInFetchXml, MissingArgumentInFetchXml, OperatorNotAllowedInFetchXml
+from core.setting import Setting
 
 logger=log.create_logger(__name__)
 
@@ -67,10 +68,11 @@ class FetchXmlParser:
         return self._columns_desc
 
     def debug(self):
-        print("######################################################")
-        print(f"Aliases........:{self._table_aliases}")
-        print(f"FetchXML.......:{self._fetch_xml}")
-        print("######################################################")
+        if int(Setting.get_value(self._context, "core.debug.level", 0))==0:
+            print("######################################################")
+            print(f"Aliases........:{self._table_aliases}")
+            print(f"FetchXML.......:{self._fetch_xml}")
+            print("######################################################")
 
     def get_table_by_alias(self, alias):
         if alias in self._table_aliases:
