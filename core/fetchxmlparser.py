@@ -309,6 +309,9 @@ class FetchXmlParser:
             sort="ASC"
             if 'alias' in item.attrib:
                 alias = item.attrib['alias']+"."
+            else:
+                alias =  f"{ self.get_alias_by_table(self._main_alias) }."
+
             if 'sort' in item.attrib:
                 sort=item.attrib['sort']
 
