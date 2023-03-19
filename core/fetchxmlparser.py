@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 from core import log
 from core.exceptions import TableAliasNotFoundInFetchXml, FieldNotFoundInMetaData, MissingFieldPermisson, TableMetaDataNotFound, FetchXmlFormat
 from core.exceptions import SpecialCharsInFetchXml, MissingArgumentInFetchXml, OperatorNotAllowedInFetchXml
+from core.setting import Setting
 
 logger=log.create_logger(__name__)
 
@@ -22,9 +23,9 @@ class FetchXmlParser:
         self._main_alias=""
         self._sql_table_alias=""
         self._sql_table_join=""
-        self._sql_select="*"
-        self._sql_comment=""
-        self._sql_order=""
+        self._sql_select="*" # field list
+        self._sql_comment="" # sql comments
+        self._sql_order="" # sql order by
         self._sql_group_by=""
         self._json_fields={} # for insert and update
         self._tables=[]
@@ -66,11 +67,27 @@ class FetchXmlParser:
     def get_columns(self):
         return self._columns_desc
 
+    def debug(self):
+        if int(Setting.get_value(self._context, "core.debug.level", 0))==0:
+            print("######################################################")
+            print(f"Aliases..............:{self._table_aliases}")
+            print(f"FetchXML.............:{self._fetch_xml}")
+            print(f"Overwrite Columns....:{self._overwrite_columns_desc}")
+            print("######################################################")
+
     def get_table_by_alias(self, alias):
         if alias in self._table_aliases:
             return self._table_aliases[alias]
         else:
             raise TableAliasNotFoundInFetchXml(f"Alias {alias} not found in fetchxml: {self._fetch_xml}")
+
+    def get_alias_by_table(self, table_alias):
+        for key, value in self._table_aliases.items():
+            if value['name']==table_alias:
+                return key
+
+        raise TableAliasNotFoundInFetchXml(f"Alias {table_alias} not found in fetchxml: {self._fetch_xml} (get_alias_by_table())")
+
 
     def get_sql_fields(self):
         return self._json_fields
@@ -120,6 +137,46 @@ class FetchXmlParser:
         # Disable the folling lines. Because it is very very slow!
         #if self._limit>0:
         #    row_count_option=" SQL_CALC_FOUND_ROWS"
+
+        from core.meta import read_table_field_meta
+        if self._sql_select=="*":
+            meta_fields= read_table_field_meta(self._context, self._sql_table)
+            tmp=[]
+            sql_join=[]
+            self._columns_desc=[]
+
+            for field in meta_fields:
+                if field['is_virtual']==0:
+                    column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": field['name'], "formatter": None}
+                    self._columns_desc.append(column_desc)
+
+                    if tmp != []:
+                        tmp.append(",")
+
+                    tmp.append(f"{ self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS { field['name'] } ")
+
+                if field['is_lookup']==-1 and field['referenced_table_desc_field_name']!=None:
+                    if tmp != []:
+                        tmp.append(",")
+
+                    #tmp.append(f"(SELECT { field['referenced_table_desc_field_name'] } ")
+                    #tmp.append(f"FROM { field['referenced_table_name'] } ")
+                    #tmp.append(f"WHERE { field['referenced_field_name'] }={ field['name'] } LIMIT 1) AS \"__{ field['name'] }@name\", ")
+                    ref_alias=f"{ field['name'] }_{ field['referenced_table_name'] }_{ field['referenced_field_name'] }"
+                    sql_join.append(f"""LEFT JOIN { field['referenced_table_name'] } AS { ref_alias } """)
+                    sql_join.append(f"ON { self.get_alias_by_table(self._main_alias) }.{ field['name'] }={ ref_alias }.{ field['referenced_field_name'] } ")
+
+                    tmp.append(f"{ref_alias}.{ field['referenced_table_desc_field_name'] } AS \"__{ field['name'] }@name\", ")
+                    tmp.append(f"CONCAT('/api/v1.0/data/{ field['referenced_table_name'] }/', { self.get_alias_by_table(self._main_alias) }.{ field['name'] })  AS \"__{ field['name'] }@url\" ")
+
+                    column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@name", "formatter": None}
+                    self._columns_desc.append(column_desc)
+                    column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@url", "formatter": None}
+                    self._columns_desc.append(column_desc)
+
+
+            self._sql_select=''.join(tmp)
+            self._sql_table_join=''.join(sql_join)
 
         sql.append(f"SELECT{row_count_option} {self._sql_select} FROM {self._sql_table} {self._sql_table_alias} {self._sql_table_join} ")
         params=self._sql_parameters_select
@@ -258,6 +315,9 @@ class FetchXmlParser:
             sort="ASC"
             if 'alias' in item.attrib:
                 alias = item.attrib['alias']+"."
+            else:
+                alias =  f"{ self.get_alias_by_table(self._main_alias) }."
+
             if 'sort' in item.attrib:
                 sort=item.attrib['sort']
 
@@ -496,7 +556,9 @@ class FetchXmlParser:
             if item.tag=="condition":
                 #op=" AND "
                 operator="="
-                field=self._escape_string(item.attrib['field'],"fieldname")
+                self.debug()
+                field=""
+                #field=self._escape_string(item.attrib['field'],"fieldname")
                 # do niot escape values here. This will be done by execute
                 value=""
                 if 'value' in item.attrib:
@@ -505,8 +567,11 @@ class FetchXmlParser:
                 #if 'type' in item.attrib:
                 #    op=self._escape_string(item.attrib['type'],"operator")
 
+                field=self._escape_string(item.attrib['field'],"fieldname")
                 if 'alias' in item.attrib:
                     field="%s.%s" % ( self._escape_string(item.attrib['alias'],"alias"), field)
+                else:
+                    field=f"{ self.get_alias_by_table(self._main_alias) }.{ self._escape_string(item.attrib['field'],'fieldname') }"
 
                 if 'operator' in item.attrib:
                     operator=item.attrib['operator'].strip()

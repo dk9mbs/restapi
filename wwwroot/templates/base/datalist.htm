@@ -2,7 +2,7 @@
 {% import "templates/base/uitools.htm" as forms %}
 {% import "templates/base/uinavigation.htm" as uinav %}
 {% set app_id=context.get_arg("app_id",1) %}
-
+{% set list_columns=view_meta['columns'] | from_json(default=None) %}
 
 {% block title %}{{ table }}{% endblock %}
 
@@ -11,7 +11,6 @@
 {% endblock %}
 
 {% block content %}
-
     <form action="/ui/v1.0/data/view/{{ table_meta['alias'] }}/default{{ build_query_string(context) }}" method="GET">
     <div class="row">
         <div class="col">
@@ -37,44 +36,29 @@
 
 <div class="table-responsive">
 <table class="table table-hover table-sm">
-
     <thead>
         <tr>
             {% for col in columns %}
-                <th scope="col">{{ col['label'] }}</th>
+                {% if list_columns==None or is_item_in_dict(list_columns, col['alias']) %}
+                    <th scope="col">{{ col['label'] }}</th>
+                {% endif %}
             {% endfor %}
         </tr>
     </thead>
 
-{% for result in data %}
-    <tr onclick="url='/ui/v1.0/data/{{ table_meta['alias'] }}/{{ result[table_meta['id_field_name']] }}{{ build_query_string(context) }}'; window.location=url;">
-        {% for col in columns %}
-            <td nowrap>{{ result[col['alias']] }}</td>
-        {% endfor %}
-    </tr>
-{% endfor %}
+    {% for result in data %}
+        <tr onclick="url='/ui/v1.0/data/{{ table_meta['alias'] }}/{{ result[table_meta['id_field_name']] }}{{ build_query_string(context) }}'; window.location=url;">
+            {% for col in columns %}
+                {% if list_columns==None or is_item_in_dict(list_columns, col['alias']) %}
+                    <td nowrap>{{ escape_html(result[col['alias']]) }}</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endfor %}
 </table>
 
 {% call uinav.dataset_navigation(context, "nav",table, page, page_count, {}) %}
 {% endcall %}
-
-<!--
-<div>
-<input type="button" class="btn btn-sm btn-primary" 
-    onclick="window.location='/ui/v1.0/data/view/{{ table }}/default{{ build_query_string(context, append_args={"page":0}) }}';" 
-    value="<"></input>
-<input type="button" class="btn btn-sm btn-primary" 
-    onclick="window.location='/ui/v1.0/data/view/{{ table }}/default{{ build_query_string(context, append_args={"page":page-1}) }}';" 
-    value="<<"></input>
-{{ page+1 }}
-<input type="button" class="btn btn-sm btn-primary" 
-    onclick="window.location='/ui/v1.0/data/view/{{ table }}/default{{ build_query_string(context, append_args={"page":page+1}) }}';" 
-    value=">>"></input>
-<input type="button" class="btn btn-sm btn-primary" 
-    onclick="window.location='/ui/v1.0/data/view/{{ table }}/default{{ build_query_string(context, append_args={"page":page_count-1}) }}';" 
-    value=">"></input>
-</div>
--->
 
 </div>
 {% endblock %}

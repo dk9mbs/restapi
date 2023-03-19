@@ -31,3 +31,7 @@ control_config:
 - disabled:True
 - mode: ace/mode/html (aceEdit)
 
+
+fetchxmlparser.get_columns():
+{"table": table, "database_field": name, "label": column_header, "alias": alias, "formatter": formatter}
+

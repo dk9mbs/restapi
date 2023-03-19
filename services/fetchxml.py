@@ -1,6 +1,6 @@
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
-from core.meta import read_table_meta
+from core.meta import read_table_meta, read_table_field_meta
 
 """
 Execute the SQL Command from a valid Cammand Builder Object
@@ -24,6 +24,7 @@ data: in case of insert or update the uploadet data as an json object
 def __build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,auto_commit=0,
         type="select",filter_field_name=None, filter_value=None, **kwargs):
     meta=read_table_meta(context,alias=alias,table_name=table_name,table_id=table_id)
+
     if meta==None:
         raise NameError("%s not exists in api_table (%s)" %  (alias,id))
 
