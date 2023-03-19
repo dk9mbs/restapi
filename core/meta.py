@@ -133,6 +133,9 @@ def read_table_view_meta(context, table_id, view_name, type):
     if meta==None:
         raise DataViewNotFound(f"View {view_name} with viewtype {type} notfound for table_id {table_id}")
 
+    if meta['columns']=="" or meta['columns']==None:
+        meta['columns']=None
+
     return meta
 
 """

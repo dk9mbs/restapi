@@ -434,19 +434,22 @@ CREATE TABLE IF NOT EXISTS api_table_view_type(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS api_table_view(
-    id int NOT NULL AUTO_INCREMENT,
-    name varchar(100) NOT NULL DEFAULT '<NEW>',
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    name varchar(100) NOT NULL DEFAULT '<NEW>' COMMENT '',
     type_id varchar(10) NOT NULL COMMENT 'LISTVIEW,SELECTVIEW,FORMVIEW',
-    table_id int NOT NULL,
-    id_field_name varchar(50) NOT NULL,
-    fetch_xml text NOT NULL,
-    solution_id int NOT NULL,
+    table_id int NOT NULL COMMENT '',
+    id_field_name varchar(50) NOT NULL COMMENT '',
+    fetch_xml text NOT NULL COMMENT '',
+    columns text NULL COMMENT 'List columns (JSON)' COMMENT '',
+    solution_id int NOT NULL COMMENT '',
     PRIMARY KEY(id),
     UNIQUE KEY(table_id, type_id, name),
     FOREIGN KEY(table_id) REFERENCES api_table(id),
     FOREIGN KEY(solution_id) REFERENCES api_solution(id),
     FOREIGN KEY(type_id) REFERENCES api_table_view_type(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_table_view ADD column IF NOT EXISTS columns text NULL COMMENT 'List columns (JSON)' AFTER fetch_xml;
 
 /*
 App Management

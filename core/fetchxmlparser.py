@@ -70,8 +70,9 @@ class FetchXmlParser:
     def debug(self):
         if int(Setting.get_value(self._context, "core.debug.level", 0))==0:
             print("######################################################")
-            print(f"Aliases........:{self._table_aliases}")
-            print(f"FetchXML.......:{self._fetch_xml}")
+            print(f"Aliases..............:{self._table_aliases}")
+            print(f"FetchXML.............:{self._fetch_xml}")
+            print(f"Overwrite Columns....:{self._overwrite_columns_desc}")
             print("######################################################")
 
     def get_table_by_alias(self, alias):
@@ -167,6 +168,11 @@ class FetchXmlParser:
 
                     tmp.append(f"{ref_alias}.{ field['referenced_table_desc_field_name'] } AS \"__{ field['name'] }@name\", ")
                     tmp.append(f"CONCAT('/api/v1.0/data/{ field['referenced_table_name'] }/', { self.get_alias_by_table(self._main_alias) }.{ field['name'] })  AS \"__{ field['name'] }@url\" ")
+
+                    column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@name", "formatter": None}
+                    self._columns_desc.append(column_desc)
+                    column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@url", "formatter": None}
+                    self._columns_desc.append(column_desc)
 
 
             self._sql_select=''.join(tmp)

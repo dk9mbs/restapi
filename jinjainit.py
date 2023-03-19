@@ -140,10 +140,19 @@ def __escape_html(text):
     import html
     return html.escape(str(text))
 
+def __is_item_in_dict(jsondict, key):
+    if key in jsondict:
+        return True
+
+    return False
+
 # Filter
-def __filter_from_json(value):
+def __filter_from_json(value, default={}):
     import json
-    return json.loads(value)
+    if value==None:
+        return default
+    else:
+        return json.loads(value)
 
 def __filter_value_from_json(json, name, default=None):
     logger.info(json)
@@ -169,6 +178,7 @@ def init():
     JinjaEnvironment.register_template_function('format_date', __format_date)
     JinjaEnvironment.register_template_function('replace', __replace)
     JinjaEnvironment.register_template_function('escape_html', __escape_html)
+    JinjaEnvironment.register_template_function('is_item_in_dict', __is_item_in_dict)
 
     JinjaEnvironment.register_filter_function('from_json', __filter_from_json)
     JinjaEnvironment.register_filter_function('value_from_json', __filter_value_from_json)

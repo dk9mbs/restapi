@@ -305,7 +305,8 @@ call api_proc_create_table_field_instance(12,300, 'type_id','Type','string',2,'{
 call api_proc_create_table_field_instance(12,400, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(12,500, 'id_field_name','ID Feld Name','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(12,600, 'fetch_xml','FetchXML','string',101,'{"disabled": false,"mode":"ace/mode/xml"}', @out_value);
-call api_proc_create_table_field_instance(12,700, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(12,700, 'columns','Spalten','string',101,'{"disabled": false,"mode":"ace/mode/json"}', @out_value);
+call api_proc_create_table_field_instance(12,800, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
@@ -512,7 +513,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     <select>
         <field name="id" table_alias="g"/>
         <field name="groupname" table_alias="g"/>
-        <field name="is_admin" table_alias="g"/>
+        <field name="is_admin" table_alias="g" formatter="boolean"/>
         <field name="solution_id" table_alias="g"/>
     </select>
 </restapi>');
@@ -544,8 +545,8 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="id" table_alias="ug"/>
         <field name="username" table_alias="u"/>
         <field name="groupname" table_alias="g"/>
-        <field name="is_admin" table_alias="u" alias="Adminuser"/>
-        <field name="is_admin" table_alias="g" alias="Admingroup"/>
+        <field name="is_admin" table_alias="u" alias="Adminuser" formatter="boolean"/>
+        <field name="is_admin" table_alias="g" alias="Admingroup" formatter="boolean"/>
     </select>
 </restapi>');
 
@@ -628,7 +629,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="table_name" table_alias="t"/>
         <field name="desc_field_name" table_alias="t"/>
         <field name="id_field_name" table_alias="t"/>
-        <field name="enable_audit_log" table_alias="t"/>
+        <field name="enable_audit_log" table_alias="t" formatter="boolean"/>
     </select>
 </restapi>');
 
@@ -723,7 +724,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </joins>
     <select>
         <field name="id" table_alias="t" alias="id"/>
-        <field name="is_active" table_alias="t" alias="Aktiviert"/>
+        <field name="is_active" table_alias="t" alias="Aktiviert" formatter="boolean"/>
         <field name="title" table_alias="t" alias="Titel"/>
         <field name="name" table_alias="t" alias="Name"/>
         <field name="name" table_alias="p" alias="Portal"/>
@@ -857,7 +858,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </joins>
     <select>
         <field name="id" table_alias="t" alias="id"/>
-        <field name="is_active" table_alias="t" alias="Aktiviert"/>
+        <field name="is_active" table_alias="t" alias="Aktiviert" formatter="boolean"/>
         <field name="title" table_alias="t" alias="Titel"/>
         <field name="name" table_alias="t" alias="Name"/>
         <field name="name" table_alias="p" alias="Portal"/>
@@ -904,22 +905,13 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </select>
 </restapi>');
 
-INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
 38,'LISTVIEW','default',30,'id',1,'<restapi type="select">
     <table name="api_data_formatter" alias="f"/>
     <filter type="or">
         <condition field="name" alias="f" value="$$query$$" operator="$$operator$$"/>
     </filter>
-    <joins>
-        <join type="left" table="api_table" alias="t" condition="f.table_id=t.id"/>
-    </joins>
-    <select>
-        <field name="id" table_alias="f" alias="id"/>
-        <field name="name" table_alias="f" alias="Name"/>
-        <field name="alias" table_alias="t" alias="Tablename"/>
-        <field name="type_id" table_alias="f" alias="Type"/>
-    </select>
-</restapi>');
+</restapi>', '{"__table_id@name": {},"name": {},"alias": {},"__type_id@name": {}}');
 
 INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
 100,'LISTVIEW','all',23,'id',1,'<restapi type="select">
@@ -947,13 +939,14 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 
 
 
-INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
 110,'LISTVIEW','default',12,'id',1,'<restapi type="select">
     <table name="api_table_view" alias="v"/>
     <orderby>
         <field name="table_id" alias="v" sort="DESC"/>
     </orderby>
-</restapi>');
+</restapi>',
+'{"__table_id@name": {},"name": {},"__type_id@name": {},"__solution_id@name": {}}');
 
 
 /* out_data_formatter */
