@@ -72,7 +72,6 @@ class FetchXmlParser:
             print("######################################################")
             print(f"Aliases..............:{self._table_aliases}")
             print(f"FetchXML.............:{self._fetch_xml}")
-            print(f"Overwrite Columns....:{self._overwrite_columns_desc}")
             print("######################################################")
 
     def get_table_by_alias(self, alias):
