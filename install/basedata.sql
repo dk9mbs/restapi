@@ -213,9 +213,9 @@ call api_proc_create_table_field_instance(30,200, 'name','Bezeichnung','string',
 call api_proc_create_table_field_instance(30,300, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,300, 'type_id','Typ','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,400, 'mime_type','Mime Typ','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(30,500, 'template_header','Kopf Bereich','string',18,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(30,600, 'template_line','Daten Bereich','string',18,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(30,700, 'template_footer','Fuss Bereich','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,500, 'template_header','Kopf Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
+call api_proc_create_table_field_instance(30,600, 'template_line','Daten Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
+call api_proc_create_table_field_instance(30,700, 'template_footer','Fuss Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
 call api_proc_create_table_field_instance(30,710, 'line_separator','Datensatz Trenner','string',20,
     '{"disabled": false, "listitems":";Kein|@n;New Line(Unix)|@r@n;New Line (Windows)"}', @out_value);
 call api_proc_create_table_field_instance(30,720, 'file_name','Dateiname','string',1,'{"disabled": false}', @out_value);
@@ -410,6 +410,11 @@ End APP
 
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('portal.default_portal','default','Default portal_id',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('datalist.page_size','10','Page Size',1);
+
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.username','','MQTT Username',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.password','','MQTT Password',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.host','','MQTT Host',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.port','','MQTT Port',1);
 
 
 /* Dataviews */

@@ -10,6 +10,7 @@ from config import CONFIG
 from core.fetchxmlparser import FetchXmlParser
 from services.database import DatabaseServices
 from core.plugin import ProcessTools
+from core.setting import Setting
 
 class Session:
     def __init__(self, name="default", init_timer=True):
@@ -23,8 +24,10 @@ class Session:
             create_logger(__name__).info("username / password wrong or user is disaled")
 
         context=AppInfo.create_context(self.session_id)
-        context.get_session_values()['timer_interval']=0
-        context.get_session_values()['timer_unit']='m'
+        if init_timer==True:
+            context.get_session_values()['timer_interval']=0
+            context.get_session_values()['timer_unit']='m'
+
         AppInfo.save_context(context)
 
 
@@ -190,10 +193,10 @@ def execute_queue(session_id):
 def main():
     session={}
     session['timer']=Session(name="timer")
-    session['queue']=Session(name="queue")
+    session['queue']=Session(name="queue", init_timer=False)
 
     create_logger(__name__).info(f"timer logged in as system with sessionid: {session['timer'].session_id}")
-    create_logger(__name__).info(f"queue logged in as system with sessionid: {session['timer'].session_id}")
+    create_logger(__name__).info(f"queue logged in as system with sessionid: {session['queue'].session_id}")
 
     tasks=[]
     w_timer=Wait(60, session['timer'].session_id, execute_timer)
