@@ -166,6 +166,32 @@ NotifyAccess=all
 WantedBy=multi-user.target
 EOF
 
+
+#
+# Create message service
+#
+echo "... writing restapi-msg.service ..."
+cat << EOF | sudo tee /etc/systemd/system/restapi-msg.$INSTANCE_ID.service
+# do not change this file here!
+# auto created by $BASEDIR/install.sh
+[Unit]
+Description=restapi msg service
+After=syslog.target mysqld.service
+
+[Service]
+WorkingDirectory=$BASEDIR
+Environment="PYTHONPATH=$PYTHONPATH"
+ExecStart=$VENV/bin/python $BASEDIR/msgservice.py
+Restart=always
+KillSignal=SIGQUIT
+Type=idle
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 echo "...reloading systemctl ..."
 sudo systemctl daemon-reload
 echo "*****************************************************************"
@@ -173,12 +199,14 @@ echo "start the services:"
 echo "-------------------"
 echo "systemctl start restapi-dev.$INSTANCE_ID.service"
 echo "systemctl start restapi-timer.$INSTANCE_ID.service"
+echo "systemctl start restapi-msg.$INSTANCE_ID.service"
 echo ""
 echo ""
 echo "autostart the services:"
 echo "-----------------------"
 echo "systemctl enable restapi-dev.$INSTANCE_ID.service"
 echo "systemctl enable restapi-timer.$INSTANCE_ID.service"
+echo "systemctl enable restapi-msg.$INSTANCE_ID.service"
 echo "*****************************************************************"
 
 echo "ready!"

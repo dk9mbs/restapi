@@ -182,61 +182,6 @@ class Wait(threading.Thread):
             time.sleep(0.1)
 
 
-class MqttWorker():
-    def __init__(self, session_id):
-        self._context=None
-        self._run=True
-        self._session_id=session_id
-        self._client=None
-
-    def kill(self):
-        self._run=False
-        self._client.loop_stop()
-
-    def _execute_plugin(self,context, publisher, params):
-        plugin=Plugin(context, publisher, 'mqtt_message')
-        plugin.execute('after', params)
-
-
-    def start(self):
-        import paho.mqtt.client as mqtt
-
-        def on_connect(client, userdata, flags, rc):
-            create_logger(__name__).info(f"MQTT Connect with result code:{str(rc)}")
-            client.subscribe("owntracks/+/+")
-            client.subscribe("owntracks/+/+/waypoints")
-
-        def on_message(client, userdata, msg):
-            context=AppInfo.create_context(self._session_id)
-
-            params="{\"data\":"+msg.payload.decode('utf-8')+", \"topic\":\""+msg.topic+"\"}"
-
-            self._execute_plugin(context, msg.topic.split("/")[0],params )
-            self._execute_plugin(context, msg.topic, params )
-
-            AppInfo.save_context(context)
-
-        client = mqtt.Client()
-        client.on_connect = on_connect
-        client.on_message = on_message
-
-        context=AppInfo.create_context(self._session_id)
-        username=Setting.get_value(context, "mqtt.username","username")
-        password=Setting.get_value(context, "mqtt.password","password")
-        host=Setting.get_value(context, "mqtt.host","mqtt.host.de")
-        port=Setting.get_value(context, "mqtt.port","1883")
-        AppInfo.save_context(context)
-
-        client.username_pw_set(username, password=password)
-        client.connect(host, 1883, 60)
-        self._client=client
-        # Blocking call that processes network traffic, dispatches callbacks and
-        # handles reconnecting.
-        # Other loop*() functions are available that give a threaded interface and a
-        # manual interface.
-        #client.loop_forever()
-        client.loop_start()
-
 def execute_timer(session_id):
     t=TimerWorker(session_id)
     t.execute()
@@ -249,11 +194,9 @@ def main():
     session={}
     session['timer']=Session(name="timer")
     session['queue']=Session(name="queue", init_timer=False)
-    session['mqtt']=Session(name="mqtt", init_timer=False)
 
     create_logger(__name__).info(f"timer logged in as system with sessionid: {session['timer'].session_id}")
     create_logger(__name__).info(f"queue logged in as system with sessionid: {session['queue'].session_id}")
-    create_logger(__name__).info(f"queue logged in as system with sessionid: {session['mqtt'].session_id}")
 
     tasks=[]
     w_timer=Wait(60, session['timer'].session_id, execute_timer)
@@ -262,16 +205,11 @@ def main():
     w_queue=Wait(30, session['queue'].session_id, execute_queue)
     w_queue.start()
 
-    t=MqttWorker(session['mqtt'].session_id)
-    t.start()
-
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt as err:
         create_logger(__name__).info("Waiting for shutdown threads...")
-
-    t.kill()
 
     w_timer.kill()
     w_queue.kill()
