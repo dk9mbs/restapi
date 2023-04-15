@@ -14,4 +14,8 @@ wwwroot/*
 venv
 init.d/*
 !init.d/001_main.sh
+models/*
+!models/__init__.py
+!models/dummy.py
+
 
