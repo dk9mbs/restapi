@@ -39,3 +39,9 @@ class OperatorNotAllowedInFetchXml(Exception):
 
 class OutDataFormatterNotFound(Exception):
     pass
+
+class TypeNotAllowedInFieldList(Exception):
+    pass
+
+class WrongFetchMode(Exception):
+    pass
