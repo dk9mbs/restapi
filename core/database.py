@@ -9,6 +9,7 @@ from core.permission import Permission
 from core import log
 from core.jsontools import json_serial
 from core.formatter_factory import FormatterFactory
+from core.exceptions import WrongFetchMode
 
 logger=log.create_logger(__name__)
 
@@ -47,7 +48,7 @@ class Recordset:
         elif self._fetch_mode==1:
             self._result=self._cursor.fetchone()
         else:
-            raise NameError(f"wrong fetch_mode: {fetch_mode}")
+            raise WrongFetchMode(f"wrong fetch_mode in recordset.read: {fetch_mode} Did you mean 0(all) or 1(one)?")
 
     def execute_formatter(self,context, columns):
         formatters={}
