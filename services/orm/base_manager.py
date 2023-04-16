@@ -2,7 +2,8 @@ from core import log
 from core.exceptions import TypeNotAllowedInFieldList
 from core.meta import read_table_field_meta
 from core.ormparser import OrmParser
-from services.orm.condition import Condition
+from core.baseparser import BaseParser
+from services.orm.condition import Q
 from services.orm.field import Field
 from services.database import DatabaseServices
 
@@ -21,16 +22,11 @@ class BaseManager:
         self._main_table_join=''
 
     def __get_sql(self, ignore_paging=True):
-        sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} WHERE {self._where} ORDER BY {self._orderby}"""
+        if self._sql_type.upper()=='SELECT':
+            sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} 
+                {self._main_table_join} WHERE {self._where} ORDER BY {self._orderby}"""
 
         return sql
-
-    def debug(self):
-        print(self._where)
-        print(self._query_vars)
-        print(self._orderby)
-
-        return self
 
     def select(self, fields: list=[], alias: str='main'):
         self._sql_type="SELECT"
@@ -62,7 +58,7 @@ class BaseManager:
     def where(self, q, logical_connector='and'):
         conditions=list()
 
-        if isinstance(q, Condition):
+        if isinstance(q, Q):
             conditions.append(q)
         elif isinstance(q, list):
             conditions=q
@@ -86,7 +82,17 @@ class BaseManager:
         self._orderby=f"{self._orderby} {field} {order}"
         return self
 
-    def exec(self):
+    def to_list(self):
+        parser=self.__execute()
+        result=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=0)
+        return result.get_result()
+
+    def to_entity(self):
+        parser=self.__execute()
+        result=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=1)
+        return result.get_result()
+
+    def __execute(self) -> BaseParser:
         parser=OrmParser('', self._context)
 
         parser.set_main_table(self._main_table)
@@ -95,10 +101,7 @@ class BaseManager:
         parser.set_sql(self.__get_sql())
         parser.set_paras(self._query_vars)
 
-        print(self.__get_sql())
-
-        result=DatabaseServices.exec (parser, self._context)
-        print(result)
+        return parser
 
     def __add_default_join(self):
         pass

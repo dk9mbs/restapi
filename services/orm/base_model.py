@@ -6,10 +6,6 @@ class MetaModel(type):
     def _get_manager(cls, context):
         return cls.manager_class(context=context, model_class=cls)
 
-    #@property
-    #def objects(cls):
-    #    return cls._get_manager()
-
     def get_objects(cls, context):
         return cls._get_manager(context)
 

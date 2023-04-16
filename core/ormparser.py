@@ -1,7 +1,7 @@
-from core.exceptions import TypeNotAllowedInFieldList
-from core.meta import read_table_field_meta
+#from core.exceptions import TypeNotAllowedInFieldList
+#from core.meta import read_table_field_meta
 from core.baseparser import BaseParser
-from services.orm.condition import Condition
+#from services.orm.condition import Q
 from services.orm.field import Field
 
 class OrmParser(BaseParser):

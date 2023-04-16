@@ -1,6 +1,6 @@
 from .f import F
 
-class Condition:
+class Q:
     operations_map = {
         'eq': '=',
         'lt': '<',
@@ -51,7 +51,7 @@ class Condition:
         return self._merge_with(other, logical_operator='AND')
 
     def _merge_with(self, other, logical_operator='AND'):
-        condition_resulting = Condition()
+        condition_resulting = Q()
         condition_resulting.sql_format = f"({self.sql_format} {logical_operator} {other.sql_format})"
 
         condition_resulting.query_objects = self.query_objects+other.query_objects

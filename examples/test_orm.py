@@ -7,15 +7,16 @@ session_id=AppInfo.login("root","password")
 context=AppInfo.create_context(session_id)
 # dk9mbs
 
-from services.orm import BaseManager, BaseModel, Condition, F
+from services.orm import BaseManager, BaseModel, Q, F
 from model.dummy import Dummy
 item=Dummy.get_objects(context) \
     .select() \
-    .where( [Condition(id__eq=1) | Condition(id__eq=2) | Condition(id__eq=3) | Condition(id__eq=4) , Condition(name='test')] ) \
+    .where( [Q(id__eq=99) | Q(id__eq=100) | Q(id__eq=3) | Q(id__eq=4) , Q(name='test')] ) \
     .orderby('id','DESC') \
     .orderby('name', 'ASC') \
-    .exec()
+    .to_entity()
 
+print(item)
 
 
 #    .where(Condition(id__eq=1) | Condition(id__eq=2) | Condition(id__eq=3) & Condition(id__eq=4) ) \
