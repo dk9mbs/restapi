@@ -4,6 +4,7 @@ from core.meta import read_table_field_meta
 from core.ormparser import OrmParser
 from core.baseparser import BaseParser
 from services.orm.q import Q
+from services.orm.o import O
 from services.orm.field import Field
 from services.database import DatabaseServices
 
@@ -75,11 +76,11 @@ class BaseManager:
 
         return self
 
-    def orderby(self, field: str, order: str):
+    def orderby(self, o: O) :
         if self._orderby!='':
             self._orderby=f"{self._orderby},"
 
-        self._orderby=f"{self._orderby} {field} {order}"
+        self._orderby=f"{self._orderby} {o.get_field_name()} {o.get_order()}"
         return self
 
     def to_list(self):
