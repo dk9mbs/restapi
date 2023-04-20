@@ -3,29 +3,33 @@ from services.numerictools import isnumeric
 class Field:
     def __init__(self, name=None, value=None):
         self._name=name
-        self._value=None
 
+        if value==None:
+            self._value=None
+        else:
+            self._value=self.convert(value)
+        
     @property
     def name(self) -> str:
         return self._name
     
-    @property.setter
+    @name.setter
     def name(self, value) -> None:
         self._name=value
 
     @property
     def value(self):
-        return self.__convert_out(self._value)
-    
-    @property.setter
-    def value(self, value : str) -> None:
-        self._value=self.__convert_in(value)
-
-    def __convert_in(self, value: str) -> str:
-        return str(value)
-
-    def __convert_out(self):
         return self._value
+    
+    @value.setter
+    def value(self, value) -> None:
+        if value==None:
+            self._value=None
+        else:
+            self._value=self.convert(value)
+
+    def convert(self, value):
+        return str(value)
 
     def __str__(self) -> str:
         return str(self._value)
@@ -35,29 +39,28 @@ class Field:
 
 
 class StringField(Field):
-    def __str__(self) -> str:
-        return super().__str__()
-    
-class NumericField(Field):
+    def convert(self, value):
+        return value
 
-    def __convert_in(self, value) -> None:
+class NumericField(Field):
+    def convert(self, value):
         if not isnumeric(value):
-            raise ValueError(f"{self._name} {self._value} is not a numeric value!")
+            raise ValueError(f"{self._name} {value} is not a numeric value!")
 
         return value
-    def __convert_out(self) -> str:
-        if not isnumeric(self._value):
-            raise ValueError(f"{self._name} {self._value} is not a numeric value!")
-        
-        return self._value
+
+
     
 class BoolField(Field):
-    def __convert_in(self, value: int) -> str:
+    def convert(self, value: int) -> bool:
+        if not isnumeric(value) and not isinstance(value, bool):
+            raise ValueError(f"{self._name} {value} is not a bool value!")
+
         if value==0:
             result=False
         else:
             result=True    
+
         return result
     
-    def __convert_out(self):
-        return super().__convert_out()
+        
