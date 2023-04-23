@@ -13,13 +13,21 @@ class TestPluginExecution(unittest.TestCase):
         self.context=AppInfo.create_context(session_id)
 
     def test_field(self):
-        from services.orm import Field, StringField, NumericField, BoolField
+        from services.orm import Field, StringField, NumericField, BoolField, IntField, DateTimeField
 
         f=StringField("id","stringvalue")
         self.assertEqual(f.value , "stringvalue")
 
         f=NumericField("id",12.34)
         self.assertEqual(f.value , 12.34)
+
+        f=NumericField("id","12.34")
+        self.assertEqual(f.value , 12.34)
+
+        f=NumericField("id","12.343453")
+        f.format='{:.2f}'
+        self.assertEqual(f.value , 12.343453)
+        self.assertEqual(f.formatted_value , 12.34)
 
         f=BoolField("id",1)
         self.assertEqual(f.value , True)
@@ -39,11 +47,54 @@ class TestPluginExecution(unittest.TestCase):
         f=BoolField("id",True)
         self.assertEqual(f.value , True)
 
-        f=BoolField()
-        f.name="id"
+        """
+        IntField
+        """
+        f=IntField("id", 99)
+        self.assertEqual(f.value, 99)
+        self.assertEqual(f.formatted_value, 99)
+
+        f=IntField("id", -99)
+        self.assertEqual(f.value, -99)
+        self.assertEqual(f.formatted_value, -99)
+
+        f=IntField("id", 99.18)
+        self.assertEqual(f.value, 99)
+        self.assertEqual(f.formatted_value, 99)
+
+        f=IntField("id", "99.98")
+        self.assertEqual(f.value, 99)
+        self.assertEqual(f.formatted_value, 99)
+
+        """
+        Datetime
+        """
+        f=DateTimeField("created_on","2023-12-31 00:00:00")
+        f.format="%d.%m.%Y %H:%M:%S"
+        print(f"Ausgabe (formatiert):  {f.formatted_value}")
+        print (f.value)
+        """
+        Complex field tests
+        """
+        f=NumericField("id","12.348453")
+        f.format='{:.2f}'
+        self.assertEqual(f.value , 12.348453)
+        self.assertEqual(f.formatted_value , 12.35)
+        self.assertEqual(f.changed, False)
+        f.value=11.5
+        self.assertEqual(f.changed, True)
+        self.assertEqual(f.formatted_value, 11.50)
+        self.assertEqual(f.value, 11.5)
+
+
+
+        f=BoolField("id")
         f.value=True
         self.assertEqual(f.value , True)
-    
+
+        #f.value="T"
+        #self.assertEqual(f.value , True)
+
         try:
             f.value="True"
             self.fail("Das darf nicht sein!!!!")
@@ -66,9 +117,14 @@ class TestPluginExecution(unittest.TestCase):
             .where( [Q(id__eq=99) | Q(id__eq=100) | Q(id__eq=3) | Q(id__eq=4) , Q(name='test')] ) \
             .orderby(O('id','DESC')) \
             .orderby(O('name', 'ASC')) \
-            .to_entity()
+            .to_list()
 
-        print(item)
+        item=Dummy.get_objects(context) \
+            .select() \
+            .where(Q(id__gt=1)) \
+            .orderby(O('id','DESC')) \
+            .orderby(O('name', 'ASC')) \
+            .to_entity()
 
 
     def tearDown(self):

@@ -26,7 +26,7 @@ class BaseManager:
         if self._sql_type.upper()=='SELECT':
             sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} 
                 {self._main_table_join} WHERE {self._where} ORDER BY {self._orderby}"""
-
+        print(sql)
         return sql
 
     def select(self, fields: list=[], alias: str='main'):
@@ -83,16 +83,35 @@ class BaseManager:
         self._orderby=f"{self._orderby} {o.get_field_name()} {o.get_order()}"
         return self
 
+    """
+    Return Methods
+    """
     def to_list(self):
         parser=self.__execute()
-        result=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=0)
-        return result.get_result()
+        rs=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=0)
+
+        model_list=[]
+        for item in rs.get_result():
+            model_list.append(self.model_class(**item))
+
+        return model_list
 
     def to_entity(self):
         parser=self.__execute()
-        result=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=1)
-        return result.get_result()
+        rs=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=1)
+        if rs.get_eof():
+            return None
+        else:
+            return self.model_class(**rs.get_result())
 
+    def to_recordset(self):
+        parser=self.__execute()
+        rs=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=0)
+        return rs
+
+    """
+    private methods
+    """
     def __execute(self) -> BaseParser:
         parser=OrmParser('', self._context)
 
