@@ -69,10 +69,11 @@ class TestPluginExecution(unittest.TestCase):
         """
         Datetime
         """
-        f=DateTimeField("created_on","2023-12-31 00:00:00")
-        f.format="%d.%m.%Y %H:%M:%S"
-        print(f"Ausgabe (formatiert):  {f.formatted_value}")
-        print (f.value)
+        f=DateTimeField("created_on","2023-12-31 00:00:00", format="%d.%m.%Y %H:%M:%S")
+        #f.format="%d.%m.%Y %H:%M:%S"
+        print(f"Ausgabe (formatiert).......:{f.formatted_value}")
+        print(f"Value (unformatiert).......:{f.value}")
+
         """
         Complex field tests
         """
