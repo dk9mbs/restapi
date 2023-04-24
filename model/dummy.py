@@ -1,4 +1,4 @@
-from services.orm import BaseModel, NumericField, StringField
+from services.orm import BaseModel, NumericField, StringField, IntField
 
 class Dummy(BaseModel):
     table_name="dummy"
@@ -6,7 +6,7 @@ class Dummy(BaseModel):
     """
     Field Definition
     """
-    id=NumericField('id', None)
-    name=StringField('name', None)
-    Port=NumericField('Port', None)
+    id=IntField('id', pk=True)
+    name=StringField('name')
+    Port=NumericField('Port')
 
