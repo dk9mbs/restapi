@@ -10,7 +10,7 @@ class Q:
         'in': 'IN'
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, alias, **kwargs):
         sql_format_parts = list()
         self.query_vars = list()
         self.query_objects = list()
@@ -29,7 +29,7 @@ class Q:
                 sql_format_parts.append(f'{field} {operation_str} ({", ".join(["%s"]*len(vars_list))})')
                 self.query_vars += vars_list
             else:
-                sql_format_parts.append(f'{field} {operation_str} %s')
+                sql_format_parts.append(f'{alias}.{field} {operation_str} %s')
                 self.query_objects.append({"field": field, "operator": operation_expr, "value": value})
                 self.query_vars.append(value)
 

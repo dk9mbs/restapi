@@ -113,20 +113,23 @@ class TestPluginExecution(unittest.TestCase):
 
         from services.orm import BaseManager, BaseModel, Q, F, O
         from model.dummy import Dummy
-        item=Dummy.get_objects(context) \
-            .select() \
-            .where( [Q(id__eq=99) | Q(id__eq=100) | Q(id__eq=3) | Q(id__eq=4) , Q(name='test')] ) \
-            .orderby(O('id','DESC')) \
-            .orderby(O('name', 'ASC')) \
-            .to_list()
+        from model.ApiGroup import ApiGroup
 
-        item=Dummy.get_objects(context) \
+        #item=Dummy.get_objects(context) \
+        #    .select() \
+        #    .where( [Q(id__eq=99) | Q(id__eq=100) | Q(id__eq=3) | Q(id__eq=4) , Q(name='test')] ) \
+        #    .orderby(O('id','DESC')) \
+        #    .orderby(O('name', 'ASC')) \
+        #    .to_list()
+
+        item=ApiGroup.get_objects(context) \
             .select() \
-            .where(Q(id__gt=1)) \
-            .orderby(O('id','DESC')) \
-            .orderby(O('name', 'ASC')) \
+            .where(Q('main',id__eq=1)) \
+            .orderby(O('main.id','DESC')) \
+            .orderby(O('main.groupname', 'ASC')) \
             .to_entity()
 
+        print(item.is_admin)
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

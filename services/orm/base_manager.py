@@ -181,7 +181,7 @@ class BaseManager:
                 fields=f"{fields},"
 
             if field['is_virtual']==0:
-                fields=f"{fields}{field['field_name']}"
+                fields=f"{fields}{main_table_alias}.{field['field_name']}"
             else:
                 fields=f"{fields} null AS {field['name']}"
 
