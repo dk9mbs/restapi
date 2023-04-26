@@ -115,21 +115,22 @@ class TestPluginExecution(unittest.TestCase):
         from model.dummy import Dummy
         from model.ApiGroup import ApiGroup
 
-        #item=Dummy.get_objects(context) \
-        #    .select() \
-        #    .where( [Q(id__eq=99) | Q(id__eq=100) | Q(id__eq=3) | Q(id__eq=4) , Q(name='test')] ) \
-        #    .orderby(O('id','DESC')) \
-        #    .orderby(O('name', 'ASC')) \
-        #    .to_list()
-
-        item=ApiGroup.get_objects(context) \
+        item=Dummy.get_objects(context) \
             .select() \
-            .where(Q('main',id__eq=1)) \
-            .orderby(O('main.id','DESC')) \
-            .orderby(O('main.groupname', 'ASC')) \
-            .to_entity()
+            .where( [Q(id__eq=99) | Q(id__eq=100) | Q(id__eq=3) | Q(id__eq=4) , Q(name='test').alias("main")] ) \
+            .orderby(O('id','DESC')) \
+            .orderby(O('name', 'ASC')) \
+            .to_list()
 
-        print(item.is_admin)
+        #item=ApiGroup.get_objects(context) \
+        #    .select() \
+        #    .where([Q(id__eq=1).alias("main") & Q(id__eq=1).alias("main"), Q(groupname='sysadmin').alias("main")], logical_connector='OR' ) \
+        #    .orderby(O('main.id','DESC')) \
+        #    .orderby(O('main.groupname', 'ASC')) \
+        #    .to_entity()
+
+        #print(item.is_admin)
+        #print(item.groupname)
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

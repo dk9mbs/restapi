@@ -24,8 +24,12 @@ class BaseManager:
 
     def __get_sql(self, ignore_paging=True):
         if self._sql_type.upper()=='SELECT':
-            sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} 
-                {self._main_table_join} WHERE {self._where} ORDER BY {self._orderby}"""
+            sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} """
+            if self._where!='':
+                sql=f"{sql} WHERE {self._where}"
+            if self._orderby!='':
+                sql=f"{sql} ORDER BY {self._orderby}"
+
         print(sql)
         return sql
 
