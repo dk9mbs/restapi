@@ -84,7 +84,7 @@ class BaseManager:
         if self._orderby!='':
             self._orderby=f"{self._orderby},"
 
-        self._orderby=f"{self._orderby} {o.get_field_name()} {o.get_order()}"
+        self._orderby=f"{self._orderby} {o.field_name} {o.order}"
         return self
 
     """

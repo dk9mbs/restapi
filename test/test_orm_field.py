@@ -93,9 +93,6 @@ class TestPluginExecution(unittest.TestCase):
         f.value=True
         self.assertEqual(f.value , True)
 
-        #f.value="T"
-        #self.assertEqual(f.value , True)
-
         try:
             f.value="True"
             self.fail("Das darf nicht sein!!!!")
@@ -115,9 +112,11 @@ class TestPluginExecution(unittest.TestCase):
         from model.dummy import Dummy
         from model.ApiGroup import ApiGroup
 
+
+
         item=Dummy.get_objects(context) \
             .select() \
-            .where( [Q(id__eq=99) | Q(id__eq=100) | Q(id__eq=3) | Q(id__eq=4) , Q(name='test').alias("main")] ) \
+            .where( [Q(id__eq=99).alias("main") | Q(id__eq=100).alias("main") | Q(id__eq=3) | Q(id__eq=4) , Q(name='test').alias("main")] ) \
             .orderby(O('id','DESC')) \
             .orderby(O('name', 'ASC')) \
             .to_list()

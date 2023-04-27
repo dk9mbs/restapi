@@ -44,6 +44,7 @@ class Q:
 
         self.sql_format = ' AND '.join(self._sql_format_parts)
 
+
     def alias(self, alias):
         self._alias=alias
         self.build()
