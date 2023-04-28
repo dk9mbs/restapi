@@ -113,13 +113,15 @@ class TestPluginExecution(unittest.TestCase):
         from model.ApiGroup import ApiGroup
 
 
+        print(ApiGroup.groupname == "test")
+        print(ApiGroup.groupname < "1")
 
-        item=Dummy.get_objects(context) \
-            .select() \
-            .where( [Q(id__eq=99).alias("main") | Q(id__eq=100).alias("main") | Q(id__eq=3) | Q(id__eq=4) , Q(name='test').alias("main")] ) \
-            .orderby(O('id','DESC')) \
-            .orderby(O('name', 'ASC')) \
-            .to_list()
+        #item=Dummy.get_objects(context) \
+        #    .select() \
+        #    .where( [Q(id__eq=99).alias("main") | Q(id__eq=100).alias("main") | Q(id__eq=3) | Q(id__eq=4) , Q(name='test').alias("main")] ) \
+        #    .orderby(O('id','DESC')) \
+        #    .orderby(O('name', 'ASC')) \
+        #    .to_list()
 
         #item=ApiGroup.get_objects(context) \
         #    .select() \

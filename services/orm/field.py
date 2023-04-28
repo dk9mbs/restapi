@@ -23,6 +23,17 @@ class Field:
 
         self._value=self._validate(value)
 
+
+    def __eq__(self, __value: object) -> str:
+        return self.name + ' ' + __value
+    
+    def __lt__ (self, value):
+        return f"{self.name} < {value}"
+    
+    def __gt__ (self, value):
+        return f"{self.name} > {value}"
+
+
     @property
     def changed(self):
         return self._changed
