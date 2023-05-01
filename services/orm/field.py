@@ -60,13 +60,13 @@ class Field:
 
 
     def __eq__(self, value: object) -> WhereExpression:
-        return WhereExpression(self.name, "=", "%s", value)
+        return WhereExpression(self.name, "=", value)
     
     def __lt__ (self, value) -> WhereExpression:
-        return WhereExpression(self.name, "<", "%s", value)
+        return WhereExpression(self.name, "<", value)
     
     def __gt__ (self, value) -> WhereExpression:
-        return WhereExpression(self.name, ">", "%s", value)
+        return WhereExpression(self.name, ">", value)
 
 
     """

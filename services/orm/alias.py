@@ -32,6 +32,9 @@ class Alias(object):
         return self._merge("AND", other)
 
     def _merge(self, logical_operator, other):
+        e=WhereExpression(self.expression, "=", self.values )
+        e.expression
+
         a=Alias(self.alias)
         a.expression=f"({self.expression}) {logical_operator} ({other.expression})"
         a.values=self.values+other.values

@@ -155,10 +155,13 @@ class TestPluginExecution(unittest.TestCase):
         #print(item.groupname)
 
     def test_expression(self):
-        expression=WhereExpression("name", "=", "%s", "Markus")
+        expression=WhereExpression("name", "=", "Markus")
         self.assertEqual(expression.values, ['Markus'])
 
-        expression=WhereExpression("name", "=", "%s", ['Markus'])
+        expression=WhereExpression("name", "<", ['Markus'])
+        self.assertEqual(expression.values, ['Markus'])
+
+        expression=WhereExpression("name", ">", ['Markus'])
         self.assertEqual(expression.values, ['Markus'])
 
     def tearDown(self):
