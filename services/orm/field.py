@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from services.numerictools import isnumeric
+from .expression import WhereExpression
 
 """
 
@@ -9,12 +10,12 @@ pk................:primary key (True or False)
 format............:Format String
 """
 class Field:
+    alias="main"
     def __init__(self, field_name, value=None, **kwargs):
         self._name=field_name
         self._primary_key=False
         self._format=None
         self._changed=False
-
         if 'format' in kwargs:
             self._format=kwargs['format']
 
@@ -22,16 +23,6 @@ class Field:
             self._primary_key=kwargs['pk']
 
         self._value=self._validate(value)
-
-
-    def __eq__(self, __value: object) -> str:
-        return self.name + ' ' + __value
-    
-    def __lt__ (self, value):
-        return f"{self.name} < {value}"
-    
-    def __gt__ (self, value):
-        return f"{self.name} > {value}"
 
 
     @property
@@ -68,6 +59,16 @@ class Field:
         return self._format_value(self._value, self._format)
 
 
+    def __eq__(self, value: object) -> WhereExpression:
+        return WhereExpression(self.name, "=", "%s", value)
+    
+    def __lt__ (self, value) -> WhereExpression:
+        return WhereExpression(self.name, "<", "%s", value)
+    
+    def __gt__ (self, value) -> WhereExpression:
+        return WhereExpression(self.name, ">", "%s", value)
+
+
     """
     overwritable methods
     """
@@ -85,7 +86,7 @@ class Field:
         return str(self._value)
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}: {self.name} ({self.data_type})>"
+        return f"<{self.__class__.__name__}: {self.name} ({self.value})>"
 
 
 class StringField(Field):

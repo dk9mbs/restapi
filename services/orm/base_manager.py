@@ -3,12 +3,15 @@ from core.exceptions import TypeNotAllowedInFieldList
 from core.meta import read_table_field_meta
 from core.ormparser import OrmParser
 from core.baseparser import BaseParser
-from services.orm.q import Q
-from services.orm.o import O
-from services.orm.field import Field
 from services.database import DatabaseServices
 
+from .field import Field
+from .alias import Alias
+from .expression import WhereExpression
+
 class BaseManager:
+    context=None
+    
     def __init__(self, context, model_class):
         self.model_class = model_class
         self._context=context
@@ -57,34 +60,40 @@ class BaseManager:
         return self
 
     """
-    q.........................:queryobject or list with queryobjects
-    logical_connector.........:and or or (in case of q is a list)
+    obj......................:WhereExpression or Alias
+    logical_operator.........:and or or (in case of q is a list)
     """
-    def where(self, q, logical_connector='and'):
-        conditions=list()
+    def where(self, obj: object(), logical_operator='and'):
+        values=list()
+        expression=''
+        if isinstance(obj, WhereExpression):
+            expression=obj.expression
+            value=obj.values
+            values.append(value)
+        elif isinstance(obj, Alias):
+            expression=obj.expression
+            values=obj.values
+        else:
+            raise ValueError('Obj must be a tuple or an Alias')
 
-        if isinstance(q, Q):
-            conditions.append(q)
-        elif isinstance(q, list):
-            conditions=q
+        if self._where!='':
+            self._where=f"{self._where} {logical_operator}"
 
-        for condition in conditions:
-            if self._where!='':
-                self._where=f"{self._where} {logical_connector}"
+        self._where=f"{self._where} {expression}"
 
-            self._where=f"{self._where} {condition.sql_format}"
-
-            for var in condition.get_query_vars():
-                self._query_vars.append(var)
-
+        self._query_vars=self._query_vars+values
+        #for var in values:
+        #    print(values)
+        #    self._query_vars=self._query_vars+var
 
         return self
 
-    def orderby(self, o: O) :
-        if self._orderby!='':
-            self._orderby=f"{self._orderby},"
 
-        self._orderby=f"{self._orderby} {o.field_name} {o.order}"
+    def orderby(self, o: object) :
+        #if self._orderby!='':
+        #    self._orderby=f"{self._orderby},"
+
+        #self._orderby=f"{self._orderby} {o.field_name} {o.order}"
         return self
 
     """

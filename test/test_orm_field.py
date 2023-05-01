@@ -6,6 +6,9 @@ from config import CONFIG
 from core.appinfo import AppInfo
 from core.plugin import Plugin
 
+from services.orm import Field, StringField, NumericField, BoolField, IntField, DateTimeField
+from services.orm import WhereExpression
+
 class TestPluginExecution(unittest.TestCase):
     def setUp(self):
         AppInfo.init(__name__, CONFIG['default'])
@@ -13,7 +16,6 @@ class TestPluginExecution(unittest.TestCase):
         self.context=AppInfo.create_context(session_id)
 
     def test_field(self):
-        from services.orm import Field, StringField, NumericField, BoolField, IntField, DateTimeField
 
         f=StringField("id","stringvalue")
         self.assertEqual(f.value , "stringvalue")
@@ -108,14 +110,33 @@ class TestPluginExecution(unittest.TestCase):
         context=AppInfo.create_context(session_id)
         # dk9mbs
 
-        from services.orm import BaseManager, BaseModel, Q, F, O
+        from services.orm import BaseManager, BaseModel, F, Alias
         from model.dummy import Dummy
         from model.ApiGroup import ApiGroup
 
+        condition=ApiGroup.groupname == "test"
+        self.assertEqual(condition.expression, 'groupname = %s')
+        self.assertEqual(condition.values, ['test'])
+        
 
-        print(ApiGroup.groupname == "test")
-        print(ApiGroup.groupname < "1")
+        ex=(Alias("ag", ApiGroup.id == 99, ApiGroup.groupname == "test") | Alias("ag", ApiGroup.id == 1)).expression
+        val=(Alias("ag", ApiGroup.id == 99, ApiGroup.groupname == "test") | Alias("ag", ApiGroup.id == 1)).values
+        self.assertEqual(ex, "(( ag.id = %s AND ag.groupname = %s)) OR (( ag.id = %s))")
+        self.assertEqual(val, [99, 'test', 1])
 
+        item=ApiGroup.get_objects(context).select().where(ApiGroup.groupname == "sysadmin").to_entity()
+        self.assertEqual(item.id, 1)
+        self.assertEqual(item.groupname, "sysadmin")
+
+
+        item=ApiGroup.get_objects(context).select().where( Alias( "main", ApiGroup.groupname == "sysadmin", 
+            ApiGroup.id == 1, logical_operator="AND" )).to_list()
+        self.assertEqual(item[0].id, 1)
+        self.assertEqual(item[0].groupname, "sysadmin")
+
+        
+        dummy_list=Dummy.get_objects(context).select().where(Alias("main", Dummy.id==99 ,Dummy.id==100)).to_list()
+        print(dummy_list)
         #item=Dummy.get_objects(context) \
         #    .select() \
         #    .where( [Q(id__eq=99).alias("main") | Q(id__eq=100).alias("main") | Q(id__eq=3) | Q(id__eq=4) , Q(name='test').alias("main")] ) \
@@ -132,6 +153,13 @@ class TestPluginExecution(unittest.TestCase):
 
         #print(item.is_admin)
         #print(item.groupname)
+
+    def test_expression(self):
+        expression=WhereExpression("name", "=", "%s", "Markus")
+        self.assertEqual(expression.values, ['Markus'])
+
+        expression=WhereExpression("name", "=", "%s", ['Markus'])
+        self.assertEqual(expression.values, ['Markus'])
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
