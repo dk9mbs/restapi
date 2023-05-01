@@ -4,6 +4,7 @@ class WhereExpression(object):
         self._lh=lh
         self._op=op
         self._values=list()
+        self._expression=''
 
         if values==None:
             return 
@@ -12,12 +13,14 @@ class WhereExpression(object):
         else:
             self._values.append(values)
 
+        self._expression=self._create_expression()
+
     def _create_expression(self) -> str:
         return f"{self._lh} {self._op} %s"
 
     @property
     def expression(self) -> str:
-        return f"{self._lh} {self._op} %s"
+        return self._expression
         
     @property
     def values(self) -> list:
