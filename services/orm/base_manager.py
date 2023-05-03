@@ -7,7 +7,7 @@ from services.database import DatabaseServices
 
 from .field import Field
 from .alias import Alias
-from .expression import WhereExpression
+from .expression import WhereExpression, Expression
 
 class BaseManager:
     context=None
@@ -66,13 +66,10 @@ class BaseManager:
     def where(self, obj: object(), logical_operator='and'):
         values=list()
         expression=''
-        if isinstance(obj, WhereExpression):
+        if isinstance(obj, Expression):
             expression=obj.expression
             value=obj.values
             values.append(value)
-        elif isinstance(obj, Alias):
-            expression=obj.expression
-            values=obj.values
         else:
             raise ValueError('Obj must be a tuple or an Alias')
 

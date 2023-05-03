@@ -1,6 +1,6 @@
-from .expression import WhereExpression
+from .expression import WhereExpression, Expression
 
-class Alias(object):
+class Alias(Expression):
     def __init__(self, alias: str, *args: WhereExpression, **kwargs):
         self.expression=''
         self.values=list()
