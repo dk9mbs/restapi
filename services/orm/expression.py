@@ -1,8 +1,12 @@
-
 class Expression(object):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self._values=list()
         self._expression=''
+        self._args=args
+        self._kwargs=kwargs
+
+        #for arg in args:
+        #    print(f"Argument: {arg} {self._expression}")
 
     @property
     def expression(self) -> str:
@@ -28,13 +32,15 @@ class Expression(object):
 
 
 class WhereExpression(Expression):
-    def __init__(self, lh: str=None, op: str=None, values=None, **kwargs):
-        super().__init__()
+    def __init__(self, *args,  **kwargs):
+        super().__init__(*args, **kwargs)
 
-        self._lh=lh
-        self._op=op
+        self._lh=args[0]
+        self._op=args[1]
         self._values=list()
         self._expression=''
+
+        values=args[2]
 
         if values==None:
             return 

@@ -1,9 +1,8 @@
-from .expression import WhereExpression, Expression
+from .expression import Expression
 
 class Alias(Expression):
-    def __init__(self, alias: str, *args: WhereExpression, **kwargs):
-        self.expression=''
-        self.values=list()
+    def __init__(self, alias: str, *args: Expression, **kwargs):
+        super().__init__()
         self.logical_operator='AND'
         self.alias=''
         self._brackets=True
@@ -16,26 +15,23 @@ class Alias(Expression):
             expression=arg.expression
             value=arg.values
 
-            if self.expression!='' and self.expression!=None:
-                self.expression=f"{self.expression} {self.logical_operator}"
+            if self._expression!='' and self._expression!=None:
+                self._expression=f"{self._expression} {self.logical_operator}"
 
-            self.expression=f"{self.expression} {alias}.{expression}"
-            self.values=self.values+value
+            self._expression=f"{self._expression} {alias}.{expression}"
+            self._values=self._values+value
 
         if self._brackets==True:
-            self.expression=f"({self.expression})"
+            self._expression=f"({self._expression})"
 
-    def __or__(self, other: WhereExpression):
+    def __or__(self, other: Expression):
         return self._merge("OR", other)
 
-    def __and__(self, other: WhereExpression):
+    def __and__(self, other: Expression):
         return self._merge("AND", other)
 
     def _merge(self, logical_operator, other):
-        e=WhereExpression(self.expression, "=", self.values )
-        e.expression
-
         a=Alias(self.alias)
-        a.expression=f"({self.expression}) {logical_operator} ({other.expression})"
-        a.values=self.values+other.values
+        a._expression=f"({self.expression}) {logical_operator} ({other.expression})"
+        a._values=self.values+other.values
         return a

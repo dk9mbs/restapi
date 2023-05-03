@@ -133,10 +133,8 @@ class TestPluginExecution(unittest.TestCase):
             ApiGroup.id == 1, logical_operator="AND" )).to_list()
         self.assertEqual(item[0].id, 1)
         self.assertEqual(item[0].groupname, "sysadmin")
-
         
-        dummy_list=Dummy.get_objects(context).select().where(Alias("main", Dummy.id==99 ,Dummy.id==100)).to_list()
-        print(dummy_list)
+        dummy_list=Dummy.get_objects(context).select().where(Alias("main", Dummy.id==99 ,Dummy.id==103)).to_list()
         #item=Dummy.get_objects(context) \
         #    .select() \
         #    .where( [Q(id__eq=99).alias("main") | Q(id__eq=100).alias("main") | Q(id__eq=3) | Q(id__eq=4) , Q(name='test').alias("main")] ) \

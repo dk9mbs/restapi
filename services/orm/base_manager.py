@@ -33,7 +33,6 @@ class BaseManager:
             if self._orderby!='':
                 sql=f"{sql} ORDER BY {self._orderby}"
 
-        print(sql)
         return sql
 
     def select(self, fields: list=[], alias: str='main'):
@@ -69,9 +68,12 @@ class BaseManager:
         if isinstance(obj, Expression):
             expression=obj.expression
             value=obj.values
-            values.append(value)
+            if isinstance(value, list):
+                values=values+value
+            else:
+                values.append(value)
         else:
-            raise ValueError('Obj must be a tuple or an Alias')
+            raise ValueError('Obj must be a Expression')
 
         if self._where!='':
             self._where=f"{self._where} {logical_operator}"
@@ -124,7 +126,6 @@ class BaseManager:
     """
     def __execute(self) -> BaseParser:
         parser=OrmParser('', self._context)
-
         parser.set_main_table(self._main_table)
         parser.set_main_alias(self._main_table_alias)
         parser.set_sql_type(self._sql_type)
