@@ -29,6 +29,18 @@ class Expression(object):
         self._values=self._values+values
         self._expression=f"{self._expression} {expression}"
     
+    def __or__(self, other):
+        return self._merge("OR", other)
+
+    def __and__(self, other):
+        return self._merge("AND", other)
+
+    def _merge(self, logical_operator, other):
+        a=Expression(self.alias)
+        a._expression=f"({self.expression}) {logical_operator} ({other.expression})"
+        a._values=self.values+other.values
+        return a
+
 
 
 class WhereExpression(Expression):
