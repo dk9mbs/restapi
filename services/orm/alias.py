@@ -23,16 +23,3 @@ class Alias(Expression):
 
         if self._brackets==True:
             self._expression=f"({self._expression})"
-    """
-    def __or__(self, other: Expression):
-        return self._merge("OR", other)
-
-    def __and__(self, other: Expression):
-        return self._merge("AND", other)
-
-    def _merge(self, logical_operator, other):
-        a=Alias(self.alias)
-        a._expression=f"({self.expression}) {logical_operator} ({other.expression})"
-        a._values=self.values+other.values
-        return a
-    """

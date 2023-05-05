@@ -114,6 +114,8 @@ class TestPluginExecution(unittest.TestCase):
         from model.dummy import Dummy
         from model.ApiGroup import ApiGroup
 
+        print((ApiGroup.groupname == "test").expression)
+
         condition=ApiGroup.groupname == "test"
         self.assertEqual(condition.expression, 'groupname = %s')
         self.assertEqual(condition.values, ['test'])

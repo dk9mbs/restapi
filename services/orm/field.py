@@ -16,6 +16,7 @@ class Field:
         self._primary_key=False
         self._format=None
         self._changed=False
+
         if 'format' in kwargs:
             self._format=kwargs['format']
 
@@ -102,7 +103,6 @@ class NumericField(Field):
 
         return float(value)
 
-
     def _format_value(self, value, format):
         if format==None:
             return value
@@ -122,7 +122,6 @@ class IntField(NumericField):
     def _format_value(self, value, format):
         return int(value)
 
-
 class BoolField(Field):
     def _validate(self, value: int):
         if value==None:
@@ -135,8 +134,6 @@ class BoolField(Field):
             return False
         else:
             return True
-       
-
 
 class DateTimeField(Field):
     def _validate(self, value):
