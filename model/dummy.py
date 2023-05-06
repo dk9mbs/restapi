@@ -6,7 +6,10 @@ class Dummy(BaseModel):
     """
     Field Definition
     """
-    id=IntField('id', pk=True)
-    name=StringField('name')
-    Port=NumericField('Port')
+    id=IntField(pk=True)
+    name=StringField()
+    Port=NumericField()
 
+    class Meta:
+        table_name="dummy"
+        table_alias="dummy"

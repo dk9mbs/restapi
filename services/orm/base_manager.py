@@ -1,20 +1,21 @@
 from core import log
 from core.exceptions import TypeNotAllowedInFieldList
 from core.meta import read_table_field_meta
+from core.context import Context
 from core.ormparser import OrmParser
 from core.baseparser import BaseParser
 from services.database import DatabaseServices
+from .expression import OrderByExpression
 
 from .field import Field
-from .alias import Alias
 from .expression import WhereExpression, Expression
 
 class BaseManager:
     context=None
     
-    def __init__(self, context, model_class):
+    def __init__(self,  model_class):
         self.model_class = model_class
-        self._context=context
+        #self._context=context
 
         self._sql_type='SELECT'
         self._main_table=''
@@ -25,37 +26,45 @@ class BaseManager:
         self._fields=''
         self._main_table_join=''
 
-    def __get_sql(self, ignore_paging=True):
+    @classmethod
+    def bind(cls, context: Context) -> None:
+        cls.context=context
+
+    def __get_sql(self, ignore_paging: bool=True) -> str:
         if self._sql_type.upper()=='SELECT':
-            sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} """
+            sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table} {self._main_table_join} """
             if self._where!='':
                 sql=f"{sql} WHERE {self._where}"
             if self._orderby!='':
                 sql=f"{sql} ORDER BY {self._orderby}"
 
+        print(sql)
         return sql
-
-    def select(self, fields: list=[], alias: str='main'):
+    
+    """
+    fields......: not used
+    """
+    def select(self, fields: list=[]):
         self._sql_type="SELECT"
-        self.__set_table(self.model_class.table_name, alias)
-        self.__add_fields(self._main_table, alias, fields)
+        self.__set_table(self.model_class.Meta.table_name)
+        self.__add_fields(self._main_table)
         return self
 
     def insert(self, fields: list):
         self._sql_type="INSERT"
-        self.__set_table(self.model_class.table_name)
+        self.__set_table(self.model_class.Meta.table_name)
         self.__add_fields(fields)
         return self
 
     def update(self, fields: list):
         self._sql_type="UPDATE"
-        self.__set_table(self.model_class.table_name)
+        self.__set_table(self.model_class.Meta.table_name)
         self.__add_fields(fields)
         return self
 
     def delete(self):
         self._sql_type="DELETE"
-        self.__set_table(self.model_class.table_name)
+        self.__set_table(self.model_class.Meta.table_name)
         return self
 
     """
@@ -79,20 +88,17 @@ class BaseManager:
             self._where=f"{self._where} {logical_operator}"
 
         self._where=f"{self._where} {expression}"
-
         self._query_vars=self._query_vars+values
-        #for var in values:
-        #    print(values)
-        #    self._query_vars=self._query_vars+var
 
         return self
 
 
-    def orderby(self, o: object) :
-        #if self._orderby!='':
-        #    self._orderby=f"{self._orderby},"
+    def orderby(self, order_by: OrderByExpression):
+        print(order_by)
+        if self._orderby!='':
+            self._orderby=f"{self._orderby},"
 
-        #self._orderby=f"{self._orderby} {o.field_name} {o.order}"
+        self._orderby=f"{self._orderby}{order_by.expression}"
         return self
 
     """
@@ -100,7 +106,7 @@ class BaseManager:
     """
     def to_list(self):
         parser=self.__execute()
-        rs=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=0)
+        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
 
         model_list=[]
         for item in rs.get_result():
@@ -110,7 +116,7 @@ class BaseManager:
 
     def to_entity(self):
         parser=self.__execute()
-        rs=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=1)
+        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=1)
         if rs.get_eof():
             return None
         else:
@@ -118,14 +124,14 @@ class BaseManager:
 
     def to_recordset(self):
         parser=self.__execute()
-        rs=DatabaseServices.exec (parser, self._context, run_as_system=False, fetch_mode=0)
+        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
         return rs
 
     """
     private methods
     """
     def __execute(self) -> BaseParser:
-        parser=OrmParser('', self._context)
+        parser=OrmParser('', self.context)
         parser.set_main_table(self._main_table)
         parser.set_main_alias(self._main_table_alias)
         parser.set_sql_type(self._sql_type)
@@ -138,16 +144,16 @@ class BaseManager:
         pass
 
     def __set_table(self, table, alias=None):
-        self._main_table=self.model_class.table_name
-        self._main_table_alias=alias
+        self._main_table=self.model_class.Meta.table_name
+        self._main_table_alias=self.model_class.Meta.table_name
 
     """
     table.........: table alias from restapi
-    fields........: not used
     """
-    def __add_fields(self, table: str,main_table_alias: str, fields: list=[]):
-        meta_fields=read_table_field_meta(self._context, table)
+    def __add_fields(self, table: str):
+        meta_fields=read_table_field_meta(self.context, table)
 
+        fields=""
         tmp=[]
         sql_join=[]
         self._columns_desc=[]
@@ -160,7 +166,7 @@ class BaseManager:
                 if tmp != []:
                     tmp.append(",")
 
-                tmp.append(f"{main_table_alias}.{ field['name'] } AS { field['name'] } ")
+                tmp.append(f"{self.model_class.Meta.table_alias}.{ field['name'] } AS { field['name'] } ")
 
             if field['is_lookup']==-1 and field['referenced_table_desc_field_name']!=None:
                 if tmp != []:
@@ -168,10 +174,21 @@ class BaseManager:
 
                 ref_alias=f"{ field['name'] }_{ field['referenced_table_name'] }_{ field['referenced_field_name'] }"
                 sql_join.append(f"""LEFT JOIN { field['referenced_table_name'] } AS { ref_alias } """)
-                sql_join.append(f"ON { main_table_alias }.{ field['name'] }={ ref_alias }.{ field['referenced_field_name'] } ")
+                sql_join.append(f"ON {self.model_class.Meta.table_alias}.{ field['name'] }={ ref_alias }.{ field['referenced_field_name'] } ")
 
-                tmp.append(f"{ref_alias}.{ field['referenced_table_desc_field_name'] } AS \"__{ field['name'] }@name\", ")
-                tmp.append(f"CONCAT('/api/v1.0/data/{ field['referenced_table_name'] }/', { main_table_alias }.{ field['name'] })  AS \"__{ field['name'] }@url\" ")
+                # set the id name
+                f=f"{ref_alias}.{ field['referenced_table_desc_field_name'] }"
+                if fields!='':
+                    fields=f"{fields},"
+                fields=f"{fields}{f} AS {field['name']}_name"
+                tmp.append(f"{f} AS \"__{ field['name'] }@name\", ")
+
+                # set the url field
+                f=f"CONCAT('/api/v1.0/data/{ field['referenced_table_name'] }/', { table }.{ field['name'] })"
+                if fields!='':
+                    fields=f"{fields},"
+                fields=f"{fields}{f} AS {field['name']}_url"
+                tmp.append(f"{f}  AS \"__{ field['name'] }@url\" ")
 
                 column_desc={"table": self._main_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@name", "formatter": None}
                 self._columns_desc.append(column_desc)
@@ -179,34 +196,20 @@ class BaseManager:
                 self._columns_desc.append(column_desc)
 
 
-        #self._sql_select=''.join(tmp)
         self._fields=f"{self._fields}, {''.join(tmp)}"
         self._main_table_join=''.join(sql_join)
 
-
-
-
-        fields=''
         for field in meta_fields:
             if fields!='':
                 fields=f"{fields},"
 
             if field['is_virtual']==0:
-                fields=f"{fields}{main_table_alias}.{field['field_name']}"
+                fields=f"{fields}{self.model_class.Meta.table_alias}.{field['field_name']}"
             else:
                 fields=f"{fields} null AS {field['name']}"
 
+        print(fields)
         self._fields=fields
-
-
-        #for field in fields:
-        #    if isinstance(field, str):
-        #        self._query['fields'].append({'name': field, 'value': None})
-        #    elif isinstance(field, dict):
-        #        self._query['fields'].append(field)
-        #    else:
-        #        raise TypeNotAllowedInFieldList(f"Fieldtype not allowed in fieldlist: {type(field)}")
-
 
 
     #def select(self, *field_names, chunk_size=2000, condition=None):

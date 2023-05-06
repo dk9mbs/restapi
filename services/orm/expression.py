@@ -4,13 +4,12 @@ class Expression(object):
         self._expression=''
         self._args=args
         self._kwargs=kwargs
+        #self._expression=self._build_expression()
 
-        #for arg in args:
-        #    print(f"Argument: {arg} {self._expression}")
 
     @property
     def expression(self) -> str:
-        return self._expression
+        return self._build_expression()
         
     @property
     def values(self) -> list:
@@ -61,8 +60,20 @@ class WhereExpression(Expression):
         else:
             self._values.append(values)
 
-        self._expression=self._create_expression()
+        #self._expression=self._create_expression()
 
-    def _create_expression(self) -> str:
+    def _build_expression(self) -> str:
         return f"{self._lh} {self._op} %s"
 
+
+class OrderByExpression(Expression):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._order_by=args[0]
+        self._sort=args[1]
+
+        #self._create_expression()
+
+    def _build_expression(self) -> str:
+        return f"{self._order_by} {self._sort}"

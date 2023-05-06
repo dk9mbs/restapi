@@ -7,7 +7,7 @@ from core.appinfo import AppInfo
 from core.plugin import Plugin
 
 from services.orm import Field, StringField, NumericField, BoolField, IntField, DateTimeField
-from services.orm import WhereExpression
+from services.orm import WhereExpression, OrderByExpression
 
 class TestPluginExecution(unittest.TestCase):
     def setUp(self):
@@ -108,51 +108,38 @@ class TestPluginExecution(unittest.TestCase):
         AppInfo.init(__name__, CONFIG['default'])
         session_id=AppInfo.login("root","password")
         context=AppInfo.create_context(session_id)
-        # dk9mbs
 
-        from services.orm import BaseManager, BaseModel, F, Alias
+        from services.orm import BaseManager, BaseModel, F
         from model.dummy import Dummy
         from model.ApiGroup import ApiGroup
 
-        print((ApiGroup.groupname == "test").expression)
+        BaseManager.bind(context)
+
+        #print((ApiGroup.groupname == "test").expression)
 
         condition=ApiGroup.groupname == "test"
-        self.assertEqual(condition.expression, 'groupname = %s')
+        self.assertEqual(condition.expression, 'api_group.groupname = %s')
         self.assertEqual(condition.values, ['test'])
         
 
-        ex=(Alias("ag", ApiGroup.id == 99, ApiGroup.groupname == "test") | Alias("ag", ApiGroup.id == 1)).expression
-        val=(Alias("ag", ApiGroup.id == 99, ApiGroup.groupname == "test") | Alias("ag", ApiGroup.id == 1)).values
-        self.assertEqual(ex, "(( ag.id = %s AND ag.groupname = %s)) OR (( ag.id = %s))")
-        self.assertEqual(val, [99, 'test', 1])
-
-        item=ApiGroup.get_objects(context).select().where(ApiGroup.groupname == "sysadmin").to_entity()
+        item=ApiGroup.objects \
+            .select() \
+            .where(ApiGroup.groupname == "sysadmin") \
+            .orderby(ApiGroup.groupname.desc()) \
+            .orderby(ApiGroup.id.asc()) \
+            .to_entity()
         self.assertEqual(item.id, 1)
         self.assertEqual(item.groupname, "sysadmin")
+        self.assertEqual(item.solution_id_url , "/api/v1.0/data/api_solution/1")
+        self.assertEqual(item.solution_id_name , "restapi")
+        self.assertEqual(ApiGroup.id.name, 'id')
 
 
-        item=ApiGroup.get_objects(context).select().where( Alias( "main", ApiGroup.groupname == "sysadmin", 
-            ApiGroup.id == 1, logical_operator="AND" )).to_list()
-        self.assertEqual(item[0].id, 1)
-        self.assertEqual(item[0].groupname, "sysadmin")
+        #print(OrderByExpression(f"api_group.groupname", "DESC").expression)
         
-        dummy_list=Dummy.get_objects(context).select().where(Alias("main", Dummy.id==99 ,Dummy.id==103)).to_list()
-        #item=Dummy.get_objects(context) \
-        #    .select() \
-        #    .where( [Q(id__eq=99).alias("main") | Q(id__eq=100).alias("main") | Q(id__eq=3) | Q(id__eq=4) , Q(name='test').alias("main")] ) \
-        #    .orderby(O('id','DESC')) \
-        #    .orderby(O('name', 'ASC')) \
-        #    .to_list()
-
-        #item=ApiGroup.get_objects(context) \
-        #    .select() \
-        #    .where([Q(id__eq=1).alias("main") & Q(id__eq=1).alias("main"), Q(groupname='sysadmin').alias("main")], logical_connector='OR' ) \
-        #    .orderby(O('main.id','DESC')) \
-        #    .orderby(O('main.groupname', 'ASC')) \
-        #    .to_entity()
-
-        #print(item.is_admin)
-        #print(item.groupname)
+        item=Dummy(id=999, Port=3306, name='test')
+        self.assertEqual(item.name, "test")
+        self.assertEqual(item.id, 999)
 
     def test_expression(self):
         expression=WhereExpression("name", "=", "Markus")

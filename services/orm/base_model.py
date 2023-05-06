@@ -1,17 +1,30 @@
+from core.context import Context
 from services.orm.base_manager import BaseManager
 from services.orm.field import Field
 
 class MetaModel(type):
     manager_class = BaseManager
 
-    def _get_manager(cls, context):
-        return cls.manager_class(context=context, model_class=cls)
+    def __new__(cls, name, bases, dct):
+        result=type.__new__(cls, name, bases, dct)
 
-    def get_objects(cls, context):
-        return cls._get_manager(context)
+        if dct['__qualname__']!="BaseModel":
+            for key, value in dct.items():
+                if isinstance(value, Field):
+                    value.bind(result, key)
+        return result
+
+    def _get_manager(cls):
+        return cls.manager_class(model_class=cls)
+
+    @property
+    def objects(cls):
+        return cls._get_manager()
+
+
+
 
 class BaseModel(metaclass=MetaModel):
-    table_name = ""
 
     def __init__(self, **row_data):
         for field_name, value in row_data.items():
@@ -26,3 +39,7 @@ class BaseModel(metaclass=MetaModel):
     @classmethod
     def get_fields(cls):
         return cls._get_manager()._get_fields()
+
+    class Meta:
+        table_name=""
+        table_alias=""

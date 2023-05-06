@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from services.numerictools import isnumeric
-from .expression import WhereExpression
+from .expression import WhereExpression, OrderByExpression
+#from .base_model import BaseModel
 
 """
 
@@ -10,12 +11,13 @@ pk................:primary key (True or False)
 format............:Format String
 """
 class Field:
-    alias="main"
-    def __init__(self, field_name, value=None, **kwargs):
+    def __init__(self, field_name: str=None, value: object=None, **kwargs):
         self._name=field_name
         self._primary_key=False
         self._format=None
         self._changed=False
+        self._table_name=None
+        self._table_alias=None
 
         if 'format' in kwargs:
             self._format=kwargs['format']
@@ -25,6 +27,10 @@ class Field:
 
         self._value=self._validate(value)
 
+    def bind(self, model, name: str) -> None:
+        self._table_name=model.Meta.table_name
+        self._table_alias=model.Meta.table_alias
+        self._name=name
 
     @property
     def changed(self):
@@ -60,14 +66,21 @@ class Field:
         return self._format_value(self._value, self._format)
 
 
+    def desc(self):
+        return OrderByExpression(f"{self._table_alias}.{self.name}", "DESC")
+
+    def asc(self):
+        return OrderByExpression(f"{self._table_alias}.{self.name}", "ASC")
+
+
     def __eq__(self, value: object) -> WhereExpression:
-        return WhereExpression(self.name, "=", value)
+        return WhereExpression(f"{self._table_alias}.{self.name}", "=", value)
     
     def __lt__ (self, value) -> WhereExpression:
-        return WhereExpression(self.name, "<", value)
+        return WhereExpression(f"{self._table_alias}.{self.name}", "<", value)
     
     def __gt__ (self, value) -> WhereExpression:
-        return WhereExpression(self.name, ">", value)
+        return WhereExpression(f"{self._table_alias}.{self.name}", ">", value)
 
 
     """
