@@ -8,7 +8,7 @@ class Dummy(BaseModel):
     """
     id=IntField(pk=True)
     name=StringField()
-    Port=NumericField()
+    Port=IntField()
 
     class Meta:
         table_name="dummy"

@@ -4,8 +4,6 @@ class Expression(object):
         self._expression=''
         self._args=args
         self._kwargs=kwargs
-        #self._expression=self._build_expression()
-
 
     @property
     def expression(self) -> str:
@@ -19,14 +17,14 @@ class Expression(object):
     to overrite
     """
     def _build_expression(self) -> str:
-        return self._expression
+        return ""
 
-    def add_expression(self, expression: str, logical_operator: str="AND", values: list=[]) -> None:
-        if self._expression!='':
-            self.expression=f"{self._expression} {logical_operator}"
+    #def add_expression(self, expression: str, logical_operator: str="AND", values: list=[]) -> None:
+    #    if self._expression!='':
+    #        self.expression=f"{self._expression} {logical_operator}"
         
-        self._values=self._values+values
-        self._expression=f"{self._expression} {expression}"
+    #    self._values=self._values+values
+    #    self._expression=f"{self._expression} {expression}"
     
     def __or__(self, other):
         return self._merge("OR", other)
@@ -60,8 +58,6 @@ class WhereExpression(Expression):
         else:
             self._values.append(values)
 
-        #self._expression=self._create_expression()
-
     def _build_expression(self) -> str:
         return f"{self._lh} {self._op} %s"
 
@@ -72,8 +68,6 @@ class OrderByExpression(Expression):
 
         self._order_by=args[0]
         self._sort=args[1]
-
-        #self._create_expression()
 
     def _build_expression(self) -> str:
         return f"{self._order_by} {self._sort}"

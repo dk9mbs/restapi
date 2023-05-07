@@ -83,9 +83,9 @@ class TestPluginExecution(unittest.TestCase):
         f.format='{:.2f}'
         self.assertEqual(f.value , 12.348453)
         self.assertEqual(f.formatted_value , 12.35)
-        self.assertEqual(f.changed, False)
+        self.assertEqual(f.dirty, False)
         f.value=11.5
-        self.assertEqual(f.changed, True)
+        self.assertEqual(f.dirty, True)
         self.assertEqual(f.formatted_value, 11.50)
         self.assertEqual(f.value, 11.5)
 
@@ -137,9 +137,15 @@ class TestPluginExecution(unittest.TestCase):
 
         #print(OrderByExpression(f"api_group.groupname", "DESC").expression)
         
-        item=Dummy(id=999, Port=3306, name='test')
+        item=Dummy(id=999, Port=3307, name='test')
         self.assertEqual(item.name, "test")
         self.assertEqual(item.id, 999)
+        item.insert()
+
+        print("*****")
+        item2=Dummy(id=998)
+        item2.insert()
+
 
     def test_expression(self):
         expression=WhereExpression("name", "=", "Markus")

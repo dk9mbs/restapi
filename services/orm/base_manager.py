@@ -25,6 +25,7 @@ class BaseManager:
         self._orderby=''
         self._fields=''
         self._main_table_join=''
+        self._data={} # data for update and insert
 
     @classmethod
     def bind(cls, context: Context) -> None:
@@ -32,13 +33,16 @@ class BaseManager:
 
     def __get_sql(self, ignore_paging: bool=True) -> str:
         if self._sql_type.upper()=='SELECT':
-            sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table} {self._main_table_join} """
+            sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} """
             if self._where!='':
                 sql=f"{sql} WHERE {self._where}"
             if self._orderby!='':
                 sql=f"{sql} ORDER BY {self._orderby}"
+        elif self._sql_type.upper()=='INSERT':
+            
+            sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES (%s,%s,%s)"
 
-        print(sql)
+        print (sql)
         return sql
     
     """
@@ -50,16 +54,21 @@ class BaseManager:
         self.__add_fields(self._main_table)
         return self
 
-    def insert(self, fields: list):
+    def insert(self, data: dict):
         self._sql_type="INSERT"
         self.__set_table(self.model_class.Meta.table_name)
-        self.__add_fields(fields)
-        return self
+        self._data=data
 
-    def update(self, fields: list):
+        for key, value in self._data.items():
+            self._query_vars.append(value)
+
+        parser=self.__execute()
+        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
+        return rs
+
+    def update(self, data: list):
         self._sql_type="UPDATE"
         self.__set_table(self.model_class.Meta.table_name)
-        self.__add_fields(fields)
         return self
 
     def delete(self):
@@ -94,7 +103,7 @@ class BaseManager:
 
 
     def orderby(self, order_by: OrderByExpression):
-        print(order_by)
+        #print(order_by)
         if self._orderby!='':
             self._orderby=f"{self._orderby},"
 
@@ -208,7 +217,6 @@ class BaseManager:
             else:
                 fields=f"{fields} null AS {field['name']}"
 
-        print(fields)
         self._fields=fields
 
 

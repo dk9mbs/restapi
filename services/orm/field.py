@@ -15,7 +15,7 @@ class Field:
         self._name=field_name
         self._primary_key=False
         self._format=None
-        self._changed=False
+        self._dirty=False
         self._table_name=None
         self._table_alias=None
 
@@ -32,9 +32,13 @@ class Field:
         self._table_alias=model.Meta.table_alias
         self._name=name
 
+    def clear(self):
+        self._value=None
+        self._dirty=False
+
     @property
-    def changed(self):
-        return self._changed
+    def dirty(self):
+        return self._dirty
 
     @property
     def format(self):
@@ -59,7 +63,7 @@ class Field:
     @value.setter
     def value(self, value) -> None:
         self._value=self._validate(value)
-        self._changed=True
+        self._dirty=True
 
     @property
     def formatted_value(self):
