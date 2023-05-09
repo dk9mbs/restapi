@@ -1,8 +1,6 @@
 from services.orm import BaseModel, NumericField, StringField, IntField
 
 class Dummy(BaseModel):
-    table_name="dummy"
-
     """
     Field Definition
     """

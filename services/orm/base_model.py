@@ -61,6 +61,15 @@ class BaseModel(metaclass=MetaModel):
 
         return True
 
+    def update(self) -> bool:
+        data=dict()
+        for key, value in self.__class__.__dict__.items():
+            if isinstance(value, Field) and value.dirty:
+                data[key]=value.value
+
+        BaseModel.manager_class(model_class=self.__class__).update(data)
+
+        return True
 
     class Meta:
         table_name=""

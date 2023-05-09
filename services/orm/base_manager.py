@@ -33,15 +33,17 @@ class BaseManager:
 
     def __get_sql(self, ignore_paging: bool=True) -> str:
         if self._sql_type.upper()=='SELECT':
-            sql=f"""SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} """
+            sql=f"SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} "
             if self._where!='':
                 sql=f"{sql} WHERE {self._where}"
             if self._orderby!='':
                 sql=f"{sql} ORDER BY {self._orderby}"
         elif self._sql_type.upper()=='INSERT':
-            
-            sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES (%s,%s,%s)"
-
+            sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES ({','.join(self._data.values())})"
+        elif self._sql_type.upper()=='UPDATE':
+            sql=f"UPDATE {self._main_table} set {','.join(f'{key}={value}' for key, value in self.data.items())} WHERE {self._where}"
+        elif self._sql_type.upper()=='DELETE':
+            sql=f"DELETE FROM {self._main_table} WHERE {self._where}"
         print (sql)
         return sql
     
@@ -60,6 +62,7 @@ class BaseManager:
         self._data=data
 
         for key, value in self._data.items():
+            self._data[key]="%s"
             self._query_vars.append(value)
 
         parser=self.__execute()
@@ -75,6 +78,7 @@ class BaseManager:
         self._sql_type="DELETE"
         self.__set_table(self.model_class.Meta.table_name)
         return self
+
 
     """
     obj......................:WhereExpression or Alias
@@ -135,6 +139,11 @@ class BaseManager:
         parser=self.__execute()
         rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
         return rs
+
+    def execute(self):
+        parser=self.__execute()
+        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
+        return None
 
     """
     private methods

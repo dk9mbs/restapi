@@ -135,15 +135,33 @@ class TestPluginExecution(unittest.TestCase):
         self.assertEqual(ApiGroup.id.name, 'id')
 
 
-        #print(OrderByExpression(f"api_group.groupname", "DESC").expression)
-        
+        """
+        Delete 999
+        """
+        Dummy.objects.delete().where(Dummy.id==999).execute()
+        """
+        Create a dummy with id=999
+        """
         item=Dummy(id=999, Port=3307, name='test')
+        item.insert()
+        self.assertEqual(item.Port, 3307)
         self.assertEqual(item.name, "test")
         self.assertEqual(item.id, 999)
-        item.insert()
+        """
+        Read the created dummy
+        """
+        item=Dummy.objects.select().where(Dummy.id==999).to_entity()
+        self.assertEqual(item.id, 999)
+        self.assertEqual(item.Port, 3307)
+        self.assertEqual(item.name, "test")
+        """
+        update the item
+        """
+        item=Dummy(id=999, Port=1234)
+        item.update()        
 
-        print("*****")
-        item2=Dummy(id=998)
+        Dummy.objects.delete().where(Dummy.id==998).execute()
+        item2=Dummy(id=998, name="hallo", Port=0)
         item2.insert()
 
 
