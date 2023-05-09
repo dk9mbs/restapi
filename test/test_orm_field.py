@@ -161,6 +161,7 @@ class TestPluginExecution(unittest.TestCase):
         item.update()        
 
         Dummy.objects.delete().where(Dummy.id==998).execute()
+        
         item2=Dummy(id=998, name="hallo", Port=0)
         item2.insert()
 
