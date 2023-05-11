@@ -33,7 +33,7 @@ class Expression(object):
         return self._merge("AND", other)
 
     def _merge(self, logical_operator, other):
-        a=Expression(self.alias)
+        a=Expression()
         a._expression=f"({self.expression}) {logical_operator} ({other.expression})"
         a._values=self.values+other.values
         return a
@@ -44,12 +44,17 @@ class WhereExpression(Expression):
     def __init__(self, *args,  **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._lh=args[0]
-        self._op=args[1]
+        self._lh=""
+        self._op=""
         self._values=list()
         self._expression=''
 
-        values=args[2]
+        values=None
+
+        if len(args)==3:
+            self._lh=args[0]
+            self._op=args[1]
+            values=args[2]
 
         if values==None:
             return 

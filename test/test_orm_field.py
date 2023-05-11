@@ -15,6 +15,12 @@ class TestPluginExecution(unittest.TestCase):
         session_id=AppInfo.login("root","password")
         self.context=AppInfo.create_context(session_id)
 
+    #def test_ormparser(self):
+    #    from core.ormparser import OrmParser
+
+
+        #parser = OrmParser(info, self.context)
+
     def test_field(self):
 
         f=StringField("id","stringvalue")

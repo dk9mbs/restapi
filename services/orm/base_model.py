@@ -1,5 +1,6 @@
 from services.orm.base_manager import BaseManager
 from services.orm.field import Field
+from services.orm.expression import Expression, WhereExpression
 
 class MetaModel(type):
     manager_class = BaseManager
@@ -63,11 +64,17 @@ class BaseModel(metaclass=MetaModel):
 
     def update(self) -> bool:
         data=dict()
+        expression=WhereExpression("","","")
+
         for key, value in self.__class__.__dict__.items():
             if isinstance(value, Field) and value.dirty:
                 data[key]=value.value
 
-        BaseModel.manager_class(model_class=self.__class__).update(data)
+                if value.primary_key:
+                    expression & WhereExpression(f"{value.table_alias}.{value.name}", "=", value.value)
+                    print(f"#########{expression.expression} {expression.values}")
+
+        BaseModel.manager_class(model_class=self.__class__).update(expression, data)
 
         return True
 

@@ -37,6 +37,14 @@ class Field:
         self._dirty=False
 
     @property
+    def table_alias(self):
+        return self._table_alias
+
+    @property
+    def primary_key(self):
+        return self._primary_key
+
+    @property
     def dirty(self):
         return self._dirty
 

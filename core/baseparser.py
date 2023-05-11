@@ -19,6 +19,9 @@ class BaseParser:
         self._main_table_join=''
         self._auto_commit=False
 
+    def get_select(self):
+        return ("", [])
+
     def get_tables(self):
         if not self._main_table in self._tables:
             self._tables.append(self._main_table)

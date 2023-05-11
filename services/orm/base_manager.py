@@ -31,21 +31,21 @@ class BaseManager:
     def bind(cls, context: Context) -> None:
         cls.context=context
 
-    def __get_sql(self, ignore_paging: bool=True) -> str:
-        if self._sql_type.upper()=='SELECT':
-            sql=f"SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} "
-            if self._where!='':
-                sql=f"{sql} WHERE {self._where}"
-            if self._orderby!='':
-                sql=f"{sql} ORDER BY {self._orderby}"
-        elif self._sql_type.upper()=='INSERT':
-            sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES ({','.join(self._data.values())})"
-        elif self._sql_type.upper()=='UPDATE':
-            sql=f"UPDATE {self._main_table} set {','.join(f'{key}={value}' for key, value in self.data.items())} WHERE {self._where}"
-        elif self._sql_type.upper()=='DELETE':
-            sql=f"DELETE FROM {self._main_table} WHERE {self._where}"
-        print (sql)
-        return sql
+    #def __get_sql(self, ignore_paging: bool=True) -> str:
+    #    if self._sql_type.upper()=='SELECT':
+    #        sql=f"SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} "
+    #        if self._where!='':
+    #            sql=f"{sql} WHERE {self._where}"
+    #        if self._orderby!='':
+    #            sql=f"{sql} ORDER BY {self._orderby}"
+    #    elif self._sql_type.upper()=='INSERT':
+    #        sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES ({','.join(self._data.values())})"
+    #    elif self._sql_type.upper()=='UPDATE':
+    #        sql=f"UPDATE {self._main_table} set {','.join(f'{key}={value}' for key, value in self.data.items())} WHERE {self._where}"
+    #    elif self._sql_type.upper()=='DELETE':
+    #        sql=f"DELETE FROM {self._main_table} WHERE {self._where}"
+    #    print (sql)
+    #    return sql
     
     """
     fields......: not used
@@ -53,7 +53,7 @@ class BaseManager:
     def select(self, fields: list=[]):
         self._sql_type="SELECT"
         self.__set_table(self.model_class.Meta.table_name)
-        self.__add_fields(self._main_table)
+        #self.__add_fields(self._main_table)
         return self
 
     def insert(self, data: dict):
@@ -69,10 +69,15 @@ class BaseManager:
         rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
         return rs
 
-    def update(self, data: list):
+    def update(self,primary_key: Expression, data: list):
         self._sql_type="UPDATE"
         self.__set_table(self.model_class.Meta.table_name)
-        return self
+        self._data=data
+        self.where(primary_key)
+        #print(f"*******{primary_key.expression}")
+        parser=self.__execute()
+        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
+        return rs
 
     def delete(self):
         self._sql_type="DELETE"
@@ -105,9 +110,7 @@ class BaseManager:
 
         return self
 
-
     def orderby(self, order_by: OrderByExpression):
-        #print(order_by)
         if self._orderby!='':
             self._orderby=f"{self._orderby},"
 
@@ -149,13 +152,16 @@ class BaseManager:
     private methods
     """
     def __execute(self) -> BaseParser:
-        parser=OrmParser('', self.context)
-        parser.set_main_table(self._main_table)
-        parser.set_main_alias(self._main_table_alias)
-        parser.set_sql_type(self._sql_type)
-        parser.set_sql(self.__get_sql())
-        parser.set_paras(self._query_vars)
+        info={"where": self._where,
+        "fields":self._fields,
+        "main_table":self._main_table,
+        "main_table_alias": self._main_table_alias,
+        "orderby": self._orderby,
+        "data":self._data,
+        "query_vars": self._query_vars,
+        "sql_type": self._sql_type}
 
+        parser=OrmParser(info, self.context)
         return parser
 
     def __add_default_join(self):
@@ -164,69 +170,6 @@ class BaseManager:
     def __set_table(self, table, alias=None):
         self._main_table=self.model_class.Meta.table_name
         self._main_table_alias=self.model_class.Meta.table_name
-
-    """
-    table.........: table alias from restapi
-    """
-    def __add_fields(self, table: str):
-        meta_fields=read_table_field_meta(self.context, table)
-
-        fields=""
-        tmp=[]
-        sql_join=[]
-        self._columns_desc=[]
-
-        for field in meta_fields:
-            if field['is_virtual']==0:
-                column_desc={"table": self._main_table, "database_field": field['name'], "label": field['label'], "alias": field['name'], "formatter": None}
-                self._columns_desc.append(column_desc)
-
-                if tmp != []:
-                    tmp.append(",")
-
-                tmp.append(f"{self.model_class.Meta.table_alias}.{ field['name'] } AS { field['name'] } ")
-
-            if field['is_lookup']==-1 and field['referenced_table_desc_field_name']!=None:
-                if tmp != []:
-                    tmp.append(",")
-
-                ref_alias=f"{ field['name'] }_{ field['referenced_table_name'] }_{ field['referenced_field_name'] }"
-                sql_join.append(f"""LEFT JOIN { field['referenced_table_name'] } AS { ref_alias } """)
-                sql_join.append(f"ON {self.model_class.Meta.table_alias}.{ field['name'] }={ ref_alias }.{ field['referenced_field_name'] } ")
-
-                # set the id name
-                f=f"{ref_alias}.{ field['referenced_table_desc_field_name'] }"
-                if fields!='':
-                    fields=f"{fields},"
-                fields=f"{fields}{f} AS {field['name']}_name"
-                tmp.append(f"{f} AS \"__{ field['name'] }@name\", ")
-
-                # set the url field
-                f=f"CONCAT('/api/v1.0/data/{ field['referenced_table_name'] }/', { table }.{ field['name'] })"
-                if fields!='':
-                    fields=f"{fields},"
-                fields=f"{fields}{f} AS {field['name']}_url"
-                tmp.append(f"{f}  AS \"__{ field['name'] }@url\" ")
-
-                column_desc={"table": self._main_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@name", "formatter": None}
-                self._columns_desc.append(column_desc)
-                column_desc={"table": self._main_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@url", "formatter": None}
-                self._columns_desc.append(column_desc)
-
-
-        self._fields=f"{self._fields}, {''.join(tmp)}"
-        self._main_table_join=''.join(sql_join)
-
-        for field in meta_fields:
-            if fields!='':
-                fields=f"{fields},"
-
-            if field['is_virtual']==0:
-                fields=f"{fields}{self.model_class.Meta.table_alias}.{field['field_name']}"
-            else:
-                fields=f"{fields} null AS {field['name']}"
-
-        self._fields=fields
 
 
     #def select(self, *field_names, chunk_size=2000, condition=None):
