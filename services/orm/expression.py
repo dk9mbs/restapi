@@ -7,7 +7,7 @@ class Expression(object):
 
     @property
     def expression(self) -> str:
-        return self._build_expression()
+        return self._expression
         
     @property
     def values(self) -> list:
@@ -19,13 +19,6 @@ class Expression(object):
     def _build_expression(self) -> str:
         return ""
 
-    #def add_expression(self, expression: str, logical_operator: str="AND", values: list=[]) -> None:
-    #    if self._expression!='':
-    #        self.expression=f"{self._expression} {logical_operator}"
-        
-    #    self._values=self._values+values
-    #    self._expression=f"{self._expression} {expression}"
-    
     def __or__(self, other):
         return self._merge("OR", other)
 
@@ -55,6 +48,7 @@ class WhereExpression(Expression):
             self._lh=args[0]
             self._op=args[1]
             values=args[2]
+            self._expression=self._build_expression()
 
         if values==None:
             return 
@@ -64,7 +58,21 @@ class WhereExpression(Expression):
             self._values.append(values)
 
     def _build_expression(self) -> str:
+        if self._lh=="" or self._op=="":
+            return ""
+
         return f"{self._lh} {self._op} %s"
+
+    def _merge(self, logical_operator, other):
+        a=WhereExpression()
+        a._values=self.values+other.values
+
+        if self.expression=="":
+            a._expression=f"({other.expression})"
+        else:
+            a._expression=f"({self.expression}) {logical_operator} ({other.expression})"
+
+        return a
 
 
 class OrderByExpression(Expression):

@@ -64,14 +64,14 @@ class BaseModel(metaclass=MetaModel):
 
     def update(self) -> bool:
         data=dict()
-        expression=WhereExpression("","","")
+        expression=WhereExpression()
 
         for key, value in self.__class__.__dict__.items():
             if isinstance(value, Field) and value.dirty:
                 data[key]=value.value
 
                 if value.primary_key:
-                    expression & WhereExpression(f"{value.table_alias}.{value.name}", "=", value.value)
+                    expression=expression & WhereExpression(f"{value.table_alias}.{value.name}", "=", value.value)
                     print(f"#########{expression.expression} {expression.values}")
 
         BaseModel.manager_class(model_class=self.__class__).update(expression, data)

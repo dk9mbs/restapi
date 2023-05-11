@@ -148,8 +148,7 @@ class TestPluginExecution(unittest.TestCase):
         """
         Create a dummy with id=999
         """
-        item=Dummy(id=999, Port=3307, name='test')
-        item.insert()
+        item=Dummy(id=999, Port=3307, name='test').insert()
         self.assertEqual(item.Port, 3307)
         self.assertEqual(item.name, "test")
         self.assertEqual(item.id, 999)
@@ -163,13 +162,15 @@ class TestPluginExecution(unittest.TestCase):
         """
         update the item
         """
-        item=Dummy(id=999, Port=1234)
-        item.update()        
+        Dummy(id=999, Port=1234).update()
 
-        Dummy.objects.delete().where(Dummy.id==998).execute()
-        
-        item2=Dummy(id=998, name="hallo", Port=0)
-        item2.insert()
+        item=Dummy.objects.select().where(Dummy.id==999).to_entity()
+        self.assertEqual(item.Port, 1234)
+        self.assertEqual(item.id, 999)
+
+        #Dummy.objects.delete().where(Dummy.id==998).execute()
+        #item2=Dummy(id=998, name="hallo", Port=0)
+        #item2.insert()
 
 
     def test_expression(self):
