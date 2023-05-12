@@ -31,22 +31,6 @@ class BaseManager:
     def bind(cls, context: Context) -> None:
         cls.context=context
 
-    #def __get_sql(self, ignore_paging: bool=True) -> str:
-    #    if self._sql_type.upper()=='SELECT':
-    #        sql=f"SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} "
-    #        if self._where!='':
-    #            sql=f"{sql} WHERE {self._where}"
-    #        if self._orderby!='':
-    #            sql=f"{sql} ORDER BY {self._orderby}"
-    #    elif self._sql_type.upper()=='INSERT':
-    #        sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES ({','.join(self._data.values())})"
-    #    elif self._sql_type.upper()=='UPDATE':
-    #        sql=f"UPDATE {self._main_table} set {','.join(f'{key}={value}' for key, value in self.data.items())} WHERE {self._where}"
-    #    elif self._sql_type.upper()=='DELETE':
-    #        sql=f"DELETE FROM {self._main_table} WHERE {self._where}"
-    #    print (sql)
-    #    return sql
-    
     """
     fields......: not used
     """
@@ -65,8 +49,7 @@ class BaseManager:
             self._data[key]="%s"
             self._query_vars.append(value)
 
-        parser=self.__execute()
-        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
+        rs=parser=self.__execute(0)
         return rs
 
     def update(self,primary_key: Expression, data: list):
@@ -74,9 +57,7 @@ class BaseManager:
         self.__set_table(self.model_class.Meta.table_name)
         self._data=data
         self.where(primary_key)
-        #print(f"*******{primary_key.expression}")
-        parser=self.__execute()
-        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
+        rs=parser=self.__execute(0)
         return rs
 
     def delete(self):
@@ -121,8 +102,7 @@ class BaseManager:
     Return Methods
     """
     def to_list(self):
-        parser=self.__execute()
-        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
+        rs=parser=self.__execute(0)
 
         model_list=[]
         for item in rs.get_result():
@@ -131,27 +111,24 @@ class BaseManager:
         return model_list
 
     def to_entity(self):
-        parser=self.__execute()
-        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=1)
+        rs=parser=self.__execute(1)
         if rs.get_eof():
             return None
         else:
             return self.model_class(**rs.get_result())
 
     def to_recordset(self):
-        parser=self.__execute()
-        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
+        rs=parser=self.__execute(0)
         return rs
 
     def execute(self):
-        parser=self.__execute()
-        rs=DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=0)
+        rs=parser=self.__execute(0)
         return None
 
     """
     private methods
     """
-    def __execute(self) -> BaseParser:
+    def __execute(self, fetch_mode: int) -> BaseParser:
         info={"where": self._where,
         "fields":self._fields,
         "main_table":self._main_table,
@@ -162,7 +139,7 @@ class BaseManager:
         "sql_type": self._sql_type}
 
         parser=OrmParser(info, self.context)
-        return parser
+        return DatabaseServices.exec (parser, self.context, run_as_system=False, fetch_mode=fetch_mode)
 
     def __add_default_join(self):
         pass

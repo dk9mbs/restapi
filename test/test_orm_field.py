@@ -148,7 +148,8 @@ class TestPluginExecution(unittest.TestCase):
         """
         Create a dummy with id=999
         """
-        item=Dummy(id=999, Port=3307, name='test').insert()
+        item=Dummy(id=999, Port=3307, name='test')
+        item.insert()
         self.assertEqual(item.Port, 3307)
         self.assertEqual(item.name, "test")
         self.assertEqual(item.id, 999)

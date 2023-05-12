@@ -18,14 +18,9 @@ class MetaModel(type):
     def _get_manager(cls):
         return cls.manager_class(model_class=cls)
 
-
     @property
     def objects(cls):
         return cls._get_manager()
-
-
-
-
 
 class BaseModel(metaclass=MetaModel):
     def __init__(self, **row_data):
@@ -72,7 +67,7 @@ class BaseModel(metaclass=MetaModel):
 
                 if value.primary_key:
                     expression=expression & WhereExpression(f"{value.table_alias}.{value.name}", "=", value.value)
-                    print(f"#########{expression.expression} {expression.values}")
+                    #print(f"#########{expression.expression} {expression.values}")
 
         BaseModel.manager_class(model_class=self.__class__).update(expression, data)
 
