@@ -79,8 +79,8 @@ class TestPluginExecution(unittest.TestCase):
         """
         f=DateTimeField("created_on","2023-12-31 00:00:00", format="%d.%m.%Y %H:%M:%S")
         #f.format="%d.%m.%Y %H:%M:%S"
-        print(f"Ausgabe (formatiert).......:{f.formatted_value}")
-        print(f"Value (unformatiert).......:{f.value}")
+        #print(f"Ausgabe (formatiert).......:{f.formatted_value}")
+        #print(f"Value (unformatiert).......:{f.value}")
 
         """
         Complex field tests
@@ -110,16 +110,16 @@ class TestPluginExecution(unittest.TestCase):
     def test_orm(self):
         from config import CONFIG
         from core.appinfo import AppInfo
+        from services.orm import BaseManager, BaseModel, F
+        from model.dummy import Dummy
+        from model.ApiGroup import ApiGroup
 
         AppInfo.init(__name__, CONFIG['default'])
         session_id=AppInfo.login("root","password")
         context=AppInfo.create_context(session_id)
 
-        from services.orm import BaseManager, BaseModel, F
-        from model.dummy import Dummy
-        from model.ApiGroup import ApiGroup
 
-        BaseManager.bind(context)
+        #BaseManager.bind(context)
 
         #print((ApiGroup.groupname == "test").expression)
 
@@ -128,7 +128,7 @@ class TestPluginExecution(unittest.TestCase):
         self.assertEqual(condition.values, ['test'])
         
 
-        item=ApiGroup.objects \
+        item=ApiGroup.objects(context) \
             .select() \
             .where(ApiGroup.groupname == "sysadmin") \
             .orderby(ApiGroup.groupname.desc()) \
@@ -144,34 +144,37 @@ class TestPluginExecution(unittest.TestCase):
         """
         Delete 999
         """
-        Dummy.objects.delete().where(Dummy.id==999).execute()
+        Dummy.objects(context).delete().where(Dummy.id==999).execute()
         """
         Create a dummy with id=999
         """
         item=Dummy(id=999, Port=3307, name='test')
-        item.insert()
+        item.insert(context)
         self.assertEqual(item.Port, 3307)
         self.assertEqual(item.name, "test")
         self.assertEqual(item.id, 999)
         """
         Read the created dummy
         """
-        item=Dummy.objects.select().where(Dummy.id==999).to_entity()
+        item=Dummy.objects(context).select().where(Dummy.id==999).to_entity()
         self.assertEqual(item.id, 999)
         self.assertEqual(item.Port, 3307)
         self.assertEqual(item.name, "test")
         """
         update the item
         """
-        Dummy(id=999, Port=1234).update()
+        Dummy(id=999, Port=1234).update(context)
 
-        item=Dummy.objects.select().where(Dummy.id==999).to_entity()
+        item=Dummy.objects(context).select().where(Dummy.id==999).to_entity()
         self.assertEqual(item.Port, 1234)
         self.assertEqual(item.id, 999)
 
-        #Dummy.objects.delete().where(Dummy.id==998).execute()
-        #item2=Dummy(id=998, name="hallo", Port=0)
-        #item2.insert()
+        """
+        insert 998 into dummy table
+        """
+        Dummy.objects(context).delete().where(Dummy.id==998).execute()
+        item2=Dummy(id=998, name="hallo", Port=0)
+        item2.insert(context)
 
 
     def test_expression(self):
@@ -183,6 +186,14 @@ class TestPluginExecution(unittest.TestCase):
 
         expression=WhereExpression("name", ">", ['Markus'])
         self.assertEqual(expression.values, ['Markus'])
+
+    def test_order_by(self):
+        from model.dummy import Dummy
+        from model.ApiGroup import ApiGroup
+        from services.orm import OrderByExpression
+
+        o=Dummy.id.desc() & Dummy.Port.asc()
+        self.assertEqual(o.expression, "dummy.id DESC,dummy.Port ASC")
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

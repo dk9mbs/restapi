@@ -11,12 +11,14 @@ from ui.core import httphelper
 from core import log
 from core.jsontools import merge
 from core.setting import Setting
+from core.context import Context
 
 logger=log.create_logger(__name__)
 #
 # jinja template functions
 # do not use this functions directly.
 # use this functions only via jinja templates!
+# The function names can by change
 #
 def __get_current_time(time_zone='MEZ', format='%H:%M'):
     return datetime.today().strftime(format)
@@ -146,6 +148,16 @@ def __is_item_in_dict(jsondict, key):
 
     return False
 
+"""
+Result all Fields from a tabe
+used for create the datamodel with jinja for the orm mapper
+"""
+def __metadata_table_fields(context: Context, table_alias: str) -> dict:
+    from core.meta import read_table_field_meta
+
+    return read_table_field_meta(context, table_alias)
+    pass
+
 # Filter
 def __filter_from_json(value, default={}):
     import json
@@ -179,6 +191,7 @@ def init():
     JinjaEnvironment.register_template_function('replace', __replace)
     JinjaEnvironment.register_template_function('escape_html', __escape_html)
     JinjaEnvironment.register_template_function('is_item_in_dict', __is_item_in_dict)
+    JinjaEnvironment.register_template_function('metadata_table_fields', __metadata_table_fields)
 
     JinjaEnvironment.register_filter_function('from_json', __filter_from_json)
     JinjaEnvironment.register_filter_function('value_from_json', __filter_value_from_json)

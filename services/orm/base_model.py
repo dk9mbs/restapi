@@ -1,3 +1,4 @@
+from core.context import Context
 from services.orm.base_manager import BaseManager
 from services.orm.field import Field
 from services.orm.expression import Expression, WhereExpression
@@ -15,12 +16,11 @@ class MetaModel(type):
                     value.bind(result, key)
         return result
 
-    def _get_manager(cls):
-        return cls.manager_class(model_class=cls)
+    def _get_manager(cls, context: object):
+        return cls.manager_class(context, model_class=cls)
 
-    @property
-    def objects(cls):
-        return cls._get_manager()
+    def objects(cls, context: object):
+        return cls._get_manager(context)
 
 class BaseModel(metaclass=MetaModel):
     def __init__(self, **row_data):
@@ -44,20 +44,20 @@ class BaseModel(metaclass=MetaModel):
         return f"<{self.__class__.__name__}: ({attrs_format})>"
 
     @classmethod
-    def get_fields(cls):
+    def get_fields(cls, context: object):
         return cls._get_manager()._get_fields()
 
-    def insert(self) -> bool:
+    def insert(self, context: Context()) -> bool:
         data=dict()
         for key, value in self.__class__.__dict__.items():
             if isinstance(value, Field) and value.dirty:
                 data[key]=value.value
 
-        BaseModel.manager_class(model_class=self.__class__).insert(data)
+        BaseModel.manager_class(context ,model_class=self.__class__).insert(data)
 
         return True
 
-    def update(self) -> bool:
+    def update(self, context: Context) -> bool:
         data=dict()
         expression=WhereExpression()
 
@@ -69,7 +69,7 @@ class BaseModel(metaclass=MetaModel):
                     expression=expression & WhereExpression(f"{value.table_alias}.{value.name}", "=", value.value)
                     #print(f"#########{expression.expression} {expression.values}")
 
-        BaseModel.manager_class(model_class=self.__class__).update(expression, data)
+        BaseModel.manager_class(context, model_class=self.__class__).update(expression, data)
 
         return True
 

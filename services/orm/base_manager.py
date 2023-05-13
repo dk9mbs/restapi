@@ -13,7 +13,7 @@ from .expression import WhereExpression, Expression
 class BaseManager:
     context=None
     
-    def __init__(self,  model_class):
+    def __init__(self,context: Context, model_class):
         self.model_class = model_class
         #self._context=context
 
@@ -26,10 +26,11 @@ class BaseManager:
         self._fields=''
         self._main_table_join=''
         self._data={} # data for update and insert
+        self._context=context
 
-    @classmethod
-    def bind(cls, context: Context) -> None:
-        cls.context=context
+    @property
+    def context(self) -> Context:
+        return self._context
 
     """
     fields......: not used
@@ -70,10 +71,10 @@ class BaseManager:
     obj......................:WhereExpression or Alias
     logical_operator.........:and or or (in case of q is a list)
     """
-    def where(self, obj: object(), logical_operator='and'):
+    def where(self, obj: object, logical_operator='and'):
         values=list()
         expression=''
-        if isinstance(obj, Expression):
+        if isinstance(obj, WhereExpression):
             expression=obj.expression
             value=obj.values
             if isinstance(value, list):

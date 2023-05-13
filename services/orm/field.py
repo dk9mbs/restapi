@@ -114,6 +114,8 @@ class Field:
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.name} ({self.value})>"
 
+class DefaultField(Field):
+    pass
 
 class StringField(Field):
     pass

@@ -23,8 +23,8 @@ class OrmParser(BaseParser):
         self._context=context
 
         self.__add_fields(self._main_table)
-        print(f"COMMAND: {self.__get_sql()}")
-        print(f"SELECT:  {self.__get_sql('Select')}")
+        #print(f"COMMAND: {self.__get_sql()}")
+        #print(f"SELECT:  {self.__get_sql('Select')}")
 
     def get_select(self):
         return (self.__get_sql("SELECT"), self._query_vars)

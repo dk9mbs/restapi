@@ -89,11 +89,14 @@ CREATE TABLE IF NOT EXISTS api_table_field_type(
     name varchar(50) NOT NULL,
     control_id int NOT NULL DEFAULT '0' COMMENT 'Default control id for the ui',
     FOREIGN KEY (control_id) REFERENCES api_table_field_control(id),
+    orm_classname varchar(100) NOT NULL DEFAULT 'services.orm.Field.DefaultField' COMMENT 'Name of the orm mapper class',
     PRIMARY KEY(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_table_field_type ADD COLUMN IF NOT EXISTS control_id int NOT NULL DEFAULT '1' COMMENT '';
 ALTER TABLE api_table_field_type ADD CONSTRAINT FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control (id);
+ALTER TABLE api_table_field_type ADD COLUMN IF NOT EXISTS
+    orm_classname varchar(100) NOT NULL DEFAULT 'services.orm.Field.DefaultField' COMMENT 'Name of the orm mapper class';
 
 
 CREATE TABLE IF NOT EXISTS api_table (
