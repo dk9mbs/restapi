@@ -36,7 +36,27 @@ def build_table_fields_meta(context):
             is_lookup=False
             allow_null=__convert_boolean(field['Null'])
             default=field['Default']
+            is_primary_key=__convert_boolean("0")
 
+            filter=(table_name, field_name)
+            sql="""
+            SELECT k.TABLE_NAME,k.column_name
+            FROM information_schema.table_constraints t
+            JOIN information_schema.key_column_usage k
+            USING(constraint_name,table_schema,table_name)
+            WHERE t.constraint_type='PRIMARY KEY'
+            AND t.table_schema=Database()
+            AND t.table_name=%s
+            AND k.COLUMN_NAME=%s;            
+            """
+            cur_pk=connection.cursor()
+            cursor=cur_pk.execute(sql, filter)
+            rs_pk=Recordset(cur_pk)
+            rs_pk.read()
+            if not rs_pk.get_eof():
+                is_primary_key=__convert_boolean("-1")
+            rs_pk.close()
+            
             filter=(table_name, field_name)
             sql="""
             SELECT TABLE_SCHEMA,TABLE_NAME,COLUMN_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME
@@ -81,32 +101,32 @@ def build_table_fields_meta(context):
 
                 sql="""
                 INSERT INTO api_table_field(table_id, label, name, type_id, size, referenced_table_name,
-                referenced_field_name, is_lookup, allow_null, default_value, referenced_table_id)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);
+                referenced_field_name, is_lookup, allow_null, default_value, referenced_table_id, is_primary_key)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);
                 """
 
                 filter=(table_id, field_name, field_name, type_id, size, referenced_table_name, referenced_field_name, is_lookup,
-                        allow_null, default, referenced_table_id )
+                        allow_null, default, referenced_table_id, is_primary_key)
             else:
 
                 if is_lookup==-1:
                     sql=f"""
                     UPDATE api_table_field SET type_id=%s,size=%s,referenced_table_name=%s,
-                    referenced_field_name=%s,is_lookup=%s,allow_null=%s,default_value=%s,referenced_table_id=%s
+                    referenced_field_name=%s,is_lookup=%s,allow_null=%s,default_value=%s,referenced_table_id=%s, is_primary_key=%s
                     WHERE table_id=%s AND name=%s;
                     """
                     filter=(type_id, size, referenced_table_name, referenced_field_name, is_lookup, allow_null, default,
-                        referenced_table_id, int(table_id), field_name )
+                        referenced_table_id,is_primary_key, int(table_id), field_name )
                 else:
                     sql=f"""
                     UPDATE api_table_field SET type_id=%s,size=%s,
-                    allow_null=%s,default_value=%s
+                    allow_null=%s,default_value=%s, is_primary_key=%s
                     WHERE table_id=%s AND name=%s;
                     """
-                    filter=(type_id, size, allow_null, default,
+                    filter=(type_id, size, allow_null, default, is_primary_key,
                         int(table_id), field_name )
 
-
+            print(f"{sql} {filter}")
             cur_write=connection.cursor()
             cur_write.execute(sql, filter)
             cur_write.close()

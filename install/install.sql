@@ -165,6 +165,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     field_name varchar(250) NULL COMMENT 'Pyhs. fieldname',
     is_lookup smallint NOT NULL DEFAULT '0' COMMENT '0=No 1=YES',
     is_virtual smallint NOT NULL DEFAULT '0' COMMENT 'Virtual field not exists on the database',
+    is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col',
     type_id varchar(50) NOT NULL COMMENT 'type of field',
     size int NOT NULL DEFAULT '0' COMMENT 'the size in case of string',
     allow_null smallint NOT NULL DEFAULT '0',
@@ -190,6 +191,7 @@ ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS provider_id varchar(50) NOT
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS pos int NOT NULL DEFAULT '10' COMMENT 'Position for ui forms' AFTER id;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_id int NULL COMMENT 'control_id';
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NULL COMMENT 'Overwrite the type config';
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col' AFTER is_virtual;
 ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control(id);
 ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (provider_id) REFERENCES api_provider(id);
 
