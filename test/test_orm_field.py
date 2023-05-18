@@ -111,22 +111,19 @@ class TestPluginExecution(unittest.TestCase):
         from config import CONFIG
         from core.appinfo import AppInfo
         from services.orm import BaseManager, BaseModel, F
-        from model.dummy import Dummy
-        from model.ApiGroup import ApiGroup
+        #from model.dummy import Dummy
+        #from model.ApiGroup import ApiGroup
+        from shared.model import api_group as ApiGroup
+        from shared.model import dummy as Dummy
 
         AppInfo.init(__name__, CONFIG['default'])
         session_id=AppInfo.login("root","password")
         context=AppInfo.create_context(session_id)
 
 
-        #BaseManager.bind(context)
-
-        #print((ApiGroup.groupname == "test").expression)
-
         condition=ApiGroup.groupname == "test"
         self.assertEqual(condition.expression, 'api_group.groupname = %s')
         self.assertEqual(condition.values, ['test'])
-        
 
         item=ApiGroup.objects(context) \
             .select() \
@@ -188,8 +185,8 @@ class TestPluginExecution(unittest.TestCase):
         self.assertEqual(expression.values, ['Markus'])
 
     def test_order_by(self):
-        from model.dummy import Dummy
-        from model.ApiGroup import ApiGroup
+        from shared.model import api_group as ApiGroup
+        from shared.model import dummy as Dummy
         from services.orm import OrderByExpression
 
         o=Dummy.id.desc() & Dummy.Port.asc()

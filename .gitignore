@@ -14,8 +14,7 @@ wwwroot/*
 venv
 init.d/*
 !init.d/001_main.sh
-model/*
-!model/__init__.py
-!model/dummy.py
+shared/*
+!shared/__init__.py
 
 

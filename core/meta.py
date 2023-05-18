@@ -126,7 +126,7 @@ def build_table_fields_meta(context):
                     filter=(type_id, size, allow_null, default, is_primary_key,
                         int(table_id), field_name )
 
-            print(f"{sql} {filter}")
+            #print(f"{sql} {filter}")
             cur_write=connection.cursor()
             cur_write.execute(sql, filter)
             cur_write.close()
