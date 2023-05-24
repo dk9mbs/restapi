@@ -173,7 +173,6 @@ class FetchXmlParser:
                     column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@url", "formatter": None}
                     self._columns_desc.append(column_desc)
 
-
             self._sql_select=''.join(tmp)
             self._sql_table_join=''.join(sql_join)
 
@@ -360,9 +359,10 @@ class FetchXmlParser:
 
     def _build_table(self,node):
         #table=node.attrib['name']
-        self._main_alias=node.attrib['name']
+        #self._main_alias=node.attrib['name'] # do not use the tablename from the xml node...
         table=self._validate_table_alias(self._context,node.attrib['name'])
         alias=table
+        self._main_alias=alias # ... use the sql table name
 
 
         if 'alias' in node.attrib:

@@ -60,6 +60,7 @@ class BaseModel(metaclass=MetaModel):
     def update(self, context: Context) -> bool:
         data=dict()
         expression=WhereExpression()
+        key_count=0
 
         for key, value in self.__class__.__dict__.items():
             if isinstance(value, Field) and value.dirty:
@@ -67,7 +68,10 @@ class BaseModel(metaclass=MetaModel):
 
                 if value.primary_key:
                     expression=expression & WhereExpression(f"{value.table_alias}.{value.name}", "=", value.value)
-                    #print(f"#########{expression.expression} {expression.values}")
+                    key_count+=1
+
+        if key_count==0:
+            raise Exception(f"No primary key in model defined for table {self.Meta.table_name}")
 
         BaseModel.manager_class(context, model_class=self.__class__).update(expression, data)
 

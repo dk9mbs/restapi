@@ -17,9 +17,9 @@ class TestBuildMeta(unittest.TestCase):
         # Add new
         #
         print("inserting ...")
-        cursor=self.context.get_connection().cursor()
-        cursor.execute("TRUNCATE api_table_field;")
-        cursor.close()
+        #cursor=self.context.get_connection().cursor()
+        #cursor.execute("TRUNCATE api_table_field;")
+        #cursor.close()
         build_table_fields_meta(self.context)
         print("insert ok")
 

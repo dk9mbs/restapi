@@ -54,6 +54,7 @@ class BaseManager:
         return rs
 
     def update(self,primary_key: Expression, data: list):
+        print(f"**** PRIMARY KEY: {primary_key.expression}")
         self._sql_type="UPDATE"
         self.__set_table(self.model_class.Meta.table_name)
         self._data=data

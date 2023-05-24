@@ -47,7 +47,7 @@ def build_table_fields_meta(context):
             WHERE t.constraint_type='PRIMARY KEY'
             AND t.table_schema=Database()
             AND t.table_name=%s
-            AND k.COLUMN_NAME=%s;            
+            AND k.COLUMN_NAME=%s;
             """
             cur_pk=connection.cursor()
             cursor=cur_pk.execute(sql, filter)
@@ -56,7 +56,7 @@ def build_table_fields_meta(context):
             if not rs_pk.get_eof():
                 is_primary_key=__convert_boolean("-1")
             rs_pk.close()
-            
+
             filter=(table_name, field_name)
             sql="""
             SELECT TABLE_SCHEMA,TABLE_NAME,COLUMN_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME
@@ -183,9 +183,9 @@ def read_table_field_meta(context, table_alias):
             INNER JOIN {meta_field_type['table_name']} type ON type.id=f.type_id
             INNER JOIN {meta_field_control['table_name']} control ON control.id=CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END
             LEFT JOIN api_table rt ON rt.id=referenced_table_id
-        WHERE t.alias=%s
+        WHERE t.alias=%s OR t.table_name=%s
         ORDER BY f.pos, f.id """
-    cursor.execute(sql,[table_alias])
+    cursor.execute(sql,[table_alias, table_alias])
     meta=cursor.fetchall()
 
     return meta
