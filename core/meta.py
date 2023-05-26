@@ -161,13 +161,25 @@ def read_table_view_meta(context, table_id, view_name, type):
 """
 Read the field metadata from a complete table
 """
-def read_table_field_meta(context, table_alias):
+def read_table_field_meta(context, table_alias=None, table_id=None):
     connection=context.get_connection()
     cursor=connection.cursor()
     meta_table=read_table_meta(context, alias="api_table")
     meta_field=read_table_meta(context, alias="api_table_field")
     meta_field_type=read_table_meta(context, alias="api_table_field_type")
     meta_field_control=read_table_meta(context, alias="api_table_field_control")
+
+    where=""
+    params=list()
+
+    if table_alias!=None:
+        where="t.alias=%s"
+        params.append(table_alias)
+    elif table_id!=None:
+        where="t.id=%s"
+        params.append(table_id)
+    else:
+        raise Exception('You must give table_id or table_alias')
 
     sql=f"""SELECT f.table_id,f.label,f.name,f.is_lookup,f.type_id,
                 f.size,f.allow_null,f.default_value,f.referenced_table_name,
@@ -183,9 +195,9 @@ def read_table_field_meta(context, table_alias):
             INNER JOIN {meta_field_type['table_name']} type ON type.id=f.type_id
             INNER JOIN {meta_field_control['table_name']} control ON control.id=CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END
             LEFT JOIN api_table rt ON rt.id=referenced_table_id
-        WHERE t.alias=%s OR t.table_name=%s
+        WHERE { where }
         ORDER BY f.pos, f.id """
-    cursor.execute(sql,[table_alias, table_alias])
+    cursor.execute(sql,params)
     meta=cursor.fetchall()
 
     return meta
@@ -212,6 +224,7 @@ def read_table_meta(context, alias=None, table_name=None, table_id=None):
         sql=f"""
         SELECT * FROM api_table WHERE id=%s
         """
+        filter=table_id
     else:
         raise NameError("table and alias are None!")
 
@@ -219,9 +232,8 @@ def read_table_meta(context, alias=None, table_name=None, table_id=None):
     cursor.execute(sql,[filter])
     meta=cursor.fetchone()
     cursor.fetchall()
-
     if meta==None:
-        raise TableMetaDataNotFound(f"Metadata not found for table:{table_name} alias:{alias}")
+        raise TableMetaDataNotFound(f"Metadata not found for table_id:{table_id}, table_name:{table_name}, alias:{alias}")
 
     return meta
 

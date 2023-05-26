@@ -20,6 +20,7 @@ class FetchXmlParser:
         self._sql_type=""
         self._sql_where=""
         self._sql_table=""
+        self._sql_table_id=0
         self._main_alias=""
         self._sql_table_alias=""
         self._sql_table_join=""
@@ -43,6 +44,7 @@ class FetchXmlParser:
         self._sql_type=""
         self._sql_where=""
         self._sql_table=""
+        self._sql_table_id=0
         self._main_alias=""
         self._sql_table_alias=""
         self._sql_table_join=""
@@ -139,7 +141,7 @@ class FetchXmlParser:
 
         from core.meta import read_table_field_meta
         if self._sql_select=="*":
-            meta_fields= read_table_field_meta(self._context, self._sql_table)
+            meta_fields= read_table_field_meta(self._context, table_id=self._sql_table_id)
             tmp=[]
             sql_join=[]
             self._columns_desc=[]
@@ -235,7 +237,7 @@ class FetchXmlParser:
             elif node.tag == "joins":
                 for join in node:
                     #table=join.attrib['table']
-                    table=self._validate_table_alias(self._context,join.attrib['table'])
+                    table,_=self._validate_table_alias(self._context,join.attrib['table'])
                     alias=table
                     if "alias" in join.attrib:
                         alias=join.attrib['alias']
@@ -344,7 +346,7 @@ class FetchXmlParser:
             alias=""
 
             table=self._escape_string(join.attrib['table'])
-            table=self._validate_table_alias(self._context,table)
+            table,_=self._validate_table_alias(self._context,table)
 
             if 'type' in join.attrib:
                 join_type=self._escape_string(join.attrib['type'])
@@ -360,16 +362,16 @@ class FetchXmlParser:
     def _build_table(self,node):
         #table=node.attrib['name']
         #self._main_alias=node.attrib['name'] # do not use the tablename from the xml node...
-        table=self._validate_table_alias(self._context,node.attrib['name'])
+        table, table_id=self._validate_table_alias(self._context,node.attrib['name'])
         alias=table
         self._main_alias=alias # ... use the sql table name
-
 
         if 'alias' in node.attrib:
             alias=node.attrib['alias']
 
         self._sql_table=table
         self._sql_table_alias=alias
+        self._sql_table_id=table_id
 
         self._tables.append(table)
         self._append_alias(table, alias)
@@ -665,6 +667,8 @@ class FetchXmlParser:
     def _validate_table_alias(self, context, table_alias):
         connection=context.get_connection()
         table_name=""
+        table_id=0
+
         sql=f"""
         SELECT id, table_name FROM api_table
         WHERE alias=%s;
@@ -680,9 +684,11 @@ class FetchXmlParser:
             raise TableMetaDataNotFound(f"Table not found for alias: {table_alias}")
 
         table_name=row['table_name']
+        table_id=row['id']
+
         cur.close()
 
-        return table_name
+        return (table_name, table_id)
 
     def _validate_field_permission(self, context, mode, table_alias, field_name):
         connection=context.get_connection()
