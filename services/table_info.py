@@ -6,6 +6,7 @@ class TableInfo(object):
     def __init__(self, context: Context, table_name: str=None, table_alias: str=None, table_id: str=None) -> None:
         row=read_table_meta(context,table_alias, table_name, table_id)
         self._context=context
+        self._table_meta_data=row
         self._table_name=row['table_name']
         self._table_id=row['id']
         self._table_alias=row['alias']
@@ -15,6 +16,13 @@ class TableInfo(object):
         self._enable_audit_log=row['enable_audit_log']
         self._solution_id=row['solution_id']
 
+    @property
+    def table_meta_data(self) -> dict:
+        return self._table_meta_data
+
+    @property
+    def solution_id(self) -> str:
+        return self._solution_id
 
     @property
     def table_name(self) -> str:

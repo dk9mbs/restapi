@@ -99,7 +99,7 @@ class DatabaseServices:
 
         if fetch_mode != -1:
             rs.read(fetch_mode)
-
+        
         if command_builder.get_sql_type().upper()== "SELECT":
             rs.execute_formatter(context, command_builder.get_columns())
             # execute plugin logic

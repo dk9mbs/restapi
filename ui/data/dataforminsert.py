@@ -15,6 +15,7 @@ from services.database import DatabaseServices
 from services.httprequest import HTTPRequest
 from services.filesystemtools import FileSystemTools
 from services.jinjatemplate import JinjaTemplate
+from services.table_info import TableInfo
 
 from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
@@ -42,12 +43,14 @@ class DataFormInsert(Resource):
             context=g.context
             data={}
 
-            if not Permission().validate(context, "create", context.get_username(), table):
+            table_info=TableInfo(context, table_alias=table)
+
+            if not Permission().validate(context, "create", context.get_username(), table_info.table_alias):
                 raise RestApiNotAllowed("")
 
-            table_meta=read_table_meta(context, alias=table)
-            fields_meta=read_table_field_meta(context, table_alias=table)
-            solution_id=table_meta['solution_id']
+            table_meta=table_info.table_meta_data
+            fields_meta=table_info.fields
+            #solution_id=table_info.solution_id
 
             for field in fields_meta:
                 json1=json.loads(field['control_config'])
@@ -60,14 +63,14 @@ class DataFormInsert(Resource):
                 if not context.get_arg(f"param_{field['name']}", None)==None:
                     data[field['name']]=context.get_arg(f"param_{field['name']}", None)
 
-            if solution_id==1:
-                file=f"templates/{table}_insert.htm"
+            if table_info.solution_id==1:
+                file=f"templates/{table_info.table_alias}_insert.htm"
             else:
-                file=f"solutions/{solution_id}/{table}_insert.htm"
+                file=f"solutions/{table_info.solution_id}/{table_info.table_alias}_insert.htm"
             file=f"templates/base/dataform.htm"
 
             template=JinjaTemplate.create_file_template(context,file)
-            response = make_response(template.render({"table": table,
+            response = make_response(template.render({"table": table_info.table_alias,
                     "pagemode": "dataforminsert",
                     "id": "", "data": data, "context": context, "fields": fields_meta,
                     "table_meta": table_meta,

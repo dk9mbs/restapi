@@ -30,7 +30,8 @@ def __build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None
 
     tmp=[]
     tmp.append(f"<restapi type=\"{type}\">\n")
-    tmp.append(f"<table name=\"{meta['table_name']}\"/>\n")
+    #tmp.append(f"<table name=\"{meta['table_name']}\"/>\n") # don't use the table name here!!!
+    tmp.append(f"<table name=\"{meta['alias']}\"/>\n") #use alwasy the alias!!!
 
     if filter_field_name!=None:
         tmp.append("<filter type=\"and\">\n")

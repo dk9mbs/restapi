@@ -22,6 +22,7 @@ from core.jsontools import json_serial,merge
 from core import log
 from core.exceptions import RestApiNotAllowed, ConfigNotValid
 from core.meta import read_table_meta, read_table_field_meta
+from services.table_info import TableInfo
 
 logger=log.create_logger(__name__)
 
@@ -40,9 +41,11 @@ class DataFormUpdate(Resource):
             create_parser().parse_args()
             context=g.context
 
-            table_meta=read_table_meta(context, alias=table)
-            solution_id=table_meta['solution_id']
-            fields_meta=read_table_field_meta(context, table_alias=table)
+            table_info=TableInfo(context, table_alias=table)
+
+            table_meta=table_info.table_meta_data
+            #solution_id=table_info.solution_id
+            fields_meta=table_info.fields
 
             for field in fields_meta:
                 json1=json.loads(field['control_config'])
@@ -50,13 +53,13 @@ class DataFormUpdate(Resource):
                 cfg=merge(json1, json2)
                 field['control_config']=cfg
 
-            if solution_id==1:
-                file=f"templates/{table}_update.htm"
+            if table_info.solution_id==1:
+                file=f"templates/{table_info.table_alias}_update.htm"
             else:
-                file=f"solutions/{solution_id}/{table}_update.htm"
+                file=f"solutions/{table_info.solution_id}/{table_info.table_alias}_update.htm"
             file=f"templates/base/dataform.htm"
 
-            fetch=build_fetchxml_by_alias(context, table, id, type="select")
+            fetch=build_fetchxml_by_alias(context, table_info.table_alias, id, type="select")
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=1)
             if rs.get_result()==None:
@@ -67,7 +70,7 @@ class DataFormUpdate(Resource):
             logger.info(f"Redirect : {next}")
 
             template=JinjaTemplate.create_file_template(context,file)
-            response = make_response(template.render({"table": table,
+            response = make_response(template.render({"table": table_info.table_alias,
                     "pagemode": "dataformupdate",
                     "id": id, "data": rs.get_result(), "context": context, "fields": fields_meta,
                     "table_meta": table_meta,

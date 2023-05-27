@@ -8,7 +8,10 @@ def json_serial(obj):
     if isinstance(obj, (datetime, date, time)):
         return obj.isoformat()
     if isinstance(obj, (timedelta)):
-        return str(obj)
+        # time only format
+        d=datetime(1970,1,1,0,0,0,0)+obj
+        #return str(obj) # do not use: 06:13:12 will be returned as 6:13:45
+        return str(d.time())
     if isinstance(obj, (decimal.Decimal)):
         return str(obj)
     if isinstance(obj, (bytes)):
