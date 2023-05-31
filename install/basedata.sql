@@ -729,7 +729,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </joins>
     <select>
         <field name="id" table_alias="t" alias="id"/>
-        <field name="is_active" table_alias="t" alias="Aktiviert" formatter="boolean"/>
+        <field name="is_active" table_alias="t" formatter="boolean"/>
         <field name="title" table_alias="t" alias="Titel"/>
         <field name="name" table_alias="t" alias="Name"/>
         <field name="name" table_alias="p" alias="Portal"/>
