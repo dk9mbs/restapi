@@ -70,7 +70,6 @@ class Recordset:
                     field=col['database_field']
                     name=col['formatter']
                     formatter=formatters[name]
-                    print(f"{field}-{rec}")
                     rec[field]=formatter.output(context, rec[field])
 
     def get_eof(self):
