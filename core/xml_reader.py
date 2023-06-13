@@ -5,7 +5,7 @@ from config import CONFIG
 from core.appinfo import AppInfo
 from core.context import Context
 
-class IDocReader(object):
+class XmlReader(object):
     def __init__(self,context: Context, idoc: str) -> None:
         self._idoc=idoc
         self._context=context
@@ -41,5 +41,5 @@ f=open('/tmp/test.idoc','rb')
 idoc=f.read()
 f.close()
 
-reader=IDocReader(context, idoc)
+reader=XmlReader(context, idoc)
 reader.read()
