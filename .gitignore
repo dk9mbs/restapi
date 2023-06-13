@@ -16,5 +16,5 @@ init.d/*
 !init.d/001_main.sh
 shared/*
 !shared/__init__.py
-
+model/*
 
