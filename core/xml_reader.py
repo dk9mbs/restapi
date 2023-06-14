@@ -16,21 +16,24 @@ class XmlReader(object):
             stack=dict()
 
         if element==None:
-            tree=ET.fromstring(self._idoc)
-            element=tree[0]
-            print(element)
+            element=ET.fromstring(self._idoc)
+            self._read(element, stack)
+        else:
+            for ele in element:
+                if len(ele)>0:
+                    self._read(ele, stack)
+                else:
+                    print(f"{ele.tag} {ele.text} {stack}")
 
-        for ele in element:
-            if len(ele)>0:
-                plugin=Plugin(self._context, f"xmlreader_{ele.tag}", "read")
-                plugin.execute("before", stack)
 
-                stack[ele.tag]=ele
-                self.read(ele, stack)
-                stack.pop(ele.tag)
-            else:
-                print(f"{ele.tag} {ele.text} {stack}")
+    def _read(self, element, stack: dict):
+        plugin=Plugin(self._context, f"xmlreader_{element.tag}", "read")
 
+        stack[element.tag]=element
+        self.read(element, stack)
+        stack.pop(element.tag)
+
+        plugin.execute("after", stack)
 
 
 AppInfo.init(__name__, CONFIG['default'])
