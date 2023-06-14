@@ -5,13 +5,22 @@ from core.appinfo import AppInfo
 from core.context import Context
 
 class XmlReader(object):
-    def __init__(self,context: Context, idoc: str) -> None:
-        self._idoc=idoc
+    """
+    context........:Context
+    business_case..:tag to identify in events
+    xml_string.....:xml as string
+    """
+    def __init__(self,context: Context,business_case: str, xml_string: bytearray) -> None:
+        self._xml_string=xml_string
         self._context=context
 
     def __del__(self):
         pass
 
+    """ 
+    element.: only in case of recursion
+    stack...: only in case of recursion
+    """
     def read(self, element=None, stack=None):
 
         if stack==None:
@@ -21,7 +30,7 @@ class XmlReader(object):
             """
             read the root node and start here
             """
-            element=ET.fromstring(self._idoc)
+            element=ET.fromstring(self._xml_string)
             print(f"{element.tag}")
             self._read(element, stack)
         else:
@@ -43,15 +52,15 @@ class XmlReader(object):
         plugin.execute("after", stack)
 
 
+if __name__=="__main__":
+    from config import CONFIG
+    AppInfo.init(__name__, CONFIG['default'])
+    session_id=AppInfo.login("root","password")
+    context=AppInfo.create_context(session_id)
 
-from config import CONFIG
-AppInfo.init(__name__, CONFIG['default'])
-session_id=AppInfo.login("root","password")
-context=AppInfo.create_context(session_id)
+    f=open('/tmp/test.idoc','rb')
+    idoc=f.read()
+    f.close()
 
-f=open('/tmp/test.idoc','rb')
-idoc=f.read()
-f.close()
-
-reader=XmlReader(context, idoc)
-reader.read()
+    reader=XmlReader(context, "SAP-DELIVERY01", idoc)
+    reader.read()
