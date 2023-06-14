@@ -9,6 +9,9 @@ class XmlReader(object):
         self._idoc=idoc
         self._context=context
 
+    def __del__(self):
+        pass
+
     def read(self, element=None, stack=None):
 
         if stack==None:
@@ -24,7 +27,7 @@ class XmlReader(object):
         else:
             for ele in element:
                 if len(ele)>0:
-                    print(f"{ele.tag}")
+                    print(f"{ele.tag} {stack}")
                     self._read(ele, stack)
                 else:
                     plugin=Plugin(self._context, f"xmlreader_item_{element.tag}", "read")
