@@ -66,6 +66,10 @@ class AsyncWrapper(threading.Thread):
             self._plugin_context['response']['error_text']=str(err)
             status_id=20
 
+            # copy from sync event on 18.06.2023
+            if self._config.get_value('raise_exception', False)==True:
+                raise err
+
         ProcessTools.set_process_status(self._context,self._plugin_context,status_id)
 
         AppInfo.save_context(self._context, True)

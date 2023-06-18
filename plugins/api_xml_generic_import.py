@@ -2,9 +2,8 @@ import datetime
 import requests
 import json
 
-from core.fetchxmlparser import FetchXmlParser
-from services.database import DatabaseServices
 from core import log, jsontools
+from core.xml_reader import XmlReader
 
 logger=log.create_logger(__name__)
 
@@ -21,4 +20,3 @@ def execute(context, plugin_context, params):
 
     reader=XmlReader(context, format, xml)
     reader.read()
-

@@ -8,11 +8,20 @@ class XmlReader(object):
     """
     context........:Context
     business_case..:tag to identify in events
-    xml_string.....:xml as string
+    xml_bytes.....:xml as string
     """
-    def __init__(self,context: Context,business_case: str, xml_string: bytearray) -> None:
-        self._xml_string=xml_string
+    def __init__(self,fn_callback, context: Context,partner_id: str, xml: object) -> None:
+        if type(xml)==bytes:
+            self._xml=xml
+        elif type(xml)==str:
+            self._xml=xml
+        else:
+            raise Exception('You must give me a String or a bytearry')
+
         self._context=context
+        self._fn_callback=fn_callback
+        self._globals=dict()
+        self._partner_id=partner_id
 
     def __del__(self):
         pass
@@ -20,47 +29,73 @@ class XmlReader(object):
     """ 
     element.: only in case of recursion
     stack...: only in case of recursion
+    globals.: only in case of recursion - variables
     """
-    def read(self, element=None, stack=None):
-
+    def read(self, element: ET.Element=None, stack: dict=None, globals: dict=None) -> dict:    
         if stack==None:
             stack=dict()
+            
+        if globals==None:
+            globals=dict()
+            globals['path']=""
+            globals['partner_id']=self._partner_id
 
         if element==None:
             """
             read the root node and start here
             """
-            element=ET.fromstring(self._xml_string)
-            print(f"{element.tag}")
-            self._read(element, stack)
+            element=ET.fromstring(self._xml)
+            self._read_childs(element, stack, globals)
         else:
             for ele in element:
+                globals['path']=self._get_path(stack, ele)
                 if len(ele)>0:
-                    print(f"{ele.tag} {stack}")
-                    self._read(ele, stack)
+                    self._read_childs(ele, stack, globals)
                 else:
-                    plugin=Plugin(self._context, f"xmlreader_item_{element.tag}", "read")
-                    self.read(ele, stack)
-                    plugin.execute("after", stack)
+                    self._read_item(ele, stack, globals)
 
+        self._globals=globals
+        return globals
 
-    def _read(self, element, stack: dict):
-        plugin=Plugin(self._context, f"xmlreader_parent_{element.tag}", "read")
+    @property
+    def xml(self):
+        return self._xml
+
+    @property
+    def globals(self):
+        return self._globals
+
+    def _read_item(self, element, stack, globals) -> bool:
+        plugin=Plugin(self._context, f"{globals['path']}", "xml_read")
+        print(f"{globals['path']}")
+        para=self._buld_plugin_para(element, stack, globals, True)
+        plugin.execute("before", para)
+        self._fn_callback(True, element, stack, globals)
+        plugin.execute("after", para)
+
+        return True
+
+    def _read_childs(self, element, stack: dict, globals: dict) -> bool:
+        plugin=Plugin(self._context, f"{globals['path']}", "xml_read")
+        print(f"{globals['path']}")
         stack[element.tag]=element
-        self.read(element, stack)
+
+        para=self._buld_plugin_para(element, stack, globals, False)
+        plugin.execute("before", para)
+        self._fn_callback(False, element, stack, globals)
+        plugin.execute("after", para)
+
+        self.read(element, stack, globals)
         stack.pop(element.tag)
-        plugin.execute("after", stack)
+        return True
 
+    def _buld_plugin_para(self, element: ET.Element, stack: dict, globals: dict, is_item: bool) -> dict:
+        return {"stack": stack, "element": element, "globals": globals, "is_item": is_item}
 
-if __name__=="__main__":
-    from config import CONFIG
-    AppInfo.init(__name__, CONFIG['default'])
-    session_id=AppInfo.login("root","password")
-    context=AppInfo.create_context(session_id)
+    def _get_path(self, stack: dict, element: ET.Element) -> str:
+        tmp=""
 
-    f=open('/tmp/test.idoc','rb')
-    idoc=f.read()
-    f.close()
+        for key, value in stack.items():
+            tmp=f"{tmp}.{key}"
 
-    reader=XmlReader(context, "SAP-DELIVERY01", idoc)
-    reader.read()
+        return f"{tmp}.{element.tag}"
