@@ -1,10 +1,10 @@
 import decimal
 import base64
 from datetime import date, datetime, time, timedelta
+import xml.etree.ElementTree as ET
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
-
     if isinstance(obj, (datetime, date, time)):
         return obj.isoformat()
     if isinstance(obj, (timedelta)):
@@ -21,6 +21,8 @@ def json_serial(obj):
         base64_bytes = base64.b64encode(message_bytes)
         base64_message = base64_bytes.decode('ascii')
         return base64_message
+    if isinstance(obj, ET.Element):
+        return ET.tostring(obj, encoding='unicode')
     raise TypeError ("Type %s not serializable" % type(obj))
 
 

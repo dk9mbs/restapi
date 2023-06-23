@@ -67,7 +67,6 @@ class XmlReader(object):
 
     def _read_item(self, element, stack, globals) -> bool:
         plugin=Plugin(self._context, f"{globals['path']}", "xml_read")
-        print(f"{globals['path']}")
         para=self._buld_plugin_para(element, stack, globals, True)
         plugin.execute("before", para)
         self._fn_callback(True, element, stack, globals)
@@ -77,9 +76,7 @@ class XmlReader(object):
 
     def _read_childs(self, element, stack: dict, globals: dict) -> bool:
         plugin=Plugin(self._context, f"{globals['path']}", "xml_read")
-        print(f"{globals['path']}")
         stack[element.tag]=element
-
         para=self._buld_plugin_para(element, stack, globals, False)
         plugin.execute("before", para)
         self._fn_callback(False, element, stack, globals)
@@ -90,7 +87,12 @@ class XmlReader(object):
         return True
 
     def _buld_plugin_para(self, element: ET.Element, stack: dict, globals: dict, is_item: bool) -> dict:
-        return {"stack": stack, "element": element, "globals": globals, "is_item": is_item}
+        stack_tmp=dict()
+
+        for key, value in stack.items():
+            stack_tmp[key]=ET.tostring(value, encoding='unicode')
+
+        return {"stack": stack_tmp, "element": ET.tostring(element, encoding='unicode'), "globals": globals, "is_item": is_item}
 
     def _get_path(self, stack: dict, element: ET.Element) -> str:
         tmp=""

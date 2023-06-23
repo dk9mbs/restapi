@@ -9,6 +9,8 @@ from core import log
 from core.appinfo import AppInfo
 from core.database import Recordset
 
+from core.jsontools import json_serial
+
 logger=log.create_logger(__name__)
 
 class SyncWrapper(object):
@@ -181,7 +183,7 @@ class ProcessTools(object):
         ON DUPLICATE KEY UPDATE status_id=status_id, retries=retries+1;
         """
         cursor.execute(sql,[plugin_context['process_id'],
-                    json.dumps(params), plugin_context['event_handler_id'],
+                    json.dumps(params, default=json_serial), plugin_context['event_handler_id'],
                     plugin_context['run_async'], str(plugin_context['config'])
                 ])
         connection.commit()
