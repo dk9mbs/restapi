@@ -181,7 +181,7 @@ def read_table_field_meta(context, table_alias=None, table_id=None):
     else:
         raise Exception('You must give table_id or table_alias')
 
-    sql=f"""SELECT f.table_id,f.label,f.name,f.is_lookup,f.type_id,
+    sql=f"""SELECT f.table_id,f.label,f.name,f.is_lookup,f.type_id,f.is_primary_key,
                 f.size,f.allow_null,f.default_value,f.referenced_table_name,
                 f.referenced_table_id,f.referenced_field_name,
                 t.alias AS table_alias,

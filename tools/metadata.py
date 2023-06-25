@@ -66,6 +66,8 @@ build_table_fields_meta(context)
 
 f=open (f"{script_dir}/../shared/model.py", 'w')
 f.write(build_datamodel(context))
+#print(build_datamodel(context))
+f.flush()
 f.close()
 
 AppInfo.save_context(context, True)

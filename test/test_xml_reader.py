@@ -205,55 +205,24 @@ class TestPluginExecution(unittest.TestCase):
         '''
 
         def _inner(is_item, element, stack, globals):
-            import uuid
-
-            #def get_order(ext_orderno: str, globals: dict):
-            #    for x in range(len(globals['orders'])):
-            #        if globals['orders'][x]['ext_orderno']==ext_orderno:
-            #            return x
-            #    raise Exception(f'Order not found {ordernumber}')
-
-            if is_item:
+            if globals['path']=="XXX.DELVRY01.IDOC.E1EDL20.VBELN":
                 pass
 
-            if globals['path']==".DELVRY01.IDOC.E1EDL20.VBELN":
-                if not 'orders' in globals:
-                    globals['orders']=[]
-                order={}
-                order['id']=str(uuid.uuid1())
-                order['ext_orderno']=element.text
-                order['partner_id']=globals['partner_id']
-                globals['orders'].append(order)
-                globals['current_order_id']=order['id']
-
-            if globals['path']==".DELVRY01.IDOC.E1EDL20.E1EDL24.MATNR":
-                if not 'positions' in globals:
-                    globals['positions']=[]
-
-                orderno=stack['E1EDL20'].find("VBELN").text
-
-                pos={}
-                pos['id']=str(uuid.uuid1())
-                pos['order_id']=globals['current_order_id']
-                pos['ext_product_no']=stack['E1EDL24'].find('MATNR').text
-                pos['quantity']=stack['E1EDL24'].find('LFIMG').text
-                pos['lot_no']=stack['E1EDL24'].find('CHARG').text
-                pos['ext_pos']=stack['E1EDL24'].find('POSNR').text                
-                pos['ext_unit']=stack['E1EDL24'].find('VRKME').text             
-
-                globals['positions'].append(pos)
-                globals['current_position_id']=pos['id']
+            if globals['path']=="XXX.DELVRY01.IDOC.E1EDL20.E1EDL24.MATNR":
+                pass
 
             return globals
 
+        globals={}
+        partner_id="DEFAULT_SAP_SHPCON"
 
-
-        reader=XmlReader(_inner, context, "DEFAULT", xml.encode('utf-8') )
+        reader=XmlReader(_inner, context, partner_id, globals, xml.encode('utf-8') )
         reader.read()
-        orders=reader.globals['orders']
-        positions=reader.globals['positions']
-        print(orders)
-        print(positions)
+
+        print(reader.globals['order'])
+        print(reader.globals['position'])
+        print(reader.globals['lot'])
+
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

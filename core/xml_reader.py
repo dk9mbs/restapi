@@ -8,9 +8,10 @@ class XmlReader(object):
     """
     context........:Context
     business_case..:tag to identify in events
+    globals........:global variables
     xml_bytes.....:xml as string
     """
-    def __init__(self,fn_callback, context: Context,partner_id: str, xml: object) -> None:
+    def __init__(self,fn_callback, context: Context,partner_id: str,globals: dict, xml: object) -> None:
         if type(xml)==bytes:
             self._xml=xml
         elif type(xml)==str:
@@ -20,7 +21,7 @@ class XmlReader(object):
 
         self._context=context
         self._fn_callback=fn_callback
-        self._globals=dict()
+        self._globals=globals
         self._partner_id=partner_id
 
     def __del__(self):
@@ -36,7 +37,8 @@ class XmlReader(object):
             stack=dict()
             
         if globals==None:
-            globals=dict()
+            #globals=dict()
+            globals=self._globals
             globals['path']=""
             globals['partner_id']=self._partner_id
 
@@ -68,6 +70,7 @@ class XmlReader(object):
     def _read_item(self, element, stack, globals) -> bool:
         plugin=Plugin(self._context, f"{globals['path']}", "xml_read")
         para=self._buld_plugin_para(element, stack, globals, True)
+        
         plugin.execute("before", para)
         self._fn_callback(True, element, stack, globals)
         plugin.execute("after", para)
@@ -78,11 +81,12 @@ class XmlReader(object):
         plugin=Plugin(self._context, f"{globals['path']}", "xml_read")
         stack[element.tag]=element
         para=self._buld_plugin_para(element, stack, globals, False)
-        plugin.execute("before", para)
-        self._fn_callback(False, element, stack, globals)
-        plugin.execute("after", para)
 
+        plugin.execute("before", para) # call for open tag
+        self._fn_callback(False, element, stack, globals)
         self.read(element, stack, globals)
+        plugin.execute("after", para) # call fore close tag
+
         stack.pop(element.tag)
         return True
 

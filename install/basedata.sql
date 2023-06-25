@@ -981,3 +981,40 @@ template_footer='</tbody>
 </div>'
 WHERE id=1 AND provider_id='MANUFACTURER';
 
+
+
+
+
+
+
+
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (2,'$orm_datamodel',10,2);
+
+UPDATE api_data_formatter SET
+name='$orm_datamodel',
+mime_type='text/text',
+template_header='from services.orm import *
+"""
+table_name...:Table alias from api_table
+table_alias..:Use this alias in the sql statements
+"""',
+template_line='
+"""
+Model for table {{ data[\'alias\'] }}
+"""
+{% set fields=metadata_table_fields(context, data[\'alias\'] ) -%}
+class {{ data[\'alias\'] }}(BaseModel):
+    {% for f in fields %}{% set pk=False -%}
+    {% if f[\'is_primary_key\'] == -1 -%}
+    {% set pk=True %}{% endif -%}
+    {{ f[\'name\'] }}={{ f[\'orm_classname\']}}(pk={{ pk }})
+    {% endfor %}
+    class Meta:
+        table_name="{{ data[\'alias\'] }}"
+        table_alias="{{ data[\'alias\'] }}"',
+template_footer=''
+WHERE id=2 AND provider_id='MANUFACTURER';
+
+
+
+
