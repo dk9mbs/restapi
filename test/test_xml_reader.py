@@ -211,17 +211,25 @@ class TestPluginExecution(unittest.TestCase):
             if globals['path']=="XXX.DELVRY01.IDOC.E1EDL20.E1EDL24.MATNR":
                 pass
 
-            return globals
-
         globals={}
-        partner_id="DEFAULT_SAP_SHPCON"
+        message_type_id="DEFAULT_SAP_SHPCON"
 
-        reader=XmlReader(_inner, context, partner_id, globals, xml.encode('utf-8') )
-        reader.read()
 
-        print(reader.globals['order'])
-        print(reader.globals['position'])
-        print(reader.globals['lot'])
+        import os
+        print("Files:")
+        for root, dirs, files in os.walk("/mnt/c/Temp/IDoc/out-save/", topdown=False):
+            for name in files:
+                print(os.path.join(root, name))
+                f=open(os.path.join(root, name), 'r')
+                xml=f.read()
+                f.close()
+
+                reader=XmlReader(_inner, context, message_type_id, globals, xml.encode('utf-8') )
+                reader.read()
+
+        #print(reader.globals['order'])
+        #print(reader.globals['position'])
+        #print(reader.globals['lot'])
 
 
     def tearDown(self):

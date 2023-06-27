@@ -11,7 +11,7 @@ class XmlReader(object):
     globals........:global variables
     xml_bytes.....:xml as string
     """
-    def __init__(self,fn_callback, context: Context,partner_id: str,globals: dict, xml: object) -> None:
+    def __init__(self,fn_callback, context: Context,message_type_id: str,globals: dict, xml: object) -> None:
         if type(xml)==bytes:
             self._xml=xml
         elif type(xml)==str:
@@ -22,7 +22,7 @@ class XmlReader(object):
         self._context=context
         self._fn_callback=fn_callback
         self._globals=globals
-        self._partner_id=partner_id
+        self._message_type_id=message_type_id
 
     def __del__(self):
         pass
@@ -40,7 +40,7 @@ class XmlReader(object):
             #globals=dict()
             globals=self._globals
             globals['path']=""
-            globals['partner_id']=self._partner_id
+            globals['message_type_id']=self._message_type_id
 
         if element==None:
             """
