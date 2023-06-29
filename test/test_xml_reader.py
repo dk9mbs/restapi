@@ -227,10 +227,6 @@ class TestPluginExecution(unittest.TestCase):
                 reader=XmlReader(_inner, context, message_type_id, globals, xml.encode('utf-8') )
                 reader.read()
 
-        #print(reader.globals['order'])
-        #print(reader.globals['position'])
-        #print(reader.globals['lot'])
-
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
