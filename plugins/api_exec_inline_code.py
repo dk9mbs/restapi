@@ -8,7 +8,7 @@ from core import log
 logger=log.create_logger(__name__)
 
 def config():
-      return {"raise_exception": False}
+      return {"raise_exception": True}
 
 def execute(context, plugin_context, params):
     code=plugin_context['inline_code']

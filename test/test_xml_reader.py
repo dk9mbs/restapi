@@ -213,20 +213,32 @@ class TestPluginExecution(unittest.TestCase):
 
         globals={}
         message_type_id="DEFAULT_SAP_SHPCON"
+        import_path="/mnt/c/Temp/IDoc/out-save/"
+        success_path="/mnt/c/Temp/IDoc/success/"
+        error_path="/mnt/c/Temp/IDoc/error/"
 
-
-        import os
-        print("Files:")
-        for root, dirs, files in os.walk("/mnt/c/Temp/IDoc/out-save/", topdown=False):
+        import os, shutil, sys
+        for root, dirs, files in os.walk(import_path, topdown=False):
             for name in files:
-                print(os.path.join(root, name))
-                f=open(os.path.join(root, name), 'r')
+                file_name=os.path.join(root, name)
+                print(file_name)
+                f=open(file_name, 'r')
                 xml=f.read()
                 f.close()
 
-                reader=XmlReader(_inner, context, message_type_id, globals, xml.encode('utf-8') )
-                reader.read()
+                try:
+                    reader=XmlReader(_inner, context, message_type_id, globals, xml.encode('utf-8') )
+                    reader.read()
+                    shutil.move(file_name, os.path.join(success_path, name))
+                except:
+                    shutil.move(file_name, os.path.join(error_path, name))
+                    f=open(f"{os.path.join(error_path, name)}.error", 'w')
+                    f.write(str(sys.exc_info()[0]))
+                    f.write(str(sys.exc_info()[1]))
+                    f.write(str(sys.exc_info()[2]))
 
+                    f.flush()
+                    f.close()
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
