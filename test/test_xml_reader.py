@@ -213,11 +213,15 @@ class TestPluginExecution(unittest.TestCase):
 
         globals={}
         message_type_id="DEFAULT_SAP_SHPCON"
-        import_path="/mnt/c/Temp/IDoc/out-save/"
-        success_path="/mnt/c/Temp/IDoc/success/"
-        error_path="/mnt/c/Temp/IDoc/error/"
+        #import_path="/mnt/c/Temp/IDoc/out-save/"
+        #success_path="/mnt/c/Temp/IDoc/success/"
+        #error_path="/mnt/c/Temp/IDoc/error/"
 
-        import os, shutil, sys
+        import_path="/home/dk9mbs/IDoc/out-save/"
+        success_path="/home/dk9mbs/IDoc/success/"
+        error_path="/home/dk9mbs/IDoc/error/"
+
+        import os, shutil, sys, traceback
         for root, dirs, files in os.walk(import_path, topdown=False):
             for name in files:
                 file_name=os.path.join(root, name)
@@ -236,7 +240,7 @@ class TestPluginExecution(unittest.TestCase):
                     f.write(str(sys.exc_info()[0]))
                     f.write(str(sys.exc_info()[1]))
                     f.write(str(sys.exc_info()[2]))
-
+                    # )
                     f.flush()
                     f.close()
 
