@@ -213,13 +213,13 @@ class TestPluginExecution(unittest.TestCase):
 
         globals={}
         message_type_id="DEFAULT_SAP_SHPCON"
-        #import_path="/mnt/c/Temp/IDoc/out-save/"
-        #success_path="/mnt/c/Temp/IDoc/success/"
-        #error_path="/mnt/c/Temp/IDoc/error/"
+        import_path="/mnt/c/Temp/IDoc/out-save/"
+        success_path="/mnt/c/Temp/IDoc/success/"
+        error_path="/mnt/c/Temp/IDoc/error/"
 
-        import_path="/home/dk9mbs/IDoc/out-save/"
-        success_path="/home/dk9mbs/IDoc/success/"
-        error_path="/home/dk9mbs/IDoc/error/"
+        #import_path="/home/dk9mbs/IDoc/out-save/"
+        #success_path="/home/dk9mbs/IDoc/success/"
+        #error_path="/home/dk9mbs/IDoc/error/"
 
         import os, shutil, sys, traceback
         for root, dirs, files in os.walk(import_path, topdown=False):

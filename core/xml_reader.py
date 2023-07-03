@@ -40,7 +40,7 @@ class XmlReader(object):
             #globals=dict()
             globals=self._globals
             globals['path']=""
-            globals['message_type_id']=self._message_type_id
+            globals['message_exchange_id']=self._message_type_id
 
         if element==None:
             """
