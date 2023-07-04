@@ -21,7 +21,7 @@ class OrmParser(BaseParser):
         self._query_vars=sql['query_vars']
         self._sql_type=sql['sql_type']
         self._context=context
-
+        
         self.__add_fields(self._main_table)
         #print(f"COMMAND: {self.__get_sql()}")
         #print(f"SELECT:  {self.__get_sql('Select')}")
@@ -49,7 +49,7 @@ class OrmParser(BaseParser):
             #print (f"Aus dem Parser: {sql}")
         elif sql_type.upper()=='DELETE':
             sql=f"DELETE FROM {self._main_table} WHERE {self._where}"
-        
+
         return sql
 
 

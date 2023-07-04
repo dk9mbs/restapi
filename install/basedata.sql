@@ -1008,6 +1008,10 @@ class {{ data[\'alias\'] }}(BaseModel):
     {% if f[\'is_primary_key\'] == -1 -%}
     {% set pk=True %}{% endif -%}
     {{ f[\'name\'] }}={{ f[\'orm_classname\']}}(pk={{ pk }})
+    {% if not f[\'referenced_table_name\'] == None -%}
+    {{ f[\'name\'] }}_name={{ f[\'orm_classname\']}}()
+    {{ f[\'name\'] }}_url={{ f[\'orm_classname\']}}()
+    {% endif -%}
     {% endfor %}
     class Meta:
         table_name="{{ data[\'alias\'] }}"

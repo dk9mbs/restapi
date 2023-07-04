@@ -233,9 +233,9 @@ class TestPluginExecution(unittest.TestCase):
                 try:
                     reader=XmlReader(_inner, context, message_type_id, globals, xml.encode('utf-8') )
                     reader.read()
-                    shutil.move(file_name, os.path.join(success_path, name))
+                    #shutil.move(file_name, os.path.join(success_path, name))
                 except:
-                    shutil.move(file_name, os.path.join(error_path, name))
+                    #shutil.move(file_name, os.path.join(error_path, name))
                     f=open(f"{os.path.join(error_path, name)}.error", 'w')
                     f.write(str(sys.exc_info()[0]))
                     f.write(str(sys.exc_info()[1]))
