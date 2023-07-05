@@ -11,7 +11,7 @@ class XmlReader(object):
     globals........:global variables
     xml_bytes.....:xml as string
     """
-    def __init__(self,fn_callback, context: Context,message_type_id: str,globals: dict, xml: object) -> None:
+    def __init__(self,fn_callback, context: Context,event_handler_event: str,globals: dict, xml: object) -> None:
         if type(xml)==bytes:
             self._xml=xml
         elif type(xml)==str:
@@ -22,7 +22,7 @@ class XmlReader(object):
         self._context=context
         self._fn_callback=fn_callback
         self._globals=globals
-        self._message_type_id=message_type_id
+        self._event_handler_event=event_handler_event
 
     def __del__(self):
         pass
@@ -40,7 +40,7 @@ class XmlReader(object):
             #globals=dict()
             globals=self._globals
             globals['path']=""
-            globals['message_exchange_id']=self._message_type_id
+            #globals['message_exchange_id']=self._message_exchange_id
 
         if element==None:
             """
@@ -68,7 +68,7 @@ class XmlReader(object):
         return self._globals
 
     def _read_item(self, element, stack, globals) -> bool:
-        plugin=Plugin(self._context, f"{globals['path']}", "xml_read")
+        plugin=Plugin(self._context, f"{globals['path']}", self._event_handler_event)
         para=self._buld_plugin_para(element, stack, globals, True)
         
         plugin.execute("before", para)
@@ -78,7 +78,7 @@ class XmlReader(object):
         return True
 
     def _read_childs(self, element, stack: dict, globals: dict) -> bool:
-        plugin=Plugin(self._context, f"{globals['path']}", "xml_read")
+        plugin=Plugin(self._context, f"{globals['path']}", self._event_handler_event)
         stack[element.tag]=element
         para=self._buld_plugin_para(element, stack, globals, False)
 

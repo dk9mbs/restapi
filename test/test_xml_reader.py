@@ -211,17 +211,25 @@ class TestPluginExecution(unittest.TestCase):
             if globals['path']=="XXX.DELVRY01.IDOC.E1EDL20.E1EDL24.MATNR":
                 pass
 
-        globals={}
-        message_type_id="DEFAULT_SAP_SHPCON"
+        message_exchange_id="DEFAULT_SAP_SHPCON"
         import_path="/mnt/c/Temp/IDoc/out-save/"
         success_path="/mnt/c/Temp/IDoc/success/"
         error_path="/mnt/c/Temp/IDoc/error/"
+
+        globals={}
+        globals['message_exchange_id']=message_exchange_id
 
         #import_path="/home/dk9mbs/IDoc/out-save/"
         #success_path="/home/dk9mbs/IDoc/success/"
         #error_path="/home/dk9mbs/IDoc/error/"
 
+        from shared.model import escm_message_exchange
         import os, shutil, sys, traceback
+
+        exchange=escm_message_exchange.objects(context).select().where(escm_message_exchange.id == message_exchange_id).to_entity()
+        if exchange==None:
+            raise (f'escm_message_exchange not exists {message_exchange_id}')
+        
         for root, dirs, files in os.walk(import_path, topdown=False):
             for name in files:
                 file_name=os.path.join(root, name)
@@ -231,18 +239,17 @@ class TestPluginExecution(unittest.TestCase):
                 f.close()
 
                 try:
-                    reader=XmlReader(_inner, context, message_type_id, globals, xml.encode('utf-8') )
+                    reader=XmlReader(_inner, context, exchange.process.value , globals, xml.encode('utf-8') )
                     reader.read()
-                    #shutil.move(file_name, os.path.join(success_path, name))
+                    shutil.move(file_name, os.path.join(success_path, name))
                 except:
-                    #shutil.move(file_name, os.path.join(error_path, name))
-                    f=open(f"{os.path.join(error_path, name)}.error", 'w')
-                    f.write(str(sys.exc_info()[0]))
-                    f.write(str(sys.exc_info()[1]))
-                    f.write(str(sys.exc_info()[2]))
-                    # )
-                    f.flush()
-                    f.close()
+                    shutil.move(file_name, os.path.join(error_path, name))
+                    #f=open(f"{os.path.join(error_path, name)}.error", 'w')
+                    #f.write(str(sys.exc_info()[0]))
+                    #f.write(str(sys.exc_info()[1]))
+                    #f.write(str(sys.exc_info()[2]))
+                    #f.flush()
+                    #f.close()
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
