@@ -23,9 +23,13 @@ class XmlReader(object):
         self._fn_callback=fn_callback
         self._globals=globals
         self._event_handler_event=event_handler_event
+        self._replace_node_name=dict()
 
     def __del__(self):
         pass
+
+    def replace_node_name(self, origin_name: str, replaced_name: str) -> None:
+        self._replace_node_name[origin_name]= replaced_name
 
     """ 
     element.: only in case of recursion
@@ -37,10 +41,8 @@ class XmlReader(object):
             stack=dict()
             
         if globals==None:
-            #globals=dict()
             globals=self._globals
-            globals['path']=""
-            #globals['message_exchange_id']=self._message_exchange_id
+            globals['path']="" # xml path
 
         if element==None:
             """
@@ -102,6 +104,9 @@ class XmlReader(object):
         tmp=""
 
         for key, value in stack.items():
-            tmp=f"{tmp}.{key}"
+            if key in self._replace_node_name:
+                tmp=f"{tmp}.{self._replace_node_name[key]}"
+            else:
+                tmp=f"{tmp}.{key}"
 
         return f"{tmp}.{element.tag}"
