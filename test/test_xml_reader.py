@@ -211,13 +211,12 @@ class TestPluginExecution(unittest.TestCase):
             if globals['path']=="XXX.DELVRY01.IDOC.E1EDL20.E1EDL24.MATNR":
                 pass
 
-        message_exchange_id="DEFAULT_SAP_SHPCON"
-        import_path="/mnt/c/Temp/IDoc/out-save/"
+        #message_exchange_id="DEFAULT_SAP_SHPCON"
+        message_exchange_id="DEFAULT_SAP_DESADV"
+        import_path="/mnt/c/Temp/IDoc/in-save/"
         success_path="/mnt/c/Temp/IDoc/success/"
         error_path="/mnt/c/Temp/IDoc/error/"
 
-        globals={}
-        globals['message_exchange_id']=message_exchange_id
 
         #import_path="/home/dk9mbs/IDoc/out-save/"
         #success_path="/home/dk9mbs/IDoc/success/"
@@ -239,17 +238,26 @@ class TestPluginExecution(unittest.TestCase):
                 f.close()
 
                 try:
+                    globals={}
+                    globals['message_exchange_id']=message_exchange_id
+                    globals['file_name']=name
+
                     reader=XmlReader(_inner, context, exchange.process.value , globals, xml.encode('utf-8') )
+                    reader.replace_node_name("DELVRY01", "DELVRY")
+                    reader.replace_node_name("DELVRY03", "DELVRY")
+                    reader.replace_node_name("DELVRY05", "DELVRY")
                     reader.read()
-                    shutil.move(file_name, os.path.join(success_path, name))
+
+                    #shutil.move(file_name, os.path.join(success_path, name))
                 except:
-                    shutil.move(file_name, os.path.join(error_path, name))
+                    #shutil.move(file_name, os.path.join(error_path, name))
                     #f=open(f"{os.path.join(error_path, name)}.error", 'w')
                     #f.write(str(sys.exc_info()[0]))
                     #f.write(str(sys.exc_info()[1]))
                     #f.write(str(sys.exc_info()[2]))
                     #f.flush()
                     #f.close()
+                    pass
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
