@@ -213,7 +213,7 @@ class TestPluginExecution(unittest.TestCase):
 
         #message_exchange_id="DEFAULT_SAP_SHPCON"
         message_exchange_id="DEFAULT_SAP_DESADV"
-        import_path="/mnt/c/Temp/IDoc/in-save/"
+        import_path="/mnt/c/Temp/IDoc/out-save/"
         success_path="/mnt/c/Temp/IDoc/success/"
         error_path="/mnt/c/Temp/IDoc/error/"
 
@@ -237,20 +237,26 @@ class TestPluginExecution(unittest.TestCase):
                 xml=f.read()
                 f.close()
 
+
                 try:
-                    globals={}
-                    globals['message_exchange_id']=message_exchange_id
-                    globals['file_name']=name
+                    if exchange.test_text.value==None or exchange.test_text.value in xml:
+                        globals={}
+                        globals['message_exchange_id']=message_exchange_id
+                        globals['file_name']=name
 
-                    reader=XmlReader(_inner, context, exchange.process.value , globals, xml.encode('utf-8') )
-                    reader.replace_node_name("DELVRY01", "DELVRY")
-                    reader.replace_node_name("DELVRY03", "DELVRY")
-                    reader.replace_node_name("DELVRY05", "DELVRY")
-                    reader.read()
+                        reader=XmlReader(_inner, context, exchange.process.value , globals, xml.encode('utf-8') )
+                        reader.add_alias("DELVRY01", "DELVRY")
+                        reader.add_alias("DELVRY03", "DELVRY")
+                        reader.add_alias("DELVRY05", "DELVRY")
+                        reader.read()
 
-                    shutil.move(file_name, os.path.join(success_path, name))
+                        shutil.move(file_name, os.path.join(success_path, name))
+                    else:
+                        print(f"{name}: Test Text not valid!!!")
                 except:
                     shutil.move(file_name, os.path.join(error_path, name))
+
+                    print(sys.exc_info())
                     #f=open(f"{os.path.join(error_path, name)}.error", 'w')
                     #f.write(str(sys.exc_info()[0]))
                     #f.write(str(sys.exc_info()[1]))

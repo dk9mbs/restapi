@@ -28,7 +28,7 @@ class XmlReader(object):
     def __del__(self):
         pass
 
-    def replace_node_name(self, origin_name: str, replaced_name: str) -> None:
+    def add_alias(self, origin_name: str, replaced_name: str) -> None:
         self._replace_node_name[origin_name]= replaced_name
 
     """ 
