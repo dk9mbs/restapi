@@ -211,8 +211,8 @@ class TestPluginExecution(unittest.TestCase):
             if globals['path']=="XXX.DELVRY01.IDOC.E1EDL20.E1EDL24.MATNR":
                 pass
 
-        #message_exchange_id="DEFAULT_SAP_SHPCON"
-        message_exchange_id="DEFAULT_SAP_DESADV"
+        message_exchange_id="DEFAULT_SAP_SHPCON"
+        #message_exchange_id="DEFAULT_SAP_DESADV"
         import_path="/mnt/c/Temp/IDoc/out-save/"
         success_path="/mnt/c/Temp/IDoc/success/"
         error_path="/mnt/c/Temp/IDoc/error/"
@@ -250,11 +250,14 @@ class TestPluginExecution(unittest.TestCase):
                         reader.add_alias("DELVRY05", "DELVRY")
                         reader.read()
 
-                        shutil.move(file_name, os.path.join(success_path, name))
+                        #shutil.move(file_name, os.path.join(success_path, name))
                     else:
                         print(f"{name}: Test Text not valid!!!")
+                except KeyboardInterrupt as e:
+                    print("Canceld by Keyboard!")
+                    return
                 except:
-                    shutil.move(file_name, os.path.join(error_path, name))
+                    #shutil.move(file_name, os.path.join(error_path, name))
 
                     print(sys.exc_info())
                     #f=open(f"{os.path.join(error_path, name)}.error", 'w')
