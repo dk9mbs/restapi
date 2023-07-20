@@ -211,8 +211,8 @@ class TestPluginExecution(unittest.TestCase):
             if globals['path']=="XXX.DELVRY01.IDOC.E1EDL20.E1EDL24.MATNR":
                 pass
 
-        message_exchange_id="DEFAULT_SAP_SHPCON"
-        #message_exchange_id="DEFAULT_SAP_DESADV"
+        #message_exchange_id="DEFAULT_SAP_SHPCON"
+        message_exchange_id="DEFAULT_SAP_DESADV"
         import_path="/mnt/c/Temp/IDoc/out-save/"
         success_path="/mnt/c/Temp/IDoc/success/"
         error_path="/mnt/c/Temp/IDoc/error/"
