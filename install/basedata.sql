@@ -191,7 +191,7 @@ call api_proc_create_table_field_instance(23,800, 'response_on','Response um','i
 call api_proc_create_table_field_instance(23,900, 'response_msg','Response','int',18,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1000, 'config','Configuration','int',18,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1100, 'event_handler_id','Event','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(23,1200, 'run_async','ID','Asynchron',19,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,1200, 'run_async', 'Asynchron','int' ,19,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1300, 'retries','Wiederholungen','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1400, 'last_retry_on','Letzte Wiederholung um','int',9,'{"disabled": true}', @out_value);
 
