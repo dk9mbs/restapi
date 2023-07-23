@@ -378,12 +378,16 @@ CREATE TABLE IF NOT EXISTS api_portal(
     id varchar(50) NOT NULL,
     name varchar(100) NOT NULL,
     solution_id int NOT NULL,
-    PRIMARY KEY(id)
+    template text NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS name varchar(100);
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS solution_id int NOT NULL;
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS template text NULL;
+ALTER TABLE api_portal ADD FOREIGN KEY IF NOT EXISTS (solution_id) REFERENCES api_solution(id);
+
 
 CREATE TABLE IF NOT EXISTS api_portal_host(
     id int NOT NULL AUTO_INCREMENT,
