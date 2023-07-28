@@ -8,8 +8,8 @@ class Permission:
         SELECT * FROM api_user WHERE username=%s AND disabled=%s AND is_admin=%s
         """
 
-        if mode=="insert": mode="create"
-        if mode=="select": mode="read"
+        if mode.lower()=="insert": mode="create"
+        if mode.lower()=="select": mode="read"
 
         connection=context.get_connection()
         cursor=connection.cursor()
