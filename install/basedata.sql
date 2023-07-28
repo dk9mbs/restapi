@@ -191,7 +191,7 @@ call api_proc_create_table_field_instance(23,800, 'response_on','Response um','i
 call api_proc_create_table_field_instance(23,900, 'response_msg','Response','int',18,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1000, 'config','Configuration','int',18,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1100, 'event_handler_id','Event','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(23,1200, 'run_async','ID','Asynchron',19,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,1200, 'run_async', 'Asynchron','int' ,19,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1300, 'retries','Wiederholungen','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1400, 'last_retry_on','Letzte Wiederholung um','int',9,'{"disabled": true}', @out_value);
 
@@ -307,6 +307,14 @@ call api_proc_create_table_field_instance(12,500, 'id_field_name','ID Feld Name'
 call api_proc_create_table_field_instance(12,600, 'fetch_xml','FetchXML','string',101,'{"disabled": false,"mode":"ace/mode/xml"}', @out_value);
 call api_proc_create_table_field_instance(12,700, 'columns','Spalten','string',101,'{"disabled": false,"mode":"ace/mode/json"}', @out_value);
 call api_proc_create_table_field_instance(12,800, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+
+/* api_portal */
+call api_proc_create_table_field_instance(8,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,300, 'template','Template','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+UPDATE api_table_field SET referenced_table_name='api_solution', referenced_table_id=25, referenced_field_name='id', is_lookup=-1 WHERE id=@out_value;
+
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
