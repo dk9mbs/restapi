@@ -30,9 +30,9 @@ BEGIN
 
     ELSE
         call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
-        INSERT INTO api_table_field (pos, table_id,name,label,type_id,control_id,control_config)
+        INSERT INTO api_table_field (pos, table_id,name,field_name,label,type_id,control_id,control_config)
             VALUES
-            (pipos, pitable_id, piname, pilabel, pitype_id, picontrol_id, picontrol_config);
+            (pipos, pitable_id, piname,piname, pilabel, pitype_id, picontrol_id, picontrol_config);
         SELECT LAST_INSERT_ID() INTO poid;
     END IF;
 END//
