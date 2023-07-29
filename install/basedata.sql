@@ -156,6 +156,9 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (30,'Daten Formatierungen','api_data_formatter', 'api_data_formatter','id','int','name',-1);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (31,'API Keys','api_user_apikey', 'api_user_apikey','id','string','name',-1);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -315,6 +318,13 @@ call api_proc_create_table_field_instance(8,300, 'template','Template','string',
 call api_proc_create_table_field_instance(8,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
 UPDATE api_table_field SET referenced_table_name='api_solution', referenced_table_id=25, referenced_field_name='id', is_lookup=-1 WHERE id=@out_value;
 
+/* api_user_apikey */
+call api_proc_create_table_field_instance(31,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(31,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(31,300, 'user_id','Benutzer','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(31,400, 'disabled','Deaktiviert','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(31,500, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
@@ -324,6 +334,8 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (6,'api_http_endpoint','dummy','update','after',-1);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (7,'api_clear_log','$timer_every_ten_minutes','execute','after',0);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (8,'api_clear_session','$timer_every_hour','execute','after',0);
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (9,'api_user_set_apikey','api_user_apikey','insert','before');
+
 
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (0,'Pending');
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (5,'Worker');
@@ -409,6 +421,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1200,1,'Eventhandler','/ui/v1.0/data/view/api_event_handler/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1300,1,'Process Log (nur Fehler)','/ui/v1.0/data/view/api_process_log/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1400,1,'Process Log (alle)','/ui/v1.0/data/view/api_process_log/all',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1500,1,'API Keys','/ui/v1.0/data/view/api_user_apikey/default',1,1);
 
 
 
@@ -949,6 +962,14 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </orderby>
 </restapi>');
 
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+101,'LISTVIEW','default',31,'id',1,'<restapi type="select">
+    <table name="api_user_apikey" alias="u"/>
+    <filter type="or">
+        <condition field="name" alias="u" value="$$query$$" operator="$$operator$$"/>
+        <condition field="id" alias="u" value="$$query$$" operator="$$operator$$"/>
+    </filter>
+</restapi>', '{"__user_id@name": {},"name": {},"id": {}}');
 
 
 

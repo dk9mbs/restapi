@@ -221,6 +221,16 @@ CREATE TABLE IF NOT EXISTS api_user (
     UNIQUE KEY(username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS api_user_apikey (
+    id varchar(100) NOT NULL,
+    user_id int NOT NULL,
+    name varchar(50) NOT NULL,
+    disabled smallint NOT NULL DEFAULT '0',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(user_id) REFERENCES api_user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS api_group (
     id int NOT NULL AUTO_INCREMENT,
     groupname varchar(100) NOT NULL,
