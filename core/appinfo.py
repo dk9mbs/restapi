@@ -228,7 +228,7 @@ class AppInfo:
         SELECT u.* 
         FROM api_user u  
         INNER JOIN api_user_apikey a ON a.user_id=u.id
-        WHERE a.id='{apikey}';
+        WHERE a.id='{apikey}' AND a.disabled=0;
         """
         connection=cls.create_connection()
         cursor=connection.cursor()

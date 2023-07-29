@@ -512,6 +512,18 @@ CREATE TABLE IF NOT EXISTS api_ui_app_nav_item(
 
 ALTER TABLE api_ui_app_nav_item AUTO_INCREMENT=1000000;
 
+CREATE TABLE IF NOT EXISTS api_permission_log(
+    id int NOT NULL AUTO_INCREMENT,
+    log_type nvarchar(50) NOT NULL,
+    table_name varchar(250) NULL,
+    table_alias varchar(250) NULL,
+    username varchar(100) NOT NULL,
+    mode varchar(50) NOT NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 /*
 End APP
 */
