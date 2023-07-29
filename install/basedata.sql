@@ -267,6 +267,7 @@ call api_proc_create_table_field_instance(13,300, 'table_id','Tabellen ID','int'
 call api_proc_create_table_field_instance(13,400, 'label','Bezeichnung','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,500, 'name','Name','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,510, 'field_name','Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,520, 'is_primary_key','Primärschlüssel','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
@@ -324,6 +325,22 @@ call api_proc_create_table_field_instance(31,200, 'name','Name','string',1,'{"di
 call api_proc_create_table_field_instance(31,300, 'user_id','Benutzer','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(31,400, 'disabled','Deaktiviert','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(31,500, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
+/* api_group_permission */
+call api_proc_create_table_field_instance(5,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(5,200, 'group_id','Benutzer Gruppe','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,300, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,400, 'mode_read','Lesen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,500, 'mode_create','Erstellen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,600, 'mode_update','Ändern','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,700, 'mode_delete','Löschen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,800, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+
+/* api_group */
+call api_proc_create_table_field_instance(3,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(3,200, 'groupname','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(3,300, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(3,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
 
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
@@ -407,6 +424,8 @@ DELETE FROM api_ui_app_nav_item WHERE solution_id=1;
 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (100,1,'Benutzer','/ui/v1.0/data/view/api_user/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (105,1,'Sitzungen','/ui/v1.0/data/view/api_session/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (110,1,'Berechtigungen','/ui/v1.0/data/view/api_group_permission/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (101,1,'Benutzergruppen','/ui/v1.0/data/view/api_group/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (200,1,'Tabellen','/ui/v1.0/data/view/api_table/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (205,1,'Sichten','/ui/v1.0/data/view/api_table_view/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (210,1,'Daten Formatierungs Type','/ui/v1.0/data/view/api_data_formatter_type/default',1,1);
@@ -622,9 +641,9 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 14,'LISTVIEW','default',5,'id',1,'<restapi type="select">
     <table name="api_group_permission" alias="gp"/>
     <filter type="or">
-        <condition field="groupname" table_alias="g" value="$$query$$" operator=" like "/>
-        <condition field="alias" table_alias="t" value="$$query$$" operator=" like "/>
-        <condition field="table_name" table_alias="t" value="$$query$$" operator=" like "/>
+        <condition_X field="groupname" alias="g" value="$$query$$" operator=" like "/>
+        <condition field="alias" alias="t" value="$$query$$" operator=" like "/>
+        <condition field="table_name" alias="t" value="$$query$$" operator=" like "/>
     </filter>
     <joins>
         <join type="inner" table="api_group" alias="g" condition="gp.group_id=g.id"/>
@@ -633,11 +652,11 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     <select>
         <field name="id" table_alias="gp"/>
         <field name="alias" table_alias="t" alias="Tablename"/>
-        <field name="groupname" table_alias="g" alias="Groupname"/>
-        <field name="mode_read" table_alias="gp"/>
-        <field name="mode_create" table_alias="gp"/>
-        <field name="mode_update" table_alias="gp"/>
-        <field name="mode_delete" table_alias="gp"/>
+        <field name="groupname" table_alias="g" />
+        <field name="mode_read" table_alias="gp" formatter="boolean"/>
+        <field name="mode_create" table_alias="gp" formatter="boolean"/>
+        <field name="mode_update" table_alias="gp" formatter="boolean"/>
+        <field name="mode_delete" table_alias="gp" formatter="boolean"/>
     </select>
 </restapi>');
 
