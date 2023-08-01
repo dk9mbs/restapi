@@ -320,6 +320,15 @@ ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NU
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS config text NULL COMMENT 'locale event handler config' AFTER is_enabled;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS inline_code text NULL COMMENT 'inline python code to execute' AFTER config;
 
+DROP TABLE IF EXISTS api_table_action;
+CREATE TABLE IF NOT EXISTS api_table_action(
+    id int NOT NULL AUTO_INCREMENT,
+    table_id INT NOT NULL,
+    event_handler_id INT NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 CREATE TABLE IF NOT EXISTS api_process_log_status(
     id int NOT NULL,
