@@ -127,19 +127,18 @@ class DatabaseServices:
                 result[field].append(item[field])
 
         for field in fields:
-            if DatabaseServices.__is_numeric_list(result[field]):
-                DatabaseServices.__fill_empty_list_items(result[field])
+            if DatabaseServices._is_numeric_list(result[field]):
+                DatabaseServices._fill_empty_list_items(result[field])
 
 
         if reverse==True:
             for field in fields:
                 result[field].reverse()
 
-
         return result
 
     @staticmethod
-    def __is_numeric_list(list):
+    def _is_numeric_list(list):
         for item in list:
             if not str(item).isnumeric():
                 return False
@@ -147,7 +146,7 @@ class DatabaseServices:
         return True
 
     @staticmethod
-    def __fill_empty_list_items(list, default=0):
+    def _fill_empty_list_items(list, default=0):
         min=None;
         max=None;
         avg=0;
