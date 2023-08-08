@@ -2,6 +2,7 @@
 
 import sys
 import json
+import traceback
 from flask import Flask, g, session, make_response
 from flask import abort
 from flask import Blueprint
@@ -14,6 +15,9 @@ from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core.plugin import Plugin
 from core.appinfo import AppInfo
+from core import log
+
+logger=log.create_logger(__name__)
 
 def create_parser_post():
     parser=reqparse.RequestParser()
@@ -43,8 +47,12 @@ class Action(Resource):
             return response
 
         except NameError  as err:
+            logger.error(f"------- {err}")
+            traceback.print_exec()
             abort(400, f"{err}")
         except Exception as err:
+            logger.error(f"------- {err}")
+            traceback.print_exec()
             abort(500,f"{err}")
 
 
