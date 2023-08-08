@@ -114,7 +114,7 @@ def main():
     session={}
     session['mqtt']=Session(name="mqtt", init_timer=False)
 
-    create_logger(__name__).info(f"queue logged in as system with sessionid: {session['mqtt'].session_id}")
+    create_logger(__name__).info(f"msgservice logged in as system with sessionid: {session['mqtt'].session_id}")
 
     t=MqttWorker(session['mqtt'].session_id)
     t.start()
