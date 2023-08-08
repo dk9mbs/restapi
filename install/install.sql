@@ -326,8 +326,10 @@ CREATE TABLE IF NOT EXISTS api_table_action(
     table_id INT NOT NULL,
     event_handler_id INT NOT NULL,
     name VARCHAR(50) NOT NULL,
+    position int NOT NULL DEFAULT '100',
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE api_table_action AUTO_INCREMENT=900000000;
 
 
 CREATE TABLE IF NOT EXISTS api_process_log_status(

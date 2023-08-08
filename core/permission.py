@@ -37,8 +37,8 @@ class Permission:
         if permission==None:
             self._add_log(connection, 'ERROR', table, table, username, mode)
             return False
-        
-        self._add_log(connection, 'SUCCESS', table, table, username, mode)
+
+        #self._add_log(connection, 'SUCCESS', table, table, username, mode)
         return True
 
 
