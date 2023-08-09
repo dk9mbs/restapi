@@ -44,8 +44,8 @@ class MqttWorker():
         self._client=None
 
         self._topics=[]
-        self._topics.append({"topic": "owntracks/+/+","regex":"", "prefix":""})
-        self._topics.append({"topic": "owntracks/+/+/waypoints","regex":"", "prefix":""})
+        self._topics.append({"topic": "owntracks/+/+","regex":"^owntracks/.*/.*$", "prefix":""})
+        self._topics.append({"topic": "owntracks/+/+/waypoints","regex":"^owntracks/.*/.*/waypoints$", "prefix":""})
         self._topics.append({"topic": "+/rpc","regex":"^shelly.*/rpc$", "prefix":"iot_shelly/"})
 
     def kill(self):
@@ -64,7 +64,7 @@ class MqttWorker():
 
             for t in self._topics:
                 client.subscribe(t['topic'])
-                create_logger(__name__).info(f"Subscribing topic: {t['topic']}")
+                create_logger(__name__).info(f"Subscribing topic: {t['topic']} regex:{t['regex']}")
 
             create_logger(__name__).info("connected!")
 
