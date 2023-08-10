@@ -1,5 +1,6 @@
 import time
 import json
+import traceback
 import threading
 import re
 from datetime import datetime
@@ -69,25 +70,31 @@ class MqttWorker():
             create_logger(__name__).info("connected!")
 
         def on_message(client, userdata, msg):
-            context=AppInfo.create_context(self._session_id)
+            try:
+                context=AppInfo.create_context(self._session_id)
 
-            params="{\"data\":"+msg.payload.decode('utf-8')+", \"topic\":\""+msg.topic+"\"}"
-            topic=msg.topic
+                params="{\"data\":"+msg.payload.decode('utf-8')+", \"topic\":\""+msg.topic+"\"}"
+                params=json.loads(params) # owntrack anpassen
+                topic=msg.topic
 
-            for t in self._topics:
-                if t['regex']!="" and t['regex']!=None:
-                    if re.search(t['regex'], topic):
-                        create_logger(__name__).info(f"Match: {topic}")
-                        if t['prefix']!="":
-                            topic=f"{t['prefix']}{topic}"
+                for t in self._topics:
+                    if t['regex']!="" and t['regex']!=None:
+                        if re.search(t['regex'], topic):
+                            create_logger(__name__).info(f"Match: {topic}")
+                            if t['prefix']!="":
+                                topic=f"{t['prefix']}{topic}"
 
-            create_logger(__name__).info(f"{topic}")
-            create_logger(__name__).info(f"{params}")
+                create_logger(__name__).info(f"{topic}")
+                create_logger(__name__).info(f"{params}")
 
-            self._execute_plugin(context, topic.split("/")[0],params )
-            self._execute_plugin(context, topic, params )
+                self._execute_plugin(context, topic.split("/")[0],params )
+                self._execute_plugin(context, topic, params )
 
-            AppInfo.save_context(context)
+                AppInfo.save_context(context)
+            except Exception as e:
+                create_logger(__name__).error(e.__traceback__)
+                traceback.print_exc()
+            
 
         client = mqtt.Client()
         client.on_connect = on_connect
