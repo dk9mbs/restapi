@@ -156,6 +156,9 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (30,'Daten Formatierungen','api_data_formatter', 'api_data_formatter','id','int','name',-1);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (31,'API Keys','api_user_apikey', 'api_user_apikey','id','string','name',-1);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -191,7 +194,7 @@ call api_proc_create_table_field_instance(23,800, 'response_on','Response um','i
 call api_proc_create_table_field_instance(23,900, 'response_msg','Response','int',18,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1000, 'config','Configuration','int',18,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1100, 'event_handler_id','Event','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(23,1200, 'run_async','ID','Asynchron',19,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(23,1200, 'run_async', 'Asynchron','int' ,19,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1300, 'retries','Wiederholungen','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,1400, 'last_retry_on','Letzte Wiederholung um','int',9,'{"disabled": true}', @out_value);
 
@@ -264,6 +267,7 @@ call api_proc_create_table_field_instance(13,300, 'table_id','Tabellen ID','int'
 call api_proc_create_table_field_instance(13,400, 'label','Bezeichnung','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,500, 'name','Name','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,510, 'field_name','Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,520, 'is_primary_key','Primärschlüssel','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
@@ -308,6 +312,37 @@ call api_proc_create_table_field_instance(12,600, 'fetch_xml','FetchXML','string
 call api_proc_create_table_field_instance(12,700, 'columns','Spalten','string',101,'{"disabled": false,"mode":"ace/mode/json"}', @out_value);
 call api_proc_create_table_field_instance(12,800, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
 
+/* api_portal */
+call api_proc_create_table_field_instance(8,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,300, 'template','Template','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+UPDATE api_table_field SET referenced_table_name='api_solution', referenced_table_id=25, referenced_field_name='id', is_lookup=-1 WHERE id=@out_value;
+
+/* api_user_apikey */
+call api_proc_create_table_field_instance(31,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(31,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(31,300, 'user_id','Benutzer','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(31,400, 'disabled','Deaktiviert','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(31,500, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
+/* api_group_permission */
+call api_proc_create_table_field_instance(5,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(5,200, 'group_id','Benutzer Gruppe','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,300, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,400, 'mode_read','Lesen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,500, 'mode_create','Erstellen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,600, 'mode_update','Ändern','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,700, 'mode_delete','Löschen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(5,800, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+
+/* api_group */
+call api_proc_create_table_field_instance(3,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(3,200, 'groupname','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(3,300, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(3,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+
+
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (3,'plugin_test','dummy','update','before');
@@ -316,6 +351,8 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (6,'api_http_endpoint','dummy','update','after',-1);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (7,'api_clear_log','$timer_every_ten_minutes','execute','after',0);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (8,'api_clear_session','$timer_every_hour','execute','after',0);
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (9,'api_user_set_apikey','api_user_apikey','insert','before');
+
 
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (0,'Pending');
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (5,'Worker');
@@ -387,6 +424,8 @@ DELETE FROM api_ui_app_nav_item WHERE solution_id=1;
 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (100,1,'Benutzer','/ui/v1.0/data/view/api_user/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (105,1,'Sitzungen','/ui/v1.0/data/view/api_session/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (110,1,'Berechtigungen','/ui/v1.0/data/view/api_group_permission/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (101,1,'Benutzergruppen','/ui/v1.0/data/view/api_group/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (200,1,'Tabellen','/ui/v1.0/data/view/api_table/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (205,1,'Sichten','/ui/v1.0/data/view/api_table_view/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (210,1,'Daten Formatierungs Type','/ui/v1.0/data/view/api_data_formatter_type/default',1,1);
@@ -401,6 +440,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1200,1,'Eventhandler','/ui/v1.0/data/view/api_event_handler/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1300,1,'Process Log (nur Fehler)','/ui/v1.0/data/view/api_process_log/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1400,1,'Process Log (alle)','/ui/v1.0/data/view/api_process_log/all',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1500,1,'API Keys','/ui/v1.0/data/view/api_user_apikey/default',1,1);
 
 
 
@@ -601,9 +641,9 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 14,'LISTVIEW','default',5,'id',1,'<restapi type="select">
     <table name="api_group_permission" alias="gp"/>
     <filter type="or">
-        <condition field="groupname" table_alias="g" value="$$query$$" operator=" like "/>
-        <condition field="alias" table_alias="t" value="$$query$$" operator=" like "/>
-        <condition field="table_name" table_alias="t" value="$$query$$" operator=" like "/>
+        <condition_X field="groupname" alias="g" value="$$query$$" operator=" like "/>
+        <condition field="alias" alias="t" value="$$query$$" operator=" like "/>
+        <condition field="table_name" alias="t" value="$$query$$" operator=" like "/>
     </filter>
     <joins>
         <join type="inner" table="api_group" alias="g" condition="gp.group_id=g.id"/>
@@ -612,11 +652,11 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     <select>
         <field name="id" table_alias="gp"/>
         <field name="alias" table_alias="t" alias="Tablename"/>
-        <field name="groupname" table_alias="g" alias="Groupname"/>
-        <field name="mode_read" table_alias="gp"/>
-        <field name="mode_create" table_alias="gp"/>
-        <field name="mode_update" table_alias="gp"/>
-        <field name="mode_delete" table_alias="gp"/>
+        <field name="groupname" table_alias="g" />
+        <field name="mode_read" table_alias="gp" formatter="boolean"/>
+        <field name="mode_create" table_alias="gp" formatter="boolean"/>
+        <field name="mode_update" table_alias="gp" formatter="boolean"/>
+        <field name="mode_delete" table_alias="gp" formatter="boolean"/>
     </select>
 </restapi>');
 
@@ -941,6 +981,14 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </orderby>
 </restapi>');
 
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+101,'LISTVIEW','default',31,'id',1,'<restapi type="select">
+    <table name="api_user_apikey" alias="u"/>
+    <filter type="or">
+        <condition field="name" alias="u" value="$$query$$" operator="$$operator$$"/>
+        <condition field="id" alias="u" value="$$query$$" operator="$$operator$$"/>
+    </filter>
+</restapi>', '{"__user_id@name": {},"name": {},"id": {}}');
 
 
 
@@ -981,20 +1029,44 @@ template_footer='</tbody>
 </div>'
 WHERE id=1 AND provider_id='MANUFACTURER';
 
-/* orm */
+
+
+
+
+
+
+
 INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (2,'$orm_datamodel',10,2);
 
 UPDATE api_data_formatter SET
 name='$orm_datamodel',
 mime_type='text/text',
-line_separator='@n',
-template_header='from services.orm import *',
-template_line='{% set fields=metadata_table_fields(context, data[\'alias\'] ) %}
+template_header='from services.orm import *
+"""
+table_name...:Table alias from api_table
+table_alias..:Use this alias in the sql statements
+"""',
+template_line='
+"""
+Model for table {{ data[\'alias\'] }}
+"""
+{% set fields=metadata_table_fields(context, data[\'alias\'] ) -%}
 class {{ data[\'alias\'] }}(BaseModel):
-    {% for f in fields %}{{ f[\'name\'] }}={{ f[\'orm_classname\']}}()
+    {% for f in fields %}{% set pk=False -%}
+    {% if f[\'is_primary_key\'] == -1 -%}
+    {% set pk=True %}{% endif -%}
+    {{ f[\'name\'] }}={{ f[\'orm_classname\']}}(pk={{ pk }})
+    {% if not f[\'referenced_table_name\'] == None -%}
+    {{ f[\'name\'] }}_name={{ f[\'orm_classname\']}}()
+    {{ f[\'name\'] }}_url={{ f[\'orm_classname\']}}()
+    {% endif -%}
     {% endfor %}
     class Meta:
         table_name="{{ data[\'alias\'] }}"
         table_alias="{{ data[\'alias\'] }}"',
 template_footer=''
 WHERE id=2 AND provider_id='MANUFACTURER';
+
+
+
+

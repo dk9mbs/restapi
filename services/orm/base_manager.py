@@ -37,34 +37,34 @@ class BaseManager:
     """
     def select(self, fields: list=[]):
         self._sql_type="SELECT"
-        self.__set_table(self.model_class.Meta.table_name)
+        self._set_table(self.model_class.Meta.table_name)
         #self.__add_fields(self._main_table)
         return self
 
     def insert(self, data: dict):
         self._sql_type="INSERT"
-        self.__set_table(self.model_class.Meta.table_name)
+        self._set_table(self.model_class.Meta.table_name)
         self._data=data
 
         for key, value in self._data.items():
             self._data[key]="%s"
             self._query_vars.append(value)
 
-        rs=parser=self.__execute(0)
+        rs=self._execute(0)
         return rs
 
     def update(self,primary_key: Expression, data: list):
         print(f"**** PRIMARY KEY: {primary_key.expression}")
         self._sql_type="UPDATE"
-        self.__set_table(self.model_class.Meta.table_name)
+        self._set_table(self.model_class.Meta.table_name)
         self._data=data
         self.where(primary_key)
-        rs=parser=self.__execute(0)
+        rs=self._execute(0)
         return rs
 
     def delete(self):
         self._sql_type="DELETE"
-        self.__set_table(self.model_class.Meta.table_name)
+        self._set_table(self.model_class.Meta.table_name)
         return self
 
 
@@ -104,7 +104,7 @@ class BaseManager:
     Return Methods
     """
     def to_list(self):
-        rs=parser=self.__execute(0)
+        rs=parser=self._execute(0)
 
         model_list=[]
         for item in rs.get_result():
@@ -113,24 +113,24 @@ class BaseManager:
         return model_list
 
     def to_entity(self):
-        rs=parser=self.__execute(1)
+        rs=self._execute(1)
         if rs.get_eof():
             return None
         else:
             return self.model_class(**rs.get_result())
 
     def to_recordset(self):
-        rs=parser=self.__execute(0)
+        rs=self._execute(0)
         return rs
 
     def execute(self):
-        rs=parser=self.__execute(0)
+        rs=self._execute(0)
         return None
 
     """
     private methods
     """
-    def __execute(self, fetch_mode: int) -> BaseParser:
+    def _execute(self, fetch_mode: int) -> BaseParser:
         info={"where": self._where,
         "fields":self._fields,
         "main_table":self._main_table,
@@ -146,7 +146,7 @@ class BaseManager:
     def __add_default_join(self):
         pass
 
-    def __set_table(self, table, alias=None):
+    def _set_table(self, table, alias=None):
         self._main_table=self.model_class.Meta.table_name
         self._main_table_alias=self.model_class.Meta.table_name
 

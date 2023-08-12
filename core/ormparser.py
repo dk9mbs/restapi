@@ -21,18 +21,16 @@ class OrmParser(BaseParser):
         self._query_vars=sql['query_vars']
         self._sql_type=sql['sql_type']
         self._context=context
-
+        
         self.__add_fields(self._main_table)
-        #print(f"COMMAND: {self.__get_sql()}")
-        #print(f"SELECT:  {self.__get_sql('Select')}")
 
     def get_select(self):
-        return (self.__get_sql("SELECT"), self._query_vars)
+        return (self._get_sql("SELECT"), self._query_vars)
 
     def get_sql(self, ignore_paging=True):
-        return (self.__get_sql(), self._query_vars)
+        return (self._get_sql(), self._query_vars)
 
-    def __get_sql(self, sql_type: str=None, ignore_paging: bool=True) -> str:
+    def _get_sql(self, sql_type: str=None, ignore_paging: bool=True) -> str:
         if sql_type==None:
             sql_type=self._sql_type
 
@@ -45,11 +43,16 @@ class OrmParser(BaseParser):
         elif sql_type.upper()=='INSERT':
             sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES ({','.join(self._data.values())})"
         elif sql_type.upper()=='UPDATE':
-            sql=f"UPDATE {self._main_table} set {','.join(f'{key}={value}' for key, value in self._data.items())} WHERE {self._where}"
+            #sql=f"UPDATE {self._main_table} set {','.join(f'{key}={value}' for key, value in self._data.items())} WHERE {self._where}"
+
+            sql=f"UPDATE {self._main_table} set "
+            sql=sql+",".join(f"{key}='{value}'" for key, value in self._data.items())
+            sql=f"{sql} WHERE {self._where}"
+            
             #print (f"Aus dem Parser: {sql}")
         elif sql_type.upper()=='DELETE':
             sql=f"DELETE FROM {self._main_table} WHERE {self._where}"
-        
+
         return sql
 
 

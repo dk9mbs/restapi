@@ -7,6 +7,8 @@ plugins/*
 !plugins/api_clear_log.py
 !plugins/api_clear_session.py
 !plugins/api_exec_inline_code.py
+!plugins/api_xml_generic_import.py
+!plugins/api_user_set_apikey.py
 3thparty
 wwwroot/*
 !wwwroot/index.htm
@@ -16,5 +18,5 @@ init.d/*
 !init.d/001_main.sh
 shared/*
 !shared/__init__.py
-
+model/*
 

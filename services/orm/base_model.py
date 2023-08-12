@@ -37,7 +37,7 @@ class BaseModel(metaclass=MetaModel):
         for field_name, value in row_data.items():
             f=getattr(self, field_name)
             f.value=value
-            #setattr(self, field_name, f)
+            f.dirty=False
 
     def __repr__(self):
         attrs_format = ", ".join([f'{field}={value}' for field, value in self.__dict__.items()])
@@ -66,6 +66,8 @@ class BaseModel(metaclass=MetaModel):
             if isinstance(value, Field) and value.dirty:
                 data[key]=value.value
 
+            # for where clause use not the dirty flag
+            if isinstance(value, Field):
                 if value.primary_key:
                     expression=expression & WhereExpression(f"{value.table_alias}.{value.name}", "=", value.value)
                     key_count+=1

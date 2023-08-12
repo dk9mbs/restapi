@@ -48,6 +48,10 @@ class Field:
     def dirty(self):
         return self._dirty
 
+    @dirty.setter
+    def dirty(self, value: bool) -> None:
+        self._dirty=value
+
     @property
     def format(self):
         return self._format

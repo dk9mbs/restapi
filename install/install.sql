@@ -30,9 +30,9 @@ BEGIN
 
     ELSE
         call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
-        INSERT INTO api_table_field (pos, table_id,name,label,type_id,control_id,control_config)
+        INSERT INTO api_table_field (pos, table_id,name,field_name,label,type_id,control_id,control_config)
             VALUES
-            (pipos, pitable_id, piname, pilabel, pitype_id, picontrol_id, picontrol_config);
+            (pipos, pitable_id, piname,piname, pilabel, pitype_id, picontrol_id, picontrol_config);
         SELECT LAST_INSERT_ID() INTO poid;
     END IF;
 END//
@@ -221,6 +221,16 @@ CREATE TABLE IF NOT EXISTS api_user (
     UNIQUE KEY(username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS api_user_apikey (
+    id varchar(100) NOT NULL,
+    user_id int NOT NULL,
+    name varchar(50) NOT NULL,
+    disabled smallint NOT NULL DEFAULT '0',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(user_id) REFERENCES api_user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS api_group (
     id int NOT NULL AUTO_INCREMENT,
     groupname varchar(100) NOT NULL,
@@ -230,6 +240,8 @@ CREATE TABLE IF NOT EXISTS api_group (
     PRIMARY KEY(id),
     UNIQUE KEY(groupname)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_group AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_user_group (
     id int NOT NULL AUTO_INCREMENT,
@@ -308,6 +320,17 @@ ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NU
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS config text NULL COMMENT 'locale event handler config' AFTER is_enabled;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS inline_code text NULL COMMENT 'inline python code to execute' AFTER config;
 
+DROP TABLE IF EXISTS api_table_action;
+CREATE TABLE IF NOT EXISTS api_table_action(
+    id int NOT NULL AUTO_INCREMENT,
+    table_id INT NOT NULL,
+    event_handler_id INT NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    position int NOT NULL DEFAULT '100',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE api_table_action AUTO_INCREMENT=900000000;
+
 
 CREATE TABLE IF NOT EXISTS api_process_log_status(
     id int NOT NULL,
@@ -378,12 +401,16 @@ CREATE TABLE IF NOT EXISTS api_portal(
     id varchar(50) NOT NULL,
     name varchar(100) NOT NULL,
     solution_id int NOT NULL,
-    PRIMARY KEY(id)
+    template text NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS name varchar(100);
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS solution_id int NOT NULL;
 ALTER TABLE api_portal ADD COLUMN IF NOT EXISTS template text NULL;
+ALTER TABLE api_portal ADD FOREIGN KEY IF NOT EXISTS (solution_id) REFERENCES api_solution(id);
+
 
 CREATE TABLE IF NOT EXISTS api_portal_host(
     id int NOT NULL AUTO_INCREMENT,
@@ -495,6 +522,18 @@ CREATE TABLE IF NOT EXISTS api_ui_app_nav_item(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_ui_app_nav_item AUTO_INCREMENT=1000000;
+
+CREATE TABLE IF NOT EXISTS api_permission_log(
+    id int NOT NULL AUTO_INCREMENT,
+    log_type nvarchar(50) NOT NULL,
+    table_name varchar(250) NULL,
+    table_alias varchar(250) NULL,
+    username varchar(100) NOT NULL,
+    mode varchar(50) NOT NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 /*
 End APP

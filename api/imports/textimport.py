@@ -53,8 +53,8 @@ class TextImport(Resource):
                 f.save(file_full_name)
 
                 plugin=Plugin(context, f"textfileimport2_{format}", "post")
-                plugin.execute("before", {"data": {"file_full_name": file_full_name}})
-                plugin.execute("after", {"data": {"file_full_name": file_full_name}})
+                plugin.execute("before", {"data": {"file_full_name": file_full_name, "format": format}})
+                plugin.execute("after", {"data": {"file_full_name": file_full_name, "format": format}})
 
                 #deprecated!!!
                 content=get_file_content(file_full_name)

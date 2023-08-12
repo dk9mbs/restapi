@@ -72,10 +72,10 @@ def before_request():
                 #abort(400, f"Session_id found in session context: error raised: {err}")
 
         if not login:
-            #do not set session['session_id'] because the
-            #guest session will be automaticly deactivated.
+            auto_logoff=False
             username=""
             password=""
+
             if 'restapi_username' in request.headers:
                 username=request.headers['restapi-username']
                 password=request.headers['restapi-password']
@@ -85,7 +85,14 @@ def before_request():
             elif 'username' in request.args:
                 username=request.args['username']
                 password=request.args['password']
+            elif 'apikey' in request.args:
+                user=AppInfo.user_credentials_by_apikey( request.args['apikey'])
+                username=user['username']
+                password=user['password']
             else:
+                #do not set session['session_id'] because the
+                #guest session will be automaticly deactivated.
+                auto_logoff=True
                 guest=AppInfo.guest_credentials()
                 username=guest['username']
                 password=guest['password']
@@ -95,7 +102,12 @@ def before_request():
                 print(f"try to login with username: {username}")
                 abort(400,'Wrong username or password')
 
-            g.context=AppInfo.create_context(session_id, auto_logoff=True)
+            if not auto_logoff:
+                logger.info(f"save session_id {session_id}")
+                session['session_id']=session_id
+
+            #g.context=AppInfo.create_context(session_id, auto_logoff=True)
+            g.context=AppInfo.create_context(session_id, auto_logoff=auto_logoff)
 
         for arg in request.args:
             g.context.set_arg(arg, request.args[arg])

@@ -1,6 +1,8 @@
 import time
 import json
+import traceback
 import threading
+import re
 from datetime import datetime
 
 from core.appinfo import AppInfo
@@ -42,6 +44,11 @@ class MqttWorker():
         self._session_id=session_id
         self._client=None
 
+        self._topics=[]
+        self._topics.append({"topic": "owntracks/+/+","regex":"^owntracks/.*/.*$", "prefix":""})
+        self._topics.append({"topic": "owntracks/+/+/waypoints","regex":"^owntracks/.*/.*/waypoints$", "prefix":""})
+        self._topics.append({"topic": "+/rpc","regex":"^shelly.*/rpc$", "prefix":"iot_shelly/"})
+
     def kill(self):
         self._run=False
         self._client.loop_stop()
@@ -50,24 +57,44 @@ class MqttWorker():
         plugin=Plugin(context, publisher, 'mqtt_message')
         plugin.execute('after', params)
 
-
     def start(self):
         import paho.mqtt.client as mqtt
 
         def on_connect(client, userdata, flags, rc):
             create_logger(__name__).info(f"MQTT Connect with result code:{str(rc)}")
-            client.subscribe("owntracks/+/+")
-            client.subscribe("owntracks/+/+/waypoints")
+
+            for t in self._topics:
+                client.subscribe(t['topic'])
+                create_logger(__name__).info(f"Subscribing topic: {t['topic']} regex:{t['regex']}")
+
+            create_logger(__name__).info("connected!")
 
         def on_message(client, userdata, msg):
-            context=AppInfo.create_context(self._session_id)
+            try:
+                context=AppInfo.create_context(self._session_id)
 
-            params="{\"data\":"+msg.payload.decode('utf-8')+", \"topic\":\""+msg.topic+"\"}"
+                params="{\"data\":"+msg.payload.decode('utf-8')+", \"topic\":\""+msg.topic+"\"}"
+                params=json.loads(params) # owntrack anpassen
+                topic=msg.topic
 
-            self._execute_plugin(context, msg.topic.split("/")[0],params )
-            self._execute_plugin(context, msg.topic, params )
+                for t in self._topics:
+                    if t['regex']!="" and t['regex']!=None:
+                        if re.search(t['regex'], topic):
+                            create_logger(__name__).info(f"Match: {topic}")
+                            if t['prefix']!="":
+                                topic=f"{t['prefix']}{topic}"
 
-            AppInfo.save_context(context)
+                create_logger(__name__).info(f"{topic}")
+                create_logger(__name__).info(f"{params}")
+
+                self._execute_plugin(context, topic.split("/")[0],params )
+                self._execute_plugin(context, topic, params )
+
+                AppInfo.save_context(context)
+            except Exception as e:
+                create_logger(__name__).error(e.__traceback__)
+                traceback.print_exc()
+            
 
         client = mqtt.Client()
         client.on_connect = on_connect
@@ -94,7 +121,7 @@ def main():
     session={}
     session['mqtt']=Session(name="mqtt", init_timer=False)
 
-    create_logger(__name__).info(f"queue logged in as system with sessionid: {session['mqtt'].session_id}")
+    create_logger(__name__).info(f"msgservice logged in as system with sessionid: {session['mqtt'].session_id}")
 
     t=MqttWorker(session['mqtt'].session_id)
     t.start()

@@ -8,8 +8,8 @@ class Permission:
         SELECT * FROM api_user WHERE username=%s AND disabled=%s AND is_admin=%s
         """
 
-        if mode=="insert": mode="create"
-        if mode=="select": mode="read"
+        if mode.lower()=="insert": mode="create"
+        if mode.lower()=="select": mode="read"
 
         connection=context.get_connection()
         cursor=connection.cursor()
@@ -25,16 +25,27 @@ class Permission:
             INNER JOIN api_user_group ug ON ug.user_id=u.id
             INNER JOIN api_group_permission p ON p.group_id=ug.group_id
             INNER JOIN api_table t ON t.id=p.table_id
-            WHERE t.table_name=%s AND u.username=%s AND mode_{mode}=%s
+            WHERE (t.table_name=%s OR t.alias=%s) AND u.username=%s AND mode_{mode}=%s
         """
 
         cursor=connection.cursor()
-        cursor.execute(sql, [table, username, -1])
+        cursor.execute(sql, [table, table, username, -1])
         permission=cursor.fetchone()
         cursor.fetchall()
 
 
         if permission==None:
+            self._add_log(connection, 'ERROR', table, table, username, mode)
             return False
 
+        #self._add_log(connection, 'SUCCESS', table, table, username, mode)
         return True
+
+
+    def _add_log(self,connection, log_type, table_name, table_alias, username, mode):
+        sql=f"""INSERT INTO api_permission_log (log_type, table_name,table_alias, username, mode) 
+        VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor=connection.cursor()
+        cursor.execute(sql, [log_type, table_name, table_alias, username, mode])
+        cursor.fetchall()

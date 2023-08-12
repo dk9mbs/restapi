@@ -196,18 +196,21 @@ class AppInfo:
     """
     @classmethod
     def guest_credentials(cls):
-        return cls.__get_user_credentials('guest')
+        return cls._get_user_credentials('guest')
 
     """
     Return the system credentials
     """
     @classmethod
     def system_credentials(cls):
-        return cls.__get_user_credentials('system')
-
+        return cls._get_user_credentials('system')
 
     @classmethod
-    def __get_user_credentials(cls, username):
+    def user_credentials_by_apikey(cls, apikey):
+        return cls._get_user_credentials_by_apikey(apikey)
+
+    @classmethod
+    def _get_user_credentials(cls, username):
         sql=f"""
         SELECT * FROM api_user WHERE username='{username}';
         """
@@ -218,6 +221,23 @@ class AppInfo:
         cursor.fetchall()
         connection.close()
         return user
+
+    @classmethod
+    def _get_user_credentials_by_apikey(cls, apikey):
+        sql=f"""
+        SELECT u.* 
+        FROM api_user u  
+        INNER JOIN api_user_apikey a ON a.user_id=u.id
+        WHERE a.id='{apikey}' AND a.disabled=0;
+        """
+        connection=cls.create_connection()
+        cursor=connection.cursor()
+        cursor.execute(sql)
+        user=cursor.fetchone()
+        cursor.fetchall()
+        connection.close()
+        return user
+
 
     """
     Log useron and create a valid session id

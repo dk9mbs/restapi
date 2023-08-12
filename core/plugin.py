@@ -9,6 +9,8 @@ from core import log
 from core.appinfo import AppInfo
 from core.database import Recordset
 
+from core.jsontools import json_serial
+
 logger=log.create_logger(__name__)
 
 class SyncWrapper(object):
@@ -65,6 +67,10 @@ class AsyncWrapper(threading.Thread):
             logger.exception(f"Exception: {err}")
             self._plugin_context['response']['error_text']=str(err)
             status_id=20
+
+            # copy from sync event on 18.06.2023
+            if self._config.get_value('raise_exception', False)==True:
+                raise err
 
         ProcessTools.set_process_status(self._context,self._plugin_context,status_id)
 
@@ -177,7 +183,7 @@ class ProcessTools(object):
         ON DUPLICATE KEY UPDATE status_id=status_id, retries=retries+1;
         """
         cursor.execute(sql,[plugin_context['process_id'],
-                    json.dumps(params), plugin_context['event_handler_id'],
+                    json.dumps(params, default=json_serial), plugin_context['event_handler_id'],
                     plugin_context['run_async'], str(plugin_context['config'])
                 ])
         connection.commit()
