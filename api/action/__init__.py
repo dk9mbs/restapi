@@ -48,11 +48,11 @@ class Action(Resource):
 
         except NameError  as err:
             logger.error(f"------- {err}")
-            traceback.print_exec()
+            traceback.print_exc()
             abort(400, f"{err}")
         except Exception as err:
             logger.error(f"------- {err}")
-            traceback.print_exec()
+            traceback.print_exc()
             abort(500,f"{err}")
 
 
