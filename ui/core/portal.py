@@ -23,6 +23,7 @@ from core.jsontools import json_serial
 from core import log
 from core.exceptions import RestApiNotAllowed, ConfigNotValid
 from core.setting import Setting
+from core.plugin import Plugin
 
 logger=log.create_logger(__name__)
 
@@ -76,15 +77,35 @@ class Portal(Resource):
                         "content_name": content_name,
                         "content_id": content['id'] }
 
+
+
+                #
+                #event handling
+                #
+                event_params={"params": params}
+                handler=Plugin(context, f"{content['name']}" ,"render_portal_content")
+                handler.execute('before', event_params)
+                #
+                #
+                #
                 template=JinjaTemplate.create_string_template(context, content['content'].encode('utf-8').decode('utf-8'))
                 content_str=template.render(params)
                 #
                 # Render the complete page
                 #
                 params['content']=content_str
-                #template=JinjaTemplate.create_file_template(context, path)
+
+                #
+                # Build the template
+                #     
                 template=JinjaTemplate.create_string_template(context, rs.get_result()['template'])
                 page_str=template.render(params)
+                #
+                # Fire the after event
+                #
+                event_params['content_str']=page_str
+                handler.execute('after', event_params)
+                page_str=event_params['content_str']
 
                 response = make_response(page_str)
                 response.headers['content-type'] = 'text/html'
@@ -107,7 +128,7 @@ class Portal(Resource):
             logger.exception(f"RestApiNotAllowed Exception: {err}")
             return redirect(f"/ui/login?redirect=/{path}", code=302)
         except Exception as err:
-            logger.exception(f"Exception: {err}")
+            logger.exception(f"XXXXXXXXXXException: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
 
     def __get_portal(self, context, host):

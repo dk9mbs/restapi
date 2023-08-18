@@ -3,6 +3,7 @@ import base64
 from datetime import date, datetime, time, timedelta
 import xml.etree.ElementTree as ET
 import uuid
+from core.context import Context
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -25,6 +26,8 @@ def json_serial(obj):
     if isinstance(obj, ET.Element):
         return ET.tostring(obj, encoding='unicode')
     if isinstance(obj, uuid.UUID):
+        return str(obj)
+    if isinstance(obj, Context):
         return str(obj)
     raise TypeError ("Type %s not serializable" % type(obj))
 
