@@ -37,10 +37,10 @@ class BaseModel(metaclass=MetaModel):
         for field_name, value in row_data.items():
             f=getattr(self, field_name)
             f.value=value
-            f.dirty=False
+            #f.dirty=False
 
     def __repr__(self):
-        attrs_format = ", ".join([f'{field}={value}' for field, value in self.__dict__.items()])
+        attrs_format = ", ".join([f'{field}={value}' for field, value in self.__class__.__dict__.items()])
         return f"<{self.__class__.__name__}: ({attrs_format})>"
 
     @classmethod

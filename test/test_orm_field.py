@@ -146,6 +146,9 @@ class TestPluginExecution(unittest.TestCase):
         Create a dummy with id=999
         """
         item=Dummy(id=999, Port=3307, name='test')
+        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||||<")
+        print(item)
+        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||||<")
         item.insert(context)
         self.assertEqual(item.Port, 3307)
         self.assertEqual(item.name, "test")
@@ -191,6 +194,14 @@ class TestPluginExecution(unittest.TestCase):
 
         o=Dummy.id.desc() & Dummy.Port.asc()
         self.assertEqual(o.expression, "dummy.id DESC,dummy.Port ASC")
+
+
+    #def test_to_list(self):
+    #    from shared.model import iot_device_routing
+    #    print("#################################################")
+    #    routing=iot_device_routing.objects(self.context).select().to_list()
+    #    print(routing)
+
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
