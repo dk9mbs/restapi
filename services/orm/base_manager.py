@@ -54,7 +54,7 @@ class BaseManager:
         return rs
 
     def update(self,primary_key: Expression, data: list):
-        print(f"**** PRIMARY KEY: {primary_key.expression}")
+        #print(f"**** PRIMARY KEY: {primary_key.expression}")
         self._sql_type="UPDATE"
         self._set_table(self.model_class.Meta.table_name)
         self._data=data
@@ -119,7 +119,9 @@ class BaseManager:
             return None
         else:
             #return self.model_class(**rs.get_result())
-            return self.model_class(rs.get_result())
+            result=self.model_class(rs.get_result())
+            print(f"*RESULT* {result}")
+            return result
 
     def to_recordset(self):
         rs=self._execute(0)

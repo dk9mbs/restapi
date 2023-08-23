@@ -198,25 +198,9 @@ class TestPluginExecution(unittest.TestCase):
         item1=dummy.objects(self.context).select().where(dummy.id==999).to_entity()
         item2=dummy.objects(self.context).select().where(dummy.id==998).to_entity()
 
-        print("##############################################")
-        print(item1.id.value)
-        print(item2.id.value)
-        print("##############################################")
-        pass
+        self.assertEqual(item1.id.value, 999)
+        self.assertEqual(item2.id.value, 998)
 
-    #def test_to_list(self):
-    #    from shared.model import iot_device_routing
-    #    print("#################################################")
-    #    routing=iot_device_routing.objects(self.context).select().to_list()
-
-        #for t in routing:
-        #    print(t)
-        #print(routing)
-
-    #def test_to_entity(self):
-    #    from shared.model import iot_device_routing
-    #    routing=iot_device_routing.objects(self.context).select().to_list()
-    #    print(routing)
 
 
     def tearDown(self):

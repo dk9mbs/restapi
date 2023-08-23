@@ -25,23 +25,27 @@ class MetaModel(type):
 class BaseModel(metaclass=MetaModel):
     #def __init__(self, **row_data):
     def __init__(self, row_data: dict={}) -> None:
+        import copy
         """
         Reset alle Field attributes
         """
         for key, value in self.__class__.__dict__.items():
             if isinstance(value, Field):
-                object.__getattribute__(self, key).clear()
+                #copy the attributes in the object. Without copy the self.__dict__ is empty!
+                #With copy you use the object attributes - not the class attributes!
+                fld=copy.deepcopy(value)
+                object.__setattr__(self, key, fld)
 
         """
         Import the values from the method argument
         """
         for field_name, value in row_data.items():
-            f=getattr(self, field_name)
+            f=object.__getattribute__(self, field_name)
             f.value=value
             #f.dirty=False
 
     def __repr__(self):
-        attrs_format = ", ".join([f'{field}={value}' for field, value in self.__class__.__dict__.items()])
+        attrs_format = ", ".join([f'{field}={value}' for field, value in self.__dict__.items()])
         return f"<{self.__class__.__name__}: ({attrs_format})>"
 
     @classmethod
@@ -50,7 +54,7 @@ class BaseModel(metaclass=MetaModel):
 
     def insert(self, context: Context()) -> bool:
         data=dict()
-        for key, value in self.__class__.__dict__.items():
+        for key, value in self.__dict__.items():
             if isinstance(value, Field) and value.dirty:
                 data[key]=value.value
 
@@ -63,7 +67,7 @@ class BaseModel(metaclass=MetaModel):
         expression=WhereExpression()
         key_count=0
 
-        for key, value in self.__class__.__dict__.items():
+        for key, value in self.__dict__.items():
             if isinstance(value, Field) and value.dirty:
                 data[key]=value.value
 
