@@ -145,10 +145,7 @@ class TestPluginExecution(unittest.TestCase):
         """
         Create a dummy with id=999
         """
-        item=Dummy(id=999, Port=3307, name='test')
-        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||||<")
-        print(item)
-        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||||<")
+        item=Dummy({"id":999, "Port":3307,"name":"test"})
         item.insert(context)
         self.assertEqual(item.Port, 3307)
         self.assertEqual(item.name, "test")
@@ -163,7 +160,7 @@ class TestPluginExecution(unittest.TestCase):
         """
         update the item
         """
-        Dummy(id=999, Port=1234).update(context)
+        Dummy({"id":999, "Port": 1234}).update(context)
 
         item=Dummy.objects(context).select().where(Dummy.id==999).to_entity()
         self.assertEqual(item.Port, 1234)
@@ -173,7 +170,7 @@ class TestPluginExecution(unittest.TestCase):
         insert 998 into dummy table
         """
         Dummy.objects(context).delete().where(Dummy.id==998).execute()
-        item2=Dummy(id=998, name="hallo", Port=0)
+        item2=Dummy({"id":998, "name":"hallo", "Port":0})
         item2.insert(context)
 
 
@@ -196,9 +193,28 @@ class TestPluginExecution(unittest.TestCase):
         self.assertEqual(o.expression, "dummy.id DESC,dummy.Port ASC")
 
 
+    def test_two_entities(self):
+        from shared.model import dummy
+        item1=dummy.objects(self.context).select().where(dummy.id==999).to_entity()
+        item2=dummy.objects(self.context).select().where(dummy.id==998).to_entity()
+
+        print("##############################################")
+        print(item1.id.value)
+        print(item2.id.value)
+        print("##############################################")
+        pass
+
     #def test_to_list(self):
     #    from shared.model import iot_device_routing
     #    print("#################################################")
+    #    routing=iot_device_routing.objects(self.context).select().to_list()
+
+        #for t in routing:
+        #    print(t)
+        #print(routing)
+
+    #def test_to_entity(self):
+    #    from shared.model import iot_device_routing
     #    routing=iot_device_routing.objects(self.context).select().to_list()
     #    print(routing)
 

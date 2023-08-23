@@ -23,7 +23,8 @@ class MetaModel(type):
         return cls._get_manager(context)
 
 class BaseModel(metaclass=MetaModel):
-    def __init__(self, **row_data):
+    #def __init__(self, **row_data):
+    def __init__(self, row_data: dict={}) -> None:
         """
         Reset alle Field attributes
         """
