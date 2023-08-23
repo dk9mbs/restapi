@@ -145,7 +145,7 @@ class TestPluginExecution(unittest.TestCase):
         """
         Create a dummy with id=999
         """
-        item=Dummy(id=999, Port=3307, name='test')
+        item=Dummy({"id":999, "Port":3307,"name":"test"})
         item.insert(context)
         self.assertEqual(item.Port, 3307)
         self.assertEqual(item.name, "test")
@@ -160,7 +160,7 @@ class TestPluginExecution(unittest.TestCase):
         """
         update the item
         """
-        Dummy(id=999, Port=1234).update(context)
+        Dummy({"id":999, "Port": 1234}).update(context)
 
         item=Dummy.objects(context).select().where(Dummy.id==999).to_entity()
         self.assertEqual(item.Port, 1234)
@@ -170,7 +170,7 @@ class TestPluginExecution(unittest.TestCase):
         insert 998 into dummy table
         """
         Dummy.objects(context).delete().where(Dummy.id==998).execute()
-        item2=Dummy(id=998, name="hallo", Port=0)
+        item2=Dummy({"id":998, "name":"hallo", "Port":0})
         item2.insert(context)
 
 
@@ -191,6 +191,17 @@ class TestPluginExecution(unittest.TestCase):
 
         o=Dummy.id.desc() & Dummy.Port.asc()
         self.assertEqual(o.expression, "dummy.id DESC,dummy.Port ASC")
+
+
+    def test_two_entities(self):
+        from shared.model import dummy
+        item1=dummy.objects(self.context).select().where(dummy.id==999).to_entity()
+        item2=dummy.objects(self.context).select().where(dummy.id==998).to_entity()
+
+        self.assertEqual(item1.id.value, 999)
+        self.assertEqual(item2.id.value, 998)
+
+
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

@@ -136,6 +136,7 @@ class Plugin:
         self._plugins=plugins
 
     def execute(self, type, params):
+        logger.info(f"Execute plugin: {self._publisher} {self._trigger} {type}")
         for p in self._plugins:
 
             if p['type']==type:

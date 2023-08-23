@@ -112,3 +112,5 @@ class Context:
                 self.__connection.commit()
             self.__connection.close()
 
+    def __str__(self):
+        return self.__session_id
