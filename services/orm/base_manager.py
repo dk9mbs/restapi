@@ -120,7 +120,6 @@ class BaseManager:
         else:
             #return self.model_class(**rs.get_result())
             result=self.model_class(rs.get_result())
-            print(f"*RESULT* {result}")
             return result
 
     def to_recordset(self):
