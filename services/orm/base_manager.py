@@ -108,8 +108,8 @@ class BaseManager:
 
         model_list=[]
         for item in rs.get_result():
-            #model_list.append(self.model_class(**item))
-            model_list.append(self.model_class(item))
+            model_list.append(self.model_class(**item))
+            #model_list.append(self.model_class(item))
 
         return model_list
 
@@ -118,8 +118,8 @@ class BaseManager:
         if rs.get_eof():
             return None
         else:
-            #return self.model_class(**rs.get_result())
-            result=self.model_class(rs.get_result())
+            return self.model_class(**rs.get_result())
+            #result=self.model_class(rs.get_result())
             return result
 
     def to_recordset(self):

@@ -23,8 +23,8 @@ class MetaModel(type):
         return cls._get_manager(context)
 
 class BaseModel(metaclass=MetaModel):
-    #def __init__(self, **row_data):
-    def __init__(self, row_data: dict={}) -> None:
+    def __init__(self, **row_data):
+    #def __init__(self, row_data: dict={}) -> None:
         import copy
         """
         Reset alle Field attributes
@@ -34,6 +34,7 @@ class BaseModel(metaclass=MetaModel):
                 #copy the attributes in the object. Without copy the self.__dict__ is empty!
                 #With copy you use the object attributes - not the class attributes!
                 fld=copy.deepcopy(value)
+                fld.dirty=False
                 object.__setattr__(self, key, fld)
 
         """
@@ -42,7 +43,7 @@ class BaseModel(metaclass=MetaModel):
         for field_name, value in row_data.items():
             f=object.__getattribute__(self, field_name)
             f.value=value
-            #f.dirty=False
+            f.dirty=True
 
     def __repr__(self):
         attrs_format = ", ".join([f'{field}={value}' for field, value in self.__dict__.items()])

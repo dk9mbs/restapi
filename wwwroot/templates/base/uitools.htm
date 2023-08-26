@@ -101,7 +101,7 @@
 
 {% macro data_select_list(name,label, value, table_alias, view_name, query='', config={}) -%}
     {% set disabled=config | value_from_json("disabled", false) %}
-    {% set listitems=config | value_from_json("listitems", false) %}
+    {% set listitems=config | value_from_json("listitems", "|") %}
 
     {% if disabled %}
         {% set show="disabled" %}
