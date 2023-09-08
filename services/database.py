@@ -74,7 +74,12 @@ class DatabaseServices:
             sql_count, paras_count =command_builder.get_sql(True)
             cursor=context.get_connection().cursor()
             cursor.execute(sql_count, paras_count)
-            row_count=len(cursor.fetchall())
+            rows=cursor.fetchall()
+            row_count=0
+            if len(rows)==1:
+                row_count=rows[0]['cnt']
+
+            logger.info(f"***** rowcount: {row_count}")
         # end
 
         cursor=context.get_connection().cursor()

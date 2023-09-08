@@ -145,7 +145,7 @@ class TestPluginExecution(unittest.TestCase):
         """
         Create a dummy with id=999
         """
-        item=Dummy({"id":999, "Port":3307,"name":"test"})
+        item=Dummy(id=999, Port=3307,name="test")
         item.insert(context)
         self.assertEqual(item.Port, 3307)
         self.assertEqual(item.name, "test")
@@ -160,7 +160,7 @@ class TestPluginExecution(unittest.TestCase):
         """
         update the item
         """
-        Dummy({"id":999, "Port": 1234}).update(context)
+        Dummy(id=999, Port=1234).update(context)
 
         item=Dummy.objects(context).select().where(Dummy.id==999).to_entity()
         self.assertEqual(item.Port, 1234)
@@ -170,7 +170,7 @@ class TestPluginExecution(unittest.TestCase):
         insert 998 into dummy table
         """
         Dummy.objects(context).delete().where(Dummy.id==998).execute()
-        item2=Dummy({"id":998, "name":"hallo", "Port":0})
+        item2=Dummy(id=998, name="hallo", Port=0)
         item2.insert(context)
 
 

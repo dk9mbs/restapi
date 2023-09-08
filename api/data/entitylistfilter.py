@@ -30,8 +30,12 @@ class EntityListFilter(Resource):
         try:
             parser=create_parser().parse_args()
             context=g.context
+
+            page=int(context.get_arg("page",0))
+            page_size=int(context.get_arg("page_size", 5000))
+
             fetch=request.data
-            fetchparser=FetchXmlParser(fetch, context)
+            fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             return rs.get_result()
         except RestApiNotAllowed as err:

@@ -123,7 +123,7 @@ cat << EOF | sudo tee /etc/systemd/system/restapi-dev.$INSTANCE_ID.service
 # do not change this file here!
 # auto created by $BASEDIR/install.sh
 [Unit]
-Description=Restapi timerservice
+Description=restAPI standalone daemon
 After=syslog.target mysqld.service
 
 [Service]
@@ -149,7 +149,7 @@ cat << EOF | sudo tee /etc/systemd/system/restapi-timer.$INSTANCE_ID.service
 # do not change this file here!
 # auto created by $BASEDIR/install.sh
 [Unit]
-Description=Restapi timerservice
+Description=restAPI timer daemon
 After=syslog.target mysqld.service
 
 [Service]
@@ -175,7 +175,7 @@ cat << EOF | sudo tee /etc/systemd/system/restapi-msg.$INSTANCE_ID.service
 # do not change this file here!
 # auto created by $BASEDIR/install.sh
 [Unit]
-Description=restapi msg service
+Description=restAPI message daemon
 After=syslog.target mysqld.service
 
 [Service]

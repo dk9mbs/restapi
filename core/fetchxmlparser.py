@@ -138,12 +138,16 @@ class FetchXmlParser:
         # Disable the folling lines. Because it is very very slow!
         #if self._limit>0:
         #    row_count_option=" SQL_CALC_FOUND_ROWS"
-
         from core.meta import read_table_field_meta
+
+        #use ignore_limit only for count all records
+        if ignore_limit==True:
+            self._sql_select="COUNT(*) as cnt"
+
         if self._sql_select=="*":
-            meta_fields= read_table_field_meta(self._context, table_id=self._sql_table_id)
             tmp=[]
             sql_join=[]
+            meta_fields= read_table_field_meta(self._context, table_id=self._sql_table_id)
             self._columns_desc=[]
 
             for field in meta_fields:
@@ -197,7 +201,7 @@ class FetchXmlParser:
             sql.append(f" LIMIT {self._limit_offset}, {self._limit} ")
 
         sql.append(f"{self._sql_comment}")
-
+        logger.info(''.join(sql))
         return (''.join(sql),params)
 
     def get_insert(self):
