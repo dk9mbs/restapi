@@ -110,9 +110,9 @@ class RestApiClient:
         else:
             return r.text
 
-    def read_multible(self, table, fetchxml=None,json_out=False, none_if_eof=False):
+    def read_multible(self, table, fetchxml=None,json_out=False, none_if_eof=False, page=0, page_size=5000):
         if fetchxml==None:
-            url=f"{self.__root}/data/{table}"
+            url=f"{self.__root}/data/{table}?page={page}&page_size={page_size}"
             r=requests.get(url, cookies=self.__cookies)
         elif type(fetchxml) is dict:
             clause=""
@@ -132,11 +132,11 @@ class RestApiClient:
                 </restapi>
                 """
 
-            url=f"{self.__root}/data"
+            url=f"{self.__root}/data?page={page}&page_size={page_size}"
             headers={"Content-Type":"application/xml"}
             r=requests.post(url, cookies=self.__cookies, data=fetchxml, headers=headers)
         else:
-            url=f"{self.__root}/data"
+            url=f"{self.__root}/data?page={page}&page_size={page_size}"
             headers={"Content-Type":"application/xml"}
             r=requests.post(url, cookies=self.__cookies, data=fetchxml, headers=headers)
 
