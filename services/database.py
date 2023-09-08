@@ -79,7 +79,6 @@ class DatabaseServices:
             if len(rows)==1:
                 row_count=rows[0]['cnt']
 
-            logger.info(f"***** rowcount: {row_count}")
         # end
 
         cursor=context.get_connection().cursor()
