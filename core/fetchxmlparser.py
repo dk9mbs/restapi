@@ -183,7 +183,13 @@ class FetchXmlParser:
             self._sql_table_join=''.join(sql_join)
 
         sql.append(f"SELECT{row_count_option} {self._sql_select} FROM {self._sql_table} {self._sql_table_alias} {self._sql_table_join} ")
-        params=self._sql_parameters_select
+
+        # in case of ignore_limit do not use the select parameters.
+        # ignore_limits has only one field: count(*) as cnt!
+        if not ignore_limit:
+            params=[]
+        else:
+            params=self._sql_parameters_select
 
         if self._sql_where != "":
             sql.append(f" WHERE {self._sql_where}")
