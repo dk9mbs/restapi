@@ -27,15 +27,19 @@ class OrmParser(BaseParser):
     def get_select(self):
         return (self._get_sql("SELECT"), self._query_vars)
 
-    def get_sql(self, ignore_paging=True):
-        return (self._get_sql(), self._query_vars)
+    def get_sql(self, ignore_paging=False):
+        return (self._get_sql(ignore_paging=ignore_paging), self._query_vars)
 
-    def _get_sql(self, sql_type: str=None, ignore_paging: bool=True) -> str:
+    def _get_sql(self, sql_type: str=None, ignore_paging: bool=False) -> str:
         if sql_type==None:
             sql_type=self._sql_type
 
         if sql_type.upper()=='SELECT':
-            sql=f"SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} "
+            if ignore_paging==True:
+                sql=f"SELECT COUNT(*) AS cnt FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} "
+            else:
+                sql=f"SELECT {self._fields} FROM {self._main_table} AS {self._main_table_alias} {self._main_table_join} "
+
             if self._where!='':
                 sql=f"{sql} WHERE {self._where}"
             if self._orderby!='':
