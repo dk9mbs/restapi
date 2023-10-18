@@ -29,7 +29,11 @@ class OutDataFormatter(object):
                 </select>
             <filter type="and">
                 <condition field="name" value="{format_name}" operator="="/>
-                <condition field="table_id" value="{self._table_id}" operator="="/>
+                <filter type="or">
+                    <condition field="table_id" value="{self._table_id}" operator="="/>
+                    <condition field="table_id" value="0" operator="="/>
+                    <condition field="table_id"  operator="null"/>
+                </filter>
                 <condition field="type_id" value="{self._type_id}" operator="="/>
             </filter>
         </restapi>
