@@ -1030,12 +1030,6 @@ template_footer='</tbody>
 WHERE id=1 AND provider_id='MANUFACTURER';
 
 
-
-
-
-
-
-
 INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (2,'$orm_datamodel',10,2);
 
 UPDATE api_data_formatter SET
@@ -1067,6 +1061,29 @@ class {{ data[\'alias\'] }}(BaseModel):
 template_footer=''
 WHERE id=2 AND provider_id='MANUFACTURER';
 
+
+
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (3,'$html_table',Null,2);
+
+UPDATE api_data_formatter SET
+name='$html_table',
+mime_type='text/html',
+template_header='<table border=0>
+<tr>
+{% for fld in columns %}
+    <td>{{ fld[\'label\'] }}</td>
+{% endfor -%}
+</tr>',
+template_line='
+{% for rec in data %}
+<tr>
+{% for fld in columns %}
+    <td>{{ data[fld[\'name\']] }}</td>
+{% endfor -%}
+<tr>
+{% endfor -%}',
+template_footer='</table>'
+WHERE id=3 AND provider_id='MANUFACTURER';
 
 
 
