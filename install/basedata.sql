@@ -1075,14 +1075,16 @@ template_header='<table border=0>
 {% endfor -%}
 </tr>',
 template_line='
-{% for rec in data %}
 <tr>
 {% for fld in columns %}
     <td>{{ data[fld[\'name\']] }}</td>
 {% endfor -%}
-<tr>
-{% endfor -%}',
-template_footer='</table>'
+<tr>',
+template_footer='</table>
+<div>
+<input type="button" id="cmdNew" value="Neu"/>
+</div>
+'
 WHERE id=3 AND provider_id='MANUFACTURER';
 
 
