@@ -7,24 +7,26 @@ Execute the SQL Command from a valid Cammand Builder Object
 """
 
 def build_fetchxml_by_table_name(context,table_name,id=None,data=None,auto_commit=0, type="select", **kwargs):
-    return __build_fetchxml_by(context,None,table_name,None,id,data,auto_commit, type)
+    return _build_fetchxml_by(context,None,table_name,None,id,data,auto_commit, type)
 
 def build_fetchxml_by_alias(context,alias,id=None,data=None,auto_commit=0, type="select", **kwargs):
-    return __build_fetchxml_by(context,alias,None,None,id,data,auto_commit, type)
+    return _build_fetchxml_by(context,alias,None,None,id,data,auto_commit, type)
 
-def build_fetchxml_lookup(context,alias,auto_commit=0, filter_field_name=None, filter_value=None):
-    return __build_fetchxml_by(context,alias,None,None,None,None,auto_commit,"select",filter_field_name,filter_value)
+def build_fetchxml_lookup(context,alias,auto_commit=0, filter_field_name=None, filter_value=None,fields_select=[], **kwargs):
+    return _build_fetchxml_by(context,alias,None,None,None,None,auto_commit,"select",
+        filter_field_name,filter_value,fields_select=fields_select, **kwargs)
 
 def build_fetchxml_by_id(context,table_id,id=None,data=None,auto_commit=0, type="select", **kwargs):
-    return __build_fetchxml_by(context,None,None,table_id,id,data,auto_commit, type)
+    return _build_fetchxml_by(context,None,None,table_id,id,data,auto_commit, type)
 
 """
 data: in case of insert or update the uploadet data as an json object
 """
-def __build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,auto_commit=0,
-        type="select",filter_field_name=None, filter_value=None, **kwargs):
+def _build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,auto_commit=0,
+        type="select",filter_field_name=None, filter_value=None,fields_select=[], **kwargs):
     meta=read_table_meta(context,alias=alias,table_name=table_name,table_id=table_id)
 
+    print(kwargs)
     if meta==None:
         raise NameError("%s not exists in api_table (%s)" %  (alias,id))
 
@@ -32,6 +34,14 @@ def __build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None
     tmp.append(f"<restapi type=\"{type}\">\n")
     #tmp.append(f"<table name=\"{meta['table_name']}\"/>\n") # don't use the table name here!!!
     tmp.append(f"<table name=\"{meta['alias']}\"/>\n") #use alwasy the alias!!!
+
+    if fields_select!=None and fields_select!=[]:
+        tmp.append("<select>")
+        for field in fields_select:
+            tmp.append(f"<field name=\"{ field }\"/>")
+        tmp.append("</select>")
+
+
 
     if filter_field_name!=None:
         tmp.append("<filter type=\"and\">\n")

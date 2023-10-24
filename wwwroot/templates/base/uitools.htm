@@ -1,191 +1,191 @@
 {% macro debug(title, text, debug_level=0) -%}
-    {% set context=get_context() %}
-    {% if debug_level>=get_debug_level(context) %}
+    {% set context=get_context() -%}
+    {% if debug_level>=get_debug_level(context) -%}
         <div style="margin-top:2px;padding-left:10px;background-color: #FFCCCB;font-weight:bold;border-radius: 18px">
         {{ title }}: {{ text }}
         {{ caller() }}
         </div>        
-    {% endif %}
-{%- endmacro %}
+    {% endif -%}
+{%- endmacro -%}
 
 {% macro input(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
-    {% set disabled=config | value_from_json("disabled", false) %}
+    {% set disabled=config | value_from_json("disabled", false) -%}
 
-    {% if disabled %}
-        {% set show="disabled" %}
-    {% else %}
-        {% set show="" %}
-    {% endif %}
+    {% if disabled -%}
+        {% set show="disabled" -%}
+    {% else -%}
+        {% set show="" -%}
+    {% endif -%}
         
 
-    {% if label!='' %}
+    {% if label!='' -%}
         <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm" style="border-bottom: 1px dashed silver">{{ label }}</label>
-        {% set col=10 %}
-    {% else %}
-        {% set col=12 %}
-    {% endif %}
+        {% set col=10 -%}
+    {% else -%}
+        {% set col=12 -%}
+    {% endif -%}
 
     <div class="col-sm-{{ col }}">
-        {% if type=='checkbox' %}
+        {% if type=='checkbox' -%}
             <input type="checkbox" class="form-check-input form-check-input-sm" id="{{ name }}" name="{{ name }}" value="1">
-        {% else %}      
+        {% else -%}      
             <input {{ show }} type="{{ type }}" class="form-control form-control-sm" id="{{ name }}" name="{{ name }}" 
                         placeholder="{{ placeholder }}" value="{{ value }}">
-        {% endif %}
+        {% endif -%}
     </div>
 
     {{ caller() }}
-{%- endmacro %}
+{%- endmacro -%}
 
 {% macro input_multiline(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
-    {% set disabled=config | value_from_json("disabled", false) %}
+    {% set disabled=config | value_from_json("disabled", false) -%}
 
-    {% if disabled %}
-        {% set show="disabled" %}
-    {% else %}
-        {% set show="" %}
-    {% endif %}
+    {% if disabled -%}
+        {% set show="disabled" -%}
+    {% else -%}
+        {% set show="" -%}
+    {% endif -%}
         
 
-    {% if label!='' %}
+    {% if label!='' -%}
         <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm" style="border-bottom: 1px dashed silver">{{ label }}</label>
-        {% set col=10 %}
-    {% else %}
-        {% set col=12 %}
-    {% endif %}
+        {% set col=10 -%}
+    {% else -%}
+        {% set col=12 -%}
+    {% endif -%}
 
     <div class="col-sm-{{ col }}">
       <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}">{{ value }}</textarea>
     </div>
 
     {{ caller() }}
-{%- endmacro %}
+{%- endmacro -%}
 
 {% macro data_select(name,label, value, table_alias, view_name, query='', config={}) -%}
-    {% if table_alias==None %}
+    {% if table_alias==None -%}
         <div style="background-color: #FFCCCB;font-weight:bold;border-radius: 18px">
         Missing table_alias for field {{ name }} ({{ label }}). Set table_alias or use another ui control for this field!
         </div>        
-    {% else %}
-        {% set disabled=config | value_from_json("disabled", false) %}
+    {% else -%}
+        {% set disabled=config | value_from_json("disabled", false) -%}
 
-        {% if disabled %}
-            {% set show="disabled" %}
-        {% else %}
-            {% set show="" %}
-        {% endif %}
+        {% if disabled -%}
+            {% set show="disabled" -%}
+        {% else -%}
+            {% set show="" -%}
+        {% endif -%}
 
-        {% if label!='' %}
+        {% if label!='' -%}
             <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm" style="border-bottom: 1px dashed silver">{{ label }}</label>
-            {% set col=10 %}
-        {% else %}
-            {% set col=12 %}
-        {% endif %}
+            {% set col=10 -%}
+        {% else -%}
+            {% set col=12 -%}
+        {% endif -%}
 
         <div class="col-sm-{{ col }}">
         <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
         <option value=""></option>
-        {% for option in datacomboview(table_alias,view_name,query) %}
-            {% if option['id']==value %}
+        {% for option in datacomboview(table_alias,view_name,query) -%}
+            {% if option['id']==value -%}
                 <option selected value="{{ option['id'] }}">{{ option['name'] }}</option>
-            {% else %}
+            {% else -%}
                 <option value="{{ option['id'] }}">{{ option['name'] }}</option>
-            {% endif %}
-        {% endfor %}
+            {% endif -%}
+        {% endfor -%}
         {{ caller() }}
         </select>
         </div>
-    {% endif %}
+    {% endif -%}
 
-{%- endmacro %}
+{%- endmacro -%}
 
 {% macro data_select_list(name,label, value, table_alias, view_name, query='', config={}) -%}
-    {% set disabled=config | value_from_json("disabled", false) %}
-    {% set listitems=config | value_from_json("listitems", "|") %}
+    {% set disabled=config | value_from_json("disabled", false) -%}
+    {% set listitems=config | value_from_json("listitems", "|") -%}
 
-    {% if disabled %}
-        {% set show="disabled" %}
-    {% else %}
-        {% set show="" %}
-    {% endif %}
+    {% if disabled -%}
+        {% set show="disabled" -%}
+    {% else -%}
+        {% set show="" -%}
+    {% endif -%}
 
-    {% if label!='' %}
+    {% if label!='' -%}
         <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm" style="border-bottom: 1px dashed silver">{{ label }}</label>
-        {% set col=10 %}
-    {% else %}
-        {% set col=12 %}
-    {% endif %}
+        {% set col=10 -%}
+    {% else -%}
+        {% set col=12 -%}
+    {% endif -%}
 
     <div class="col-sm-{{ col }}">
     <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
-    {% for option in listitems2json(listitems) %}
-        {% if option['key']==value %}
+    {% for option in listitems2json(listitems) -%}
+        {% if option['key']==value -%}
             <option selected value="{{ option['key'] }}">{{ option['value'] }}</option>
-        {% else %}
+        {% else -%}
             <option value="{{ option['key'] }}">{{ option['value'] }}</option>
-        {% endif %}
-    {% endfor %}
+        {% endif -%}
+    {% endfor -%}
     {{ caller() }}
     </select>
     </div>
 
-{%- endmacro %}
+{%- endmacro -%}
 
-{% macro row_form_group () %}
+{% macro row_form_group () -%}
     <div class="form-group row p-1">
     {{ caller() }}
     </div>
-{% endmacro %}
+{% endmacro -%}
 
-{% macro col_form_group () %}
+{% macro col_form_group () -%}
     <div class="form-group col p-1">
     {{ caller() }}
     </div>
-{% endmacro %}
+{% endmacro -%}
 
-{% macro row () %}
+{% macro row () -%}
     <div class="row p-1" style="">
     {{ caller() }}
     </div>
-{% endmacro %}
+{% endmacro -%}
 
-{% macro col () %}
+{% macro col () -%}
     <div class="col p-1">
     {{ caller() }}
     </div>
-{% endmacro %}
+{% endmacro -%}
 
 
-{% macro record_form (table, id='', context=None) %}
-        {% if id=='' %}
+{% macro record_form (table, id='', context=None) -%}
+        {% if id=='' -%}
         <form method="POST" id="frmData" action="/api/v1.0/form/{{ table }}?redirect=/ui/v1.0/data/{{ table }}/$$id$${{ build_query_string(context) }}">
-        {% else %}
+        {% else -%}
         <form method="POST" id="frmData" action="/api/v1.0/form/{{ table }}/{{ id }}?redirect=/ui/v1.0/data/{{ table }}/$$id$${{ build_query_string(context) }}">
-        {% endif %}
+        {% endif -%}
 
         {{ caller() }}
 
         </form>
-{% endmacro %}
+{% endmacro -%}
 
 
 
 {% macro input_nicedit(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
-    {% set disabled=config | value_from_json("disabled", false) %}
+    {% set disabled=config | value_from_json("disabled", false) -%}
 
-    {% if disabled %}
-        {% set show="disabled" %}
-    {% else %}
-        {% set show="" %}
-    {% endif %}
+    {% if disabled -%}
+        {% set show="disabled" -%}
+    {% else -%}
+        {% set show="" -%}
+    {% endif -%}
         
 
-    {% if label!='' %}
+    {% if label!='' -%}
         <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm" style="border-bottom: 1px dashed silver">{{ label }}</label>
-        {% set col=10 %}
-    {% else %}
-        {% set col=12 %}
-    {% endif %}
+        {% set col=10 -%}
+    {% else -%}
+        {% set col=12 -%}
+    {% endif -%}
 
     <div class="col-sm-{{ col }}">
       <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}">{{ value }}</textarea>
@@ -208,28 +208,28 @@
     <!-- end of enbale nicEdit -->
 
     {{ caller() }}
-{%- endmacro %}
+{%- endmacro -%}
 
 
 
 
 {% macro input_aceedit(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
-    {% set disabled=config | value_from_json("disabled", false) %}
-    {% set mode=config | value_from_json("mode", "ace/mode/text") %}
+    {% set disabled=config | value_from_json("disabled", false) -%}
+    {% set mode=config | value_from_json("mode", "ace/mode/text") -%}
 
-    {% if disabled %}
-        {% set show="disabled" %}
-    {% else %}
-        {% set show="" %}
-    {% endif %}
+    {% if disabled -%}
+        {% set show="disabled" -%}
+    {% else -%}
+        {% set show="" -%}
+    {% endif -%}
         
 
-    {% if label!='' %}
+    {% if label!='' -%}
         <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm" style="border-bottom: 1px dashed silver">{{ label }}</label>
-        {% set col=10 %}
-    {% else %}
-        {% set col=12 %}
-    {% endif %}
+        {% set col=10 -%}
+    {% else -%}
+        {% set col=12 -%}
+    {% endif -%}
 
 
 
@@ -260,44 +260,44 @@
     <!-- end of enbale nicEdit -->
 
     {{ caller() }}
-{%- endmacro %}
+{%- endmacro -%}
 
 
 {% macro boolean(name, label='', placeholder='', value='', config={}) -%}
-    {% set disabled=config | value_from_json("disabled", false) %}
+    {% set disabled=config | value_from_json("disabled", false) -%}
 
-    {% if disabled %}
-        {% set show="disabled" %}
-    {% else %}
-        {% set show="" %}
-    {% endif %}
+    {% if disabled -%}
+        {% set show="disabled" -%}
+    {% else -%}
+        {% set show="" -%}
+    {% endif -%}
 
-    {% set true_value=config | value_from_json("true_value",-1) %}
+    {% set true_value=config | value_from_json("true_value",-1) -%}
 
-    {% if label!='' %}
+    {% if label!='' -%}
         <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm" style="border-bottom: 1px dashed silver">{{ label }}</label>
-        {% set col=10 %}
-    {% else %}
-        {% set col=12 %}
-    {% endif %}
+        {% set col=10 -%}
+    {% else -%}
+        {% set col=12 -%}
+    {% endif -%}
 
     <div class="col-sm-{{ col }}">
     <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
 
-        {% if value==0 or value==None %}
+        {% if value==0 or value==None -%}
             <option selected value="0">No</option>
-        {% else %}
+        {% else -%}
             <option value="0">No</option>
-        {% endif %}
+        {% endif -%}
 
-        {% if value==1 or value==-1 or value==true_value %}
+        {% if value==1 or value==-1 or value==true_value -%}
             <option selected value="{{ true_value }}">Yes</option>
-        {% else %}
+        {% else -%}
             <option value="{{ true_value }}">Yes</option>
-        {% endif %}
+        {% endif -%}
 
 
     {{ caller() }}
     </select>
     </div>
-{%- endmacro %}
+{%- endmacro -%}
