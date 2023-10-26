@@ -76,7 +76,7 @@ class OutDataFormatter(object):
         template_line=JinjaTemplate.create_string_template(self._context,self._template_line)
         template_footer=JinjaTemplate.create_string_template(self._context,self._template_footer)
 
-        result=template_header.render({"data": self._data, "columns": self._columns})+self._line_separator
+        result=template_header.render({"context": self._context, "data": self._data, "columns": self._columns})+self._line_separator
 
         temp_data={}
         for key, value in self._template_data.items():
@@ -87,7 +87,7 @@ class OutDataFormatter(object):
             temp_data['columns']=self._columns
             result=result+template_line.render(temp_data)+self._line_separator
 
-        result=result+template_footer.render({"data": self._data})
+        result=result+template_footer.render({"context": self._context, "data": self._data})
 
         return result
 

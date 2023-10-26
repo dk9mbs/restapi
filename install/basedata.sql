@@ -1068,18 +1068,21 @@ INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (3,'$htm
 UPDATE api_data_formatter SET
 name='$html_table',
 mime_type='text/html',
-template_header='<table border=0>
+template_header='{% set cols=context.get_arg("view_columns","").split(\',\') -%}
+<table border=1>
 <tr>
-{% for fld in columns %}
-    <td>{{ fld[\'label\'] }}</td>
+{% for col in cols %}
+    <td>{{ col }}</td>
 {% endfor -%}
 </tr>',
 template_line='
+{% set cols=context.get_arg("view_columns","").split(\',\') -%}
 <tr>
-{% for fld in columns %}
-    <td>{{ data[fld[\'name\']] }}</td>
+{% for col in cols %}
+    <td>{{ data[col] }}</td>
 {% endfor -%}
-<tr>',
+<tr>
+',
 template_footer='</table>
 <div>
 <input type="button" id="cmdNew" value="Neu"/>

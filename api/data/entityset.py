@@ -49,7 +49,7 @@ class EntitySet(Resource):
             page_size=int(context.get_arg("page_size", 5000))
 
             fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),
-                context.get_arg("filter_value",None),fields_select=['id'])
+                context.get_arg("filter_value",None))
             fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             result=rs.get_result()
