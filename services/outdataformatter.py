@@ -72,6 +72,8 @@ class OutDataFormatter(object):
         self._template_data[key]=value
 
     def render(self):
+        table=TableInfo(self._context, table_alias=self._table_alias)
+
         template_header=JinjaTemplate.create_string_template(self._context,self._template_header)
         template_line=JinjaTemplate.create_string_template(self._context,self._template_line)
         template_footer=JinjaTemplate.create_string_template(self._context,self._template_footer)
@@ -85,9 +87,10 @@ class OutDataFormatter(object):
         for rec in self._data:
             temp_data['data']=rec
             temp_data['columns']=self._columns
+            temp_data['table_alias']=table.table_alias
             result=result+template_line.render(temp_data)+self._line_separator
 
-        result=result+template_footer.render({"context": self._context, "data": self._data})
+        result=result+template_footer.render({"context": self._context,"table_alias": table.table_alias, "data": self._data})
 
         return result
 
