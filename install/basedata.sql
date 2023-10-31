@@ -1116,8 +1116,13 @@ template_footer='
 </div>
 <div>
 <div class="btn-group btn-group-sm" role="group" aria-label="...">
-<button type="button" class="btn btn-outline-primary" onclick=\'window.location("/ui/v1.0/data/{{ table_alias }}")\');">Neu</button>
-</div>'
+<button type="button" class="btn btn-outline-primary" onclick=\'window.location="/ui/v1.0/data/{{ table_alias }}";\'>Neu</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'alert("First");\'><</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'alert("Previous");\'><<</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'alert("Next");\'>>></button>
+<button type="button" class="btn btn-outline-primary" onclick=\'alert("Last");\'>></button>
+</div>
+'
 WHERE id=3 AND provider_id='MANUFACTURER';
 
 
