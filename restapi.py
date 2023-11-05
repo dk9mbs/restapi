@@ -10,7 +10,7 @@ from core.appinfo import AppInfo
 from core import log
 import jinjainit
 from core.plugin import Plugin
-
+from services.httprequest import HTTPRequest
 
 AppInfo.init(__name__, CONFIG['default'])
 jinjainit.init()
@@ -109,8 +109,11 @@ def before_request():
             #g.context=AppInfo.create_context(session_id, auto_logoff=True)
             g.context=AppInfo.create_context(session_id, auto_logoff=auto_logoff)
 
-        for arg in request.args:
-            g.context.set_arg(arg, request.args[arg])
+        if not HTTPRequest.process_command(request, g.context):
+            # only when not restore, next_page
+            for arg in request.args:
+                g.context.set_arg(arg, request.args[arg])
+
 
 AppInfo.get_api().add_resource(api.core.login.get_endpoint() ,"/v1.0/core/login")
 AppInfo.get_api().add_resource(api.core.logoff.get_endpoint() ,"/v1.0/core/logoff")

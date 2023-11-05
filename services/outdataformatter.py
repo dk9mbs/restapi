@@ -8,8 +8,10 @@ from core.database import Recordset
 from core.context import Context
 
 class OutDataFormatter(object):
-    def __init__(self, context,format_name, type_id, table_alias, data):
+    def __init__(self, context,format_name, type_id, table_alias, data, page: int=0, page_size: int=5000):
         self._context=context
+        self._page=page
+        self._page_size=page_size
         self._type_id=type_id
         self._template_data={}
         self._columns={}
@@ -22,7 +24,8 @@ class OutDataFormatter(object):
             self._data=data
             self._columns=self._init_columns(context, table_alias,{})
 
-        meta=read_table_meta(context, table_alias)
+        self._table_info=TableInfo(context, table_alias=table_alias)
+        meta=self._table_info.table_meta_data
         self._table_alias=table_alias
         self._table_id=meta['id']
 
@@ -72,13 +75,22 @@ class OutDataFormatter(object):
         self._template_data[key]=value
 
     def render(self):
-        table=TableInfo(self._context, table_alias=self._table_alias)
+        #table=TableInfo(self._context, table_alias=self._table_alias)
+        table=self._table_info
 
         template_header=JinjaTemplate.create_string_template(self._context,self._template_header)
         template_line=JinjaTemplate.create_string_template(self._context,self._template_line)
         template_footer=JinjaTemplate.create_string_template(self._context,self._template_footer)
 
-        result=template_header.render({"context": self._context, "data": self._data, "columns": self._columns})+self._line_separator
+        result=template_header.render({"context": self._context,
+                "table_alias":table.table_alias, 
+                "data": self._data, 
+                "columns": self._columns,
+                "page":self._page, 
+                "page_size": self._page_size,
+                "fields": self._table_info.fields
+            }
+        )+self._line_separator
 
         temp_data={}
         for key, value in self._template_data.items():
@@ -88,9 +100,20 @@ class OutDataFormatter(object):
             temp_data['data']=rec
             temp_data['columns']=self._columns
             temp_data['table_alias']=table.table_alias
+            temp_data['table_meta']=table.table_meta_data
+            temp_data['page']=self._page
+            temp_data['page_size']=self._page_size
             result=result+template_line.render(temp_data)+self._line_separator
 
-        result=result+template_footer.render({"context": self._context,"table_alias": table.table_alias, "data": self._data})
+        result=result+template_footer.render({"context": self._context,
+                "table_alias": table.table_alias, 
+                "data": self._data, 
+                "columns": self._columns, 
+                "page":self._page, 
+                "page_size": self._page_size,
+                "fields": self._table_info.fields
+            }
+        )
 
         return result
 

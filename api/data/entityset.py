@@ -53,14 +53,15 @@ class EntitySet(Resource):
             fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             result=rs.get_result()
-
+            
             view=context.get_arg("view", None)
 
             if not view==None:
                 from core.meta import read_table_meta
 
                 formatter=OutDataFormatter(context,view,2, table, rs)
-                formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
+                #table_meta set in table_info.render automaticly
+                #formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
                 formatter.add_template_var("context", context)
 
                 httpresponse=HTTPResponse(formatter.render())

@@ -1102,7 +1102,7 @@ template_line='
 {% for col in cols %}
 
     {% if col=="id" -%}
-        <td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[col] }}" target="_self">{{ data[col] }}</a>
+        <td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[col] }}" target="_blank">{{ data[col] }}</a>
     {% else -%}
         <td>{{ data[col] }}</td>
     {% endif -%}
@@ -1115,13 +1115,52 @@ template_footer='
 </table>
 </div>
 <div>
+{% set dbg_level=get_debug_level(context) -%}
+{% if dbg_level==0 -%}
+    <div style="margin-top:2px;padding-left:10px;background-color: #FFCCCB;font-weight:bold;border-radius: 18px">
+    {{ context.get_args() }}
+    </div>
+{% endif -%}
+
+{% set div_name=context.get_arg("view_tag1","") -%}
+{% set referenced_field_name=context.get_arg("filter_field_name","") -%}
+{% set filter_value=context.get_arg("filter_value","") -%}
+{% set cols=context.get_arg("view_columns","") -%}
+{% set page=context.get_arg("page","0") | int -%}
+{% set page_size=context.get_arg("page_size","5") -%}
+{% set next_page=page+1 -%}
+{% set previous_page=page-1 -%}
+{% if previous_page<0 -%}
+    {% set previous_page=0 -%}
+{% endif -%}
+
 <div class="btn-group btn-group-sm" role="group" aria-label="...">
 <button type="button" class="btn btn-outline-primary" onclick=\'window.location="/ui/v1.0/data/{{ table_alias }}";\'>Neu</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'alert("First");\'><</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'alert("Previous");\'><<</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'alert("Next");\'>>></button>
+
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}")
+;\'>Aktualisieren</button>
+
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}")
+;\'><</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}")
+;\'><<</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}")
+;\'>>></button>
 <button type="button" class="btn btn-outline-primary" onclick=\'alert("Last");\'>></button>
 </div>
+
+
+Page:{{ next_page }}
+
+<!--     
+getSubList("{{ name }}", "{{ referenced_table_alias }}","{{ referenced_field_name }}","{{ value }}", "{{ columns }}","0", "5");
+function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size)
+
+{\'view\': \'$html_table\', \'filter_field_name\': \'group_id\', \'filter_value\': \'100\', 
+\'view_columns\': \'id,mode_read,mode_create,mode_update,mode_delete,__table_id@name\', 
+\'page\': \'0\', \'page_size\': \'5\', \'view_tag1\': \'__permission\'}
+
+-->
 '
 WHERE id=3 AND provider_id='MANUFACTURER';
 

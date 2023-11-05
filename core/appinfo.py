@@ -157,6 +157,8 @@ class AppInfo:
         cursor.fetchall()
 
         session_values=json.loads(rest_session['session_values'].replace("'", '"'))
+        if not 'saved_args' in session_values:
+            session_values['saved_args']={}
 
         ctx=Context()
         ctx.set_connection(cls.create_connection())

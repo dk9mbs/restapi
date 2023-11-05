@@ -29,6 +29,35 @@
     }
     </script>
 
+    <script lang="javascript">
+    function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size) {
+      var url='/api/v1.0/data/'+referenced_table_alias+
+        '?view=$html_table'+
+        '&filter_field_name='+referenced_field_name+
+        '&filter_value='+value+
+        '&view_columns='+columns+
+        '&page='+page+
+        '&page_size='+page_size+
+        '&view_tag1='+div_name+
+        '&api_cmd=save'+
+        '&api_token='+div_name+'_'+referenced_table_alias+'_'+referenced_field_name
+
+      //alert(url);
+      axios.get(url)
+      .then(function (response) {
+        console.log(response.data);
+        document.getElementById("div_sub_table_"+div_name).innerHTML=response.data;
+      })
+      .catch(function (error) {
+        document.getElementById("div_sub_table_"+div_name).innerHTML=error;
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
+    }
+    </script>
+
     {% block head %}
     <title>{% block title %}{% endblock title %} - {{ app_id }}</title>
 
