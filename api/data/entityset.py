@@ -50,6 +50,7 @@ class EntitySet(Resource):
 
             fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),
                 context.get_arg("filter_value",None))
+
             fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             result=rs.get_result()

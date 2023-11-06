@@ -36,29 +36,31 @@ class HTTPRequest:
         return urllib.parse.unquote(next.replace(var_id, id))
 
     @staticmethod
-    def process_command(request, context: Context) -> bool:
-        if not 'api_cmd' in request.args:
+    def process_command(request, args: dict, context: Context, token: str, command:str) -> bool:
+        if token==None or command==None:
             return False
-
-        if not 'api_token' in request.args:
-            return False
-
-        token=request.args['api_token']
-        command=request.args['api_cmd']
 
         # save the current http query args in the users session
         if command=='save':
             context.get_session_values()['saved_args'][token]=context.get_args()
             return False
 
+        if not 'page' in context.get_session_values()['saved_args'][token]:
+            return False
+
         if command=='next_page':
-            if 'page' in context.get_session_values()['saved_args'][token]:
-                print(context.get_session_values()['saved_args'][token])
-                context.get_session_values()['saved_args'][token]['page']=int(context.get_session_values()['saved_args'][token]['page'])+1
+            page=int(context.get_session_values()['saved_args'][token]['page'])+1
+            context.get_session_values()['saved_args'][token]['page']=page
 
         if command=='previous_page':
-            if 'page' in context.get_session_values()['saved_args'][token]:
-                context.get_session_values()['saved_args'][token]['page']=int(context.get_session_values()['saved_args'][token]['page'])-1
+            page=int(context.get_session_values()['saved_args'][token]['page'])-1
+            if page<0:
+                page=0
+            context.get_session_values()['saved_args'][token]['page']=page
+
+        if command=='first_page':
+            context.get_session_values()['saved_args'][token]['page']=0
+
 
         for key, value in context.get_session_values()['saved_args'][token].items():
             context.set_arg(key, value)

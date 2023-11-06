@@ -109,7 +109,13 @@ def before_request():
             #g.context=AppInfo.create_context(session_id, auto_logoff=True)
             g.context=AppInfo.create_context(session_id, auto_logoff=auto_logoff)
 
-        if not HTTPRequest.process_command(request, g.context):
+        token=None
+        command=None
+        if 'api_token' in request.args and 'api_cmd' in request.args:
+            token=request.args['api_token']
+            command=request.args['api_cmd']
+
+        if not HTTPRequest.process_command(request,request.args, g.context, token, command):
             # only when not restore, next_page
             for arg in request.args:
                 g.context.set_arg(arg, request.args[arg])
