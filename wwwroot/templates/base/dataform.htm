@@ -68,6 +68,10 @@
                 {% endif -%}
             {% endcall -%}
         {% endfor -%}
+
+        {% call forms.form_api_action("default") -%}
+        {% endcall -%}
+
     {% endcall -%}
 {% endblock -%}
 

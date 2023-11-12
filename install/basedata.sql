@@ -1102,7 +1102,7 @@ template_line='
 {% for col in cols %}
 
     {% if col=="id" -%}
-        <td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[col] }}" target="_blank">{{ data[col] }}</a>
+        <td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[col] }}?pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}" target="_blank">{{ data[col] }}</a>
     {% else -%}
         <td>{{ data[col] }}</td>
     {% endif -%}

@@ -8,6 +8,14 @@
     {% endif -%}
 {%- endmacro -%}
 
+{% macro form_api_action(action) -%}
+    {% set context=get_context() -%}
+    {% set type='hidden' -%}
+    <input type="{{ type }}" name="__action" id="__action" value="{{ action }}">
+
+    {{ caller() }}
+{%- endmacro -%}
+
 {% macro input(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
     {% set disabled=config | value_from_json("disabled", false) -%}
 
