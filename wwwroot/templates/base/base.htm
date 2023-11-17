@@ -1,5 +1,5 @@
-{% set ui_app, ui_app_nav_items=ui_app_info(context)  %}
-{% set app_id=context.get_arg("app_id",1) %}
+{% set ui_app, ui_app_nav_items=ui_app_info(context)  -%}
+{% set app_id=context.get_arg("app_id",1) -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -213,6 +213,18 @@
 {% block content %}{% endblock content %}
 </div>
 <!-- End content -->
+
+{% set dbg_level=get_debug_level(context) -%}
+{% if dbg_level==0 -%}
+<div style="margin-top:2px;padding-left:10px;background-color: #FFCCCB;font-weight:bold;border-radius: 18px">Begin pagesettings:</div>
+<table class="table table-hover table-sm">
+  <tr>
+    <td>pagemode</td>
+    <td>{{ pagemode }}</td>
+  </tr>
+</table>
+<div style="margin-top:2px;padding-left:10px;background-color: #FFCCCB;font-weight:bold;border-radius: 18px">End pagesettings</div>
+{% endif -%}
 
 </body>
 </html>
