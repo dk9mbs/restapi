@@ -6,6 +6,8 @@ from core.meta import read_table_meta
 from core.exceptions import OutDataFormatterNotFound
 from core.database import Recordset
 from core.context import Context
+from core.exceptions import NotAllowedDataClass
+
 
 class OutDataFormatter(object):
     def __init__(self, context,format_name, type_id, table_alias, data, page: int=0, page_size: int=5000):
@@ -23,6 +25,8 @@ class OutDataFormatter(object):
         elif type(data)==dict:
             self._data=data
             self._columns=self._init_columns(context, table_alias,{})
+        else:
+            raise NotAllowedDataClass(f"Only Recordset or dict allowed! You give me a {type(data)}")
 
         self._table_info=TableInfo(context, table_alias=table_alias)
         meta=self._table_info.table_meta_data

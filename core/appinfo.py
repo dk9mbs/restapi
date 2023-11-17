@@ -56,14 +56,18 @@ class AppInfo:
         bp_api=Blueprint('api', __name__)
         bp_ui=Blueprint('ui', __name__)
         bp_portal=Blueprint('portal',__name__)
+        bp_solution=Blueprint('solution',__name__)
 
         cls._api=Api(bp_api, doc='/swagger/')
         cls._ui_api=Api(bp_ui, doc='/swagger/')
         cls._portal_api=Api(bp_portal, doc='/swagger/')
+        cls._solution_api=Api(bp_solution, doc='/swagger/')
 
         cls._app.register_blueprint(bp_api, url_prefix='/api')
         cls._app.register_blueprint(bp_ui, url_prefix='/ui')
         cls._app.register_blueprint(bp_portal)
+        cls._app.register_blueprint(bp_solution)
+
         # buid api
         cls._mysql=MySQL(cls._app ,cursorclass=DictCursor)
         cls._mysql.connect()
@@ -123,6 +127,8 @@ class AppInfo:
             return cls._portal_api
         elif name=="ui":
             return cls._ui_api
+        elif name=="solution":
+            return cls._solution_api
         else:
             logger.info(f"{name} is not a valid api name!")
 
