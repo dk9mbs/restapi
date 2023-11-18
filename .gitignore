@@ -12,6 +12,7 @@ plugins/*
 3thparty
 wwwroot/*
 !wwwroot/index.htm
+!wwwroot/favicon.ico
 !wwwroot/templates/
 venv
 init.d/*
