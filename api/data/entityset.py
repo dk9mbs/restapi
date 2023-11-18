@@ -48,18 +48,21 @@ class EntitySet(Resource):
             page=int(context.get_arg("page",0))
             page_size=int(context.get_arg("page_size", 5000))
 
-            fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),context.get_arg("filter_value",None))
+            fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),
+                context.get_arg("filter_value",None))
+
             fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             result=rs.get_result()
-
+            
             view=context.get_arg("view", None)
 
             if not view==None:
                 from core.meta import read_table_meta
 
-                formatter=OutDataFormatter(context,view,2, table, rs.get_result())
-                formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
+                formatter=OutDataFormatter(context,view,2, table, rs)
+                #table_meta set in table_info.render automaticly
+                #formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
                 formatter.add_template_var("context", context)
 
                 httpresponse=HTTPResponse(formatter.render())

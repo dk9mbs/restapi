@@ -1,4 +1,5 @@
 from core import log
+from core.context import Context
 import urllib
 
 
@@ -33,6 +34,38 @@ class HTTPRequest:
             return HTTPRequest.__replace_default(default, var_id, id)
 
         return urllib.parse.unquote(next.replace(var_id, id))
+
+    @staticmethod
+    def process_command(request, args: dict, context: Context, token: str, command:str) -> bool:
+        if token==None or command==None:
+            return False
+
+        # save the current http query args in the users session
+        if command=='save':
+            context.get_session_values()['saved_args'][token]=context.get_args()
+            return False
+
+        if not 'page' in context.get_session_values()['saved_args'][token]:
+            return False
+
+        if command=='next_page':
+            page=int(context.get_session_values()['saved_args'][token]['page'])+1
+            context.get_session_values()['saved_args'][token]['page']=page
+
+        if command=='previous_page':
+            page=int(context.get_session_values()['saved_args'][token]['page'])-1
+            if page<0:
+                page=0
+            context.get_session_values()['saved_args'][token]['page']=page
+
+        if command=='first_page':
+            context.get_session_values()['saved_args'][token]['page']=0
+
+
+        for key, value in context.get_session_values()['saved_args'][token].items():
+            context.set_arg(key, value)
+
+        return True
 
     @staticmethod
     def __replace_default(default, var_id, id):

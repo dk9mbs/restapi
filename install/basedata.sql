@@ -182,6 +182,12 @@ INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (1
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
 
+/* api_user_group */
+call api_proc_create_table_field_instance(4,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(4,200, 'user_id','Benutzer','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(4,300, 'group_id','Gruppe','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(4,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+
 /* api_process_log */
 call api_proc_create_table_field_instance(23,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(23,200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
@@ -250,9 +256,14 @@ call api_proc_create_table_field_instance(2,300, 'password','Password','string',
 call api_proc_create_table_field_instance(2,400, 'disabled','Disabled','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,500, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,600, 'solution_id','Solution','int',2,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(2,600, '__sessions','Sitzungen','string',200,'{}', @out_value);
+call api_proc_create_table_field_instance(2,600, '_sessions','Sitzungen','string',200,'{"columns": "id,__user_id@name,last_access_on"}', @out_value);
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_session',referenced_table_id=7,referenced_field_name='user_id'
+    WHERE id=@out_value;
+
+call api_proc_create_table_field_instance(2,600, '_groups','Sicherheitsgruppen','string',200,'{"columns":"id,__group_id@name"}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_user_group',referenced_table_id=4,referenced_field_name='user_id'
     WHERE id=@out_value;
 
 /* dummy */
@@ -341,6 +352,10 @@ call api_proc_create_table_field_instance(3,100, 'id','ID','int',14,'{"disabled"
 call api_proc_create_table_field_instance(3,200, 'groupname','Name','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(3,300, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(3,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(3,500, '_permissions','Berechtigungen','int',200,'{"columns":"id,mode_read,mode_create,mode_update,mode_delete,__table_id@name"}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_group_permission',referenced_table_id=5,referenced_field_name='group_id'
+    WHERE id=@out_value;
 
 
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
@@ -1030,12 +1045,6 @@ template_footer='</tbody>
 WHERE id=1 AND provider_id='MANUFACTURER';
 
 
-
-
-
-
-
-
 INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (2,'$orm_datamodel',10,2);
 
 UPDATE api_data_formatter SET
@@ -1067,6 +1076,93 @@ class {{ data[\'alias\'] }}(BaseModel):
 template_footer=''
 WHERE id=2 AND provider_id='MANUFACTURER';
 
+
+
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (3,'$html_table',Null,2);
+
+UPDATE api_data_formatter SET
+name='$html_table',
+mime_type='text/html',
+template_header='{% set cols=context.get_arg("view_columns","").split(\',\') -%}
+<div class="table-responsive">
+<table class="table table-hover table-sm">
+<thead>
+{% for col in cols %}
+    {% for fld in columns -%}
+        {% if fld[\'name\']==col -%}
+            <th>{{ fld[\'label\'] }}</th>
+        {% endif -%}
+    {% endfor -%}
+{% endfor -%}
+</thead>
+<tbody>',
+template_line='
+{% set cols=context.get_arg("view_columns","").split(\',\') -%}
+<tr>
+{% for col in cols %}
+
+    {% if col=="id" -%}
+        <td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[col] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}" target="_blank">{{ data[col] }}</a>
+    {% else -%}
+        <td>{{ data[col] }}</td>
+    {% endif -%}
+    
+{% endfor -%}
+<tr>
+',
+template_footer='
+</tbody>
+</table>
+</div>
+<div>
+{% set dbg_level=get_debug_level(context) -%}
+{% if dbg_level==0 -%}
+    <div style="margin-top:2px;padding-left:10px;background-color: #FFCCCB;font-weight:bold;border-radius: 18px">
+    {{ context.get_args() }}
+    </div>
+{% endif -%}
+
+{% set div_name=context.get_arg("view_tag1","") -%}
+{% set referenced_field_name=context.get_arg("filter_field_name","") -%}
+{% set filter_value=context.get_arg("filter_value","") -%}
+{% set cols=context.get_arg("view_columns","") -%}
+{% set page=context.get_arg("page","0") | int -%}
+{% set page_size=context.get_arg("page_size","5") -%}
+{% set next_page=page+1 -%}
+{% set previous_page=page-1 -%}
+{% if previous_page<0 -%}
+    {% set previous_page=0 -%}
+{% endif -%}
+
+<div class="btn-group btn-group-sm" role="group" aria-label="...">
+<button type="button" class="btn btn-outline-primary" onclick=\'window.location="/ui/v1.0/data/{{ table_alias }}";\'>Neu</button>
+
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}")
+;\'>Aktualisieren</button>
+
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}")
+;\'><</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}")
+;\'><<</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}")
+;\'>>></button>
+<button type="button" class="btn btn-outline-primary" onclick=\'alert("Last");\'>></button>
+</div>
+
+
+Page:{{ next_page }}
+
+<!--     
+getSubList("{{ name }}", "{{ referenced_table_alias }}","{{ referenced_field_name }}","{{ value }}", "{{ columns }}","0", "5");
+function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size)
+
+{\'view\': \'$html_table\', \'filter_field_name\': \'group_id\', \'filter_value\': \'100\', 
+\'view_columns\': \'id,mode_read,mode_create,mode_update,mode_delete,__table_id@name\', 
+\'page\': \'0\', \'page_size\': \'5\', \'view_tag1\': \'__permission\'}
+
+-->
+'
+WHERE id=3 AND provider_id='MANUFACTURER';
 
 
 

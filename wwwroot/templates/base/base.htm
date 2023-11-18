@@ -1,12 +1,13 @@
-{% set ui_app, ui_app_nav_items=ui_app_info(context)  %}
-{% set app_id=context.get_arg("app_id",1) %}
+{% set ui_app, ui_app_nav_items=ui_app_info(context)  -%}
+{% set app_id=context.get_arg("app_id",1) -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <script>
         var table="{{ table }}";
         var id="{{ id }}";
-        var queryString="{{ build_query_string(context) }}";
+        var queryString="{{ build_query_string(context)[1:] }}";
+        var appId="{{ context.get_arg('app_id',1) }}";
     </script>
 
     <script>
@@ -28,6 +29,50 @@
         }
     }
     </script>
+
+    <script lang="javascript">
+    function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size) {
+      var url='/api/v1.0/data/'+referenced_table_alias+
+        '?view=$html_table'+
+        '&filter_field_name='+referenced_field_name+
+        '&filter_value='+value+
+        '&view_columns='+columns+
+        '&page='+page+
+        '&page_size='+page_size+
+        '&view_tag1='+div_name+
+        '&api_cmd=save'+
+        '&app_id='+appId+
+        '&api_token='+div_name+'_'+referenced_table_alias+'_'+referenced_field_name
+
+      //alert(url);
+      axios.get(url)
+      .then(function (response) {
+        console.log(response.data);
+        document.getElementById("div_sub_table_"+div_name).innerHTML=response.data;
+      })
+      .catch(function (error) {
+        document.getElementById("div_sub_table_"+div_name).innerHTML=error;
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
+    }
+    </script>
+
+    <script>
+      function submitData(action) {
+        document.getElementById('__action').value=action;
+        document.getElementById('frmData').submit();
+      }
+    </script>
+
+    {% if context.get_arg("__action","default")=="close" -%}
+    <script>
+      window.close();
+    </script>
+    {% endif -%}
+
 
     {% block head %}
     <title>{% block title %}{% endblock title %} - {{ app_id }}</title>
@@ -80,17 +125,36 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             
         {% if pagemode=="dataformupdate" %}        
+
         <li class="nav-item active">
-            <a class="nav-link" href="#" onclick="document.getElementById('frmData').submit();return false;">Save <span class="sr-only"></span></a>
+            <a class="nav-link" href="#" onclick="submitData();return false;">Save <span class="sr-only"></span></a>
         </li>
+
         <li class="nav-item active">
             <a class="nav-link" href="#" onclick="window.location='/ui/v1.0/data/{{ table }}{{ build_query_string(context) }}';return false;">New <span class="sr-only"></span></a>
         </li>
         <li class="nav-item active">
             <a class="nav-link" href="#" onclick="window.location='/ui/v1.0/data/view/{{ table }}/default{{ build_query_string(context) }}';return false;">List <span class="sr-only"></span></a>
         </li>
+
+
         <li class="nav-item active">
             <a class="nav-link" href="#" onclick="deleteRecord(table,id);return false;">Delete <span class="sr-only"></span></a>
+        </li>
+        {% endif %}
+
+        {% if pagemode=="dataformupdateclose" %}        
+        <li class="nav-item active">
+          <a class="nav-link" href="#" onclick="window.close();return false;">Close <span class="sr-only"></span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="#" onclick="submitData('default');return false;">Save<span class="sr-only"></span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="#" onclick="submitData('close');return false;">Save and close<span class="sr-only"></span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="#" onclick="deleteRecord(table,id);return false;">Delete <span class="sr-only"></span></a>
         </li>
         {% endif %}
 
@@ -149,6 +213,18 @@
 {% block content %}{% endblock content %}
 </div>
 <!-- End content -->
+
+{% set dbg_level=get_debug_level(context) -%}
+{% if dbg_level==0 -%}
+<div style="margin-top:2px;padding-left:10px;background-color: #FFCCCB;font-weight:bold;border-radius: 18px">Begin pagesettings:</div>
+<table class="table table-hover table-sm">
+  <tr>
+    <td>pagemode</td>
+    <td>{{ pagemode }}</td>
+  </tr>
+</table>
+<div style="margin-top:2px;padding-left:10px;background-color: #FFCCCB;font-weight:bold;border-radius: 18px">End pagesettings</div>
+{% endif -%}
 
 </body>
 </html>

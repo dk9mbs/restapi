@@ -102,7 +102,7 @@ class Entity(Resource):
                 fields_meta=read_table_field_meta(context, table_alias=table)
                 table_meta=read_table_meta(context, alias=table)
 
-                formatter=OutDataFormatter(context,view,1, table, rs.get_result())
+                formatter=OutDataFormatter(context,view,1, table, rs)
                 formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
                 formatter.add_template_var("context", context)
                 formatter.add_template_var("table", table)

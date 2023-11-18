@@ -45,3 +45,6 @@ class TypeNotAllowedInFieldList(Exception):
 
 class WrongFetchMode(Exception):
     pass
+
+class NotAllowedDataClass(Exception):
+    pass

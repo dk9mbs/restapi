@@ -29,7 +29,7 @@ def build_datamodel(context):
     fetchparser=FetchXmlParser(fetch, context)
     rs=DatabaseServices.exec(fetchparser, context,run_as_system=True, fetch_mode=0)
 
-    formatter=OutDataFormatter(context,view,2, table, rs.get_result())
+    formatter=OutDataFormatter(context,view,2, table, rs)
     formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
     formatter.add_template_var("context", context)
     rs.close()

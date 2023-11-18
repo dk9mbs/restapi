@@ -6,7 +6,7 @@ from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 
 from core.appinfo import AppInfo
-from core.database import CommandBuilderFactory as factory
+#from core.database import CommandBuilderFactory as factory
 from services.database import DatabaseServices
 from services.httprequest import HTTPRequest
 from core import log

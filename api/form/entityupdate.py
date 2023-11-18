@@ -37,19 +37,21 @@ class Entity(Resource):
             create_parser_post().parse_args()
             context=g.context
 
-
+            action="default"
             json=request.form.to_dict()
             for key in list(json):
                 if key.startswith("__"):
+                    if key=="__action":
+                        action=json[key]
+                    
                     del json[key]
 
             fetch=build_fetchxml_by_alias(context, table, id, json, type="update")
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
-
             next=HTTPRequest.redirect(request, default=f"/ui/v1.0/data/{table}/$$id$$", id=id)
 
-            return redirect(next, code=302)
+            return redirect(f"{next}&__action={action}", code=302)
 
         except RestApiNotAllowed as err:
             logger.exception(f"RestApiNotAllowed Exception: {err}")

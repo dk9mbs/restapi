@@ -1,17 +1,37 @@
 from services.jinjatemplate import JinjaTemplate
 from core.fetchxmlparser import FetchXmlParser
 from services.database import DatabaseServices
+from services.table_info import TableInfo
 from core.meta import read_table_meta
 from core.exceptions import OutDataFormatterNotFound
+from core.database import Recordset
+from core.context import Context
+from core.exceptions import NotAllowedDataClass
+
 
 class OutDataFormatter(object):
-    def __init__(self, context,format_name, type_id, table_alias, data):
+    def __init__(self, context,format_name, type_id, table_alias, data, page: int=0, page_size: int=5000):
         self._context=context
-        self._data=data
+        self._page=page
+        self._page_size=page_size
         self._type_id=type_id
         self._template_data={}
+        self._columns={}
+        self._data={}
 
-        meta=read_table_meta(context, table_alias)
+        if type(data)==Recordset:
+            self._data=data.get_result()
+            self._columns=self._init_columns(context, table_alias, data.get_columns())
+        elif type(data)==dict:
+            self._data=data
+            self._columns=self._init_columns(context, table_alias,{})
+        elif type(data)==list:
+            self._data=data
+        else:
+            raise NotAllowedDataClass(f"Only Recordset or dict allowed! You give me a {type(data)}")
+
+        self._table_info=TableInfo(context, table_alias=table_alias)
+        meta=self._table_info.table_meta_data
         self._table_alias=table_alias
         self._table_id=meta['id']
 
@@ -29,7 +49,11 @@ class OutDataFormatter(object):
                 </select>
             <filter type="and">
                 <condition field="name" value="{format_name}" operator="="/>
-                <condition field="table_id" value="{self._table_id}" operator="="/>
+                <filter type="or">
+                    <condition field="table_id" value="{self._table_id}" operator="="/>
+                    <condition field="table_id" value="0" operator="="/>
+                    <condition field="table_id"  operator="null"/>
+                </filter>
                 <condition field="type_id" value="{self._type_id}" operator="="/>
             </filter>
         </restapi>
@@ -57,11 +81,22 @@ class OutDataFormatter(object):
         self._template_data[key]=value
 
     def render(self):
+        #table=TableInfo(self._context, table_alias=self._table_alias)
+        table=self._table_info
+
         template_header=JinjaTemplate.create_string_template(self._context,self._template_header)
         template_line=JinjaTemplate.create_string_template(self._context,self._template_line)
         template_footer=JinjaTemplate.create_string_template(self._context,self._template_footer)
 
-        result=template_header.render({"data": self._data})+self._line_separator
+        result=template_header.render({"context": self._context,
+                "table_alias":table.table_alias, 
+                "data": self._data, 
+                "columns": self._columns,
+                "page":self._page, 
+                "page_size": self._page_size,
+                "fields": self._table_info.fields
+            }
+        )+self._line_separator
 
         temp_data={}
         for key, value in self._template_data.items():
@@ -69,9 +104,22 @@ class OutDataFormatter(object):
 
         for rec in self._data:
             temp_data['data']=rec
+            temp_data['columns']=self._columns
+            temp_data['table_alias']=table.table_alias
+            temp_data['table_meta']=table.table_meta_data
+            temp_data['page']=self._page
+            temp_data['page_size']=self._page_size
             result=result+template_line.render(temp_data)+self._line_separator
 
-        result=result+template_footer.render({"data": self._data})
+        result=result+template_footer.render({"context": self._context,
+                "table_alias": table.table_alias, 
+                "data": self._data, 
+                "columns": self._columns, 
+                "page":self._page, 
+                "page_size": self._page_size,
+                "fields": self._table_info.fields
+            }
+        )
 
         return result
 
@@ -83,3 +131,25 @@ class OutDataFormatter(object):
 
     def get_content_disposition(self):
         return self._content_disposition
+
+    def _init_columns(self, context: Context, table_alias: str, columns: dict) -> dict():
+        table=TableInfo(context, table_alias= table_alias)
+
+        for column in columns:
+            name=str(column['name'])
+            name_post=""
+
+            if name.startswith('__') and name.find('@')>=0:
+                name_post=str(name[name.rfind('@')+1:]).capitalize()
+                name=name[2:name.find('@')]
+
+            if name_post!="":
+                name_post=f" ({name_post})"
+
+            column['label']=name
+            
+            for fld in table.fields:
+                if fld['name']==name:
+                    column['label']=f"{fld['label']}{name_post}"
+
+        return columns

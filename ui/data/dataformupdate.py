@@ -67,11 +67,12 @@ class DataFormUpdate(Resource):
             #
             # render the defined jinja template (in case ofahtm file)
             #
-            logger.info(f"Redirect : {next}")
+            #logger.info(f"Redirect : {next}")
+            pagemode=context.get_arg("__pagemode", "dataformupdate")
 
             template=JinjaTemplate.create_file_template(context,file)
             response = make_response(template.render({"table": table_info.table_alias,
-                    "pagemode": "dataformupdate",
+                    "pagemode": pagemode,
                     "id": id, "data": rs.get_result(), "context": context, "fields": fields_meta,
                     "table_meta": table_meta,
                     "title": f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}"
