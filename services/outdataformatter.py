@@ -25,6 +25,8 @@ class OutDataFormatter(object):
         elif type(data)==dict:
             self._data=data
             self._columns=self._init_columns(context, table_alias,{})
+        elif type(data)==list:
+            self._data=data
         else:
             raise NotAllowedDataClass(f"Only Recordset or dict allowed! You give me a {type(data)}")
 
