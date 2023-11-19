@@ -13,6 +13,7 @@ plugins/*
 wwwroot/*
 !wwwroot/index.htm
 !wwwroot/favicon.ico
+!wwwroot/robots.txt
 !wwwroot/templates/
 venv
 init.d/*
