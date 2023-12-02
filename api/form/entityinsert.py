@@ -41,8 +41,6 @@ class EntityAdd(Resource):
                     
                     del json[key]
 
-            json=request.form.to_dict()
-
             fetch=build_fetchxml_by_alias(context,table,None, json, type="insert")
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
