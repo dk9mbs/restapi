@@ -59,7 +59,7 @@ def before_request():
         if request.endpoint=='doc':
             abort(404, "Not enabled")
 
-    logger.info(f"Endpoint: {request.endpoint}")
+    #logger.info(f"Endpoint: {request.endpoint}")
 
     if request.endpoint!='api.login' and request.endpoint!='ui.login':
         login=False

@@ -32,6 +32,15 @@ class EntityAdd(Resource):
         try:
             context=g.context
 
+            action="default"
+            json=request.form.to_dict()
+            for key in list(json):
+                if key.startswith("__"):
+                    if key=="__action":
+                        action=json[key]
+                    
+                    del json[key]
+
             json=request.form.to_dict()
 
             fetch=build_fetchxml_by_alias(context,table,None, json, type="insert")
