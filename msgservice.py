@@ -49,6 +49,7 @@ class MqttWorker():
         self._topics.append({"topic": "owntracks/+/+/waypoints","regex":"^owntracks/.*/.*/waypoints$", "prefix":""})
         self._topics.append({"topic": "+/rpc","regex":"^shelly.*/rpc$", "prefix":"iot_shelly/"})
         self._topics.append({"topic": "restapi/sys/ping","regex":"^restapi/sys/ping$", "prefix":""})
+        self._topics.append({"topic": "restapi/solution/iot/sys/node/pong","regex":"^restapi/solution/iot/sys/node/pong$", "prefix":""})
 
     def kill(self):
         self._run=False
