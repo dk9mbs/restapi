@@ -51,6 +51,8 @@ class MqttWorker():
         self._topics.append({"topic": "restapi/sys/ping","regex":"^restapi/sys/ping$", "prefix":""})
         self._topics.append({"topic": "restapi/solution/iot/sys/node/pong","regex":"^restapi/solution/iot/sys/node/pong$", "prefix":""})
 
+        self._topics.append({"topic": "iot_restapi/dk9mbs/status/rpc","regex":"^iot_restapi/dk9mbs/status/rpc$", "prefix":"iot_dk9mbs_device_status/"})
+
     def kill(self):
         self._run=False
         self._client.loop_stop()

@@ -18,12 +18,16 @@ class Field:
         self._dirty=False
         self._table_name=None
         self._table_alias=None
+        self._is_ref_info=False
 
         if 'format' in kwargs:
             self._format=kwargs['format']
 
         if 'pk' in kwargs:
             self._primary_key=kwargs['pk']
+
+        if 'is_ref_info' in kwargs:
+            self._is_ref_info=kwargs['is_ref_info']
 
         self._value=self._validate(value)
 
@@ -37,6 +41,10 @@ class Field:
         self._dirty=False
 
     @property
+    def is_ref_info(self):
+        return self._is_ref_info
+
+    @property
     def table_alias(self):
         return self._table_alias
 
@@ -46,6 +54,9 @@ class Field:
 
     @property
     def dirty(self):
+        if self._is_ref_info==True:
+            return False
+                                    
         return self._dirty
 
     @dirty.setter

@@ -1066,8 +1066,8 @@ class {{ data[\'alias\'] }}(BaseModel):
     {% set pk=True %}{% endif -%}
     {{ f[\'name\'] }}={{ f[\'orm_classname\']}}(pk={{ pk }})
     {% if not f[\'referenced_table_name\'] == None -%}
-    {{ f[\'name\'] }}_name={{ f[\'orm_classname\']}}()
-    {{ f[\'name\'] }}_url={{ f[\'orm_classname\']}}()
+    {{ f[\'name\'] }}_name={{ f[\'orm_classname\']}}(is_ref_info=True)
+    {{ f[\'name\'] }}_url={{ f[\'orm_classname\']}}(is_ref_info=True)
     {% endif -%}
     {% endfor %}
     class Meta:
