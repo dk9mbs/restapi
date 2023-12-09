@@ -69,7 +69,8 @@ class BaseModel(metaclass=MetaModel):
         key_count=0
 
         for key, value in self.__dict__.items():
-            if isinstance(value, Field) and value.dirty:
+            # is_ref_info= linked fields like _name and _url
+            if isinstance(value, Field) and value.dirty and not value.is_ref_info:
                 data[key]=value.value
 
             # for where clause use not the dirty flag
