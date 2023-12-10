@@ -469,6 +469,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1300,1,'Process Log (nur Fehler)','/ui/v1.0/data/view/api_process_log/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1400,1,'Process Log (alle)','/ui/v1.0/data/view/api_process_log/all',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1500,1,'API Keys','/ui/v1.0/data/view/api_user_apikey/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1600,1,'MQTT Message Bus','/ui/v1.0/data/view/api_mqtt_message_bus/default',1,1);
 
 
 

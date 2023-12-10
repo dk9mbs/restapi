@@ -48,21 +48,25 @@ class MqttWorker():
         self._topics=[]
 
         self._context=AppInfo.create_context(session_id)
-        mqtt=api_mqtt_message_bus.objects(self._context).select().where(api_mqtt_message_bus.is_enabled==-1).to_list()
-        self._context.close()
-        #device=iot_device.objects(context).select().where(iot_device.id==routing.external_device_id.value).to_entity()
+        topics=api_mqtt_message_bus.objects(self._context).select().where(api_mqtt_message_bus.is_enabled==-1).to_list()
 
-        #ToDo: put the topics into the database table
-        self._topics.append({"topic": "owntracks/+/+","regex":"^owntracks/.*/.*$", "prefix":""})
-        self._topics.append({"topic": "owntracks/+/+/waypoints","regex":"^owntracks/.*/.*/waypoints$", "prefix":""})
-        self._topics.append({"topic": "+/rpc","regex":"^shelly.*/rpc$", "prefix":"iot_shelly/"})
-        self._topics.append({"topic": "restapi/sys/ping","regex":"^restapi/sys/ping$", "prefix":""})
-        self._topics.append({"topic": "restapi/solution/iot/sys/node/pong",
-            "regex":"^restapi/solution/iot/sys/node/pong$", 
-            "prefix":"iot_sys_pong/"})
-        self._topics.append({"topic": "restapi/solution/iot/dk9mbs/status/rpc",
-            "regex":"^restapi/solution/iot/dk9mbs/status/rpc$", 
-            "prefix":"iot_dk9mbs_device_status/"})
+        for topic in topics:
+            self._topics.append({"topic": topic.topic.value,"regex":topic.regex.value , "prefix": topic.alias.value})
+
+
+        #self._topics.append({"topic": "owntracks/+/+","regex":"^owntracks/.*/.*$", "prefix":""})
+        #self._topics.append({"topic": "owntracks/+/+/waypoints","regex":"^owntracks/.*/.*/waypoints$", "prefix":""})
+        #self._topics.append({"topic": "+/rpc","regex":"^shelly.*/rpc$", "prefix":"iot_shelly/"})
+        #self._topics.append({"topic": "restapi/sys/ping","regex":"^restapi/sys/ping$", "prefix":""})
+        #self._topics.append({"topic": "restapi/solution/iot/sys/node/pong",
+        #    "regex":"^restapi/solution/iot/sys/node/pong$", 
+        #    "prefix":"iot_sys_pong/"})
+        #self._topics.append({"topic": "restapi/solution/iot/dk9mbs/status/rpc",
+        #    "regex":"^restapi/solution/iot/dk9mbs/status/rpc$", 
+        #    "prefix":"iot_dk9mbs_device_status/"})
+
+
+        AppInfo.save_context(self._context)
 
     def kill(self):
         self._run=False
