@@ -566,3 +566,15 @@ CREATE TABLE IF NOT EXISTS api_setting (
     UNIQUE KEY(setting)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS api_mqtt_message_bus(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    topic varchar(500) NOT NULL COMMENT '',
+    regex varchar(500) NOT NULL COMMENT '',
+    alias varchar(500) NULL COMMENT '',
+    is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '',
+    solution_id int NOT NULL DEFAULT'1',
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_mqtt_message_bus AUTO_INCREMENT=900000000;

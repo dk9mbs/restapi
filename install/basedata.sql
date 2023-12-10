@@ -159,6 +159,10 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (31,'API Keys','api_user_apikey', 'api_user_apikey','id','string','name',-1);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (32,'Message Bus Listener','api_mqtt_message_bus', 'api_mqtt_message_bus','id','int','topic',-1);
+
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -181,6 +185,15 @@ INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (1
 
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
+
+/* mqtt_message_bus */
+call api_proc_create_table_field_instance(32,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(32,200, 'topic','Topic','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(32,300, 'regex','Regex','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(32,400, 'alias','Alias','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(32,500, 'is_enabled','Aktiv','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(32,600, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+
 
 /* api_user_group */
 call api_proc_create_table_field_instance(4,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
@@ -470,6 +483,12 @@ INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('m
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.password','','MQTT Password',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.host','','MQTT Host',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.port','','MQTT Port',1);
+
+
+/* MQTT Message Topics */
+INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias) VALUES (1, 'restapi/sys/ping', '^restapi/sys/ping$', '');
+INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias, solution_id) VALUES (100020001, 'owntracks/+/+', '^owntracks/.*/.*$', '',  10002);
+INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias, solution_id) VALUES (100020002, 'owntracks/+/+/waypoints', '^owntracks/.*/.*/waypoints$', '', 10002);
 
 
 /* Dataviews */
@@ -1015,6 +1034,17 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </orderby>
 </restapi>',
 '{"__table_id@name": {},"name": {},"__type_id@name": {},"__solution_id@name": {}}');
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+111,'LISTVIEW','default',32,'id',1,'<restapi type="select">
+    <table name="api_mqtt_message_bus" alias="b"/>
+    <orderby>
+        <field name="topic" alias="b" sort="ASC"/>
+    </orderby>
+</restapi>',
+'{"id": {},"topic": {},"regex": {},"alias": {}}');
+
 
 
 /* out_data_formatter */
