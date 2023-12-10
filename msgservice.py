@@ -13,6 +13,7 @@ from core.fetchxmlparser import FetchXmlParser
 from services.database import DatabaseServices
 from core.plugin import ProcessTools
 from core.setting import Setting
+from shared.model import *
 
 class Session:
     def __init__(self, name="default", init_timer=True):
@@ -45,13 +46,27 @@ class MqttWorker():
         self._client=None
 
         self._topics=[]
-        self._topics.append({"topic": "owntracks/+/+","regex":"^owntracks/.*/.*$", "prefix":""})
-        self._topics.append({"topic": "owntracks/+/+/waypoints","regex":"^owntracks/.*/.*/waypoints$", "prefix":""})
-        self._topics.append({"topic": "+/rpc","regex":"^shelly.*/rpc$", "prefix":"iot_shelly/"})
-        self._topics.append({"topic": "restapi/sys/ping","regex":"^restapi/sys/ping$", "prefix":""})
-        self._topics.append({"topic": "restapi/solution/iot/sys/node/pong","regex":"^restapi/solution/iot/sys/node/pong$", "prefix":""})
 
-        self._topics.append({"topic": "iot_restapi/dk9mbs/status/rpc","regex":"^iot_restapi/dk9mbs/status/rpc$", "prefix":"iot_dk9mbs_device_status/"})
+        self._context=AppInfo.create_context(session_id)
+        topics=api_mqtt_message_bus.objects(self._context).select().where(api_mqtt_message_bus.is_enabled==-1).to_list()
+
+        for topic in topics:
+            self._topics.append({"topic": topic.topic.value,"regex":topic.regex.value , "prefix": topic.alias.value})
+
+
+        #self._topics.append({"topic": "owntracks/+/+","regex":"^owntracks/.*/.*$", "prefix":""})
+        #self._topics.append({"topic": "owntracks/+/+/waypoints","regex":"^owntracks/.*/.*/waypoints$", "prefix":""})
+        #self._topics.append({"topic": "+/rpc","regex":"^shelly.*/rpc$", "prefix":"iot_shelly/"})
+        #self._topics.append({"topic": "restapi/sys/ping","regex":"^restapi/sys/ping$", "prefix":""})
+        #self._topics.append({"topic": "restapi/solution/iot/sys/node/pong",
+        #    "regex":"^restapi/solution/iot/sys/node/pong$", 
+        #    "prefix":"iot_sys_pong/"})
+        #self._topics.append({"topic": "restapi/solution/iot/dk9mbs/status/rpc",
+        #    "regex":"^restapi/solution/iot/dk9mbs/status/rpc$", 
+        #    "prefix":"iot_dk9mbs_device_status/"})
+
+
+        AppInfo.save_context(self._context)
 
     def kill(self):
         self._run=False
@@ -84,15 +99,16 @@ class MqttWorker():
                 for t in self._topics:
                     if t['regex']!="" and t['regex']!=None:
                         if re.search(t['regex'], topic):
-                            create_logger(__name__).info(f"Match: {topic}")
                             if t['prefix']!="":
                                 topic=f"{t['prefix']}{topic}"
 
-                create_logger(__name__).info(f"{topic}")
-                create_logger(__name__).info(f"{params}")
+                            if int(Setting.get_value(context, "core.debug.level", 0))==0:
+                                create_logger(__name__).info(f"Match: {topic}")
+                                create_logger(__name__).info(f"{topic}")
+                                create_logger(__name__).info(f"{params}")
 
-                self._execute_plugin(context, topic.split("/")[0],params )
-                self._execute_plugin(context, topic, params )
+                            self._execute_plugin(context, topic.split("/")[0],params )
+                            self._execute_plugin(context, topic, params )
 
                 AppInfo.save_context(context)
             except Exception as e:
