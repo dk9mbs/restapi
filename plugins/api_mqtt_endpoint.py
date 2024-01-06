@@ -13,7 +13,8 @@ logger=log.create_logger(__name__)
 def execute(context, plugin_context, params):
     now=datetime.datetime.now()
     config=plugin_context['config']
-
+    trigger=plugin_context['trigger']
+    
     topic=_get_config_value(config, "endpoint", "restapi/core/event/$publisher/$trigger")
     filter=_get_config_value(config, "filter", '[]').replace("'", "\"")
     filter=json.loads(filter)
@@ -33,6 +34,10 @@ def execute(context, plugin_context, params):
     topic=topic.replace("$publisher", (plugin_context['publisher']).lower())
     topic=topic.replace("$trigger", (plugin_context['trigger']).lower())
     topic=topic.replace("$type", (plugin_context['type']).lower())
+
+    if trigger.upper()=="INSERT" or trigger.upper()=="UPDATE" or trigger.upper()=="DELETE":
+        for key,val in payload.items():
+            topic=topic.replace(f"$value_{key}", str(val['value']))
 
     with MqttClient(context) as client:
         client.publish(topic, json.dumps(payload))
