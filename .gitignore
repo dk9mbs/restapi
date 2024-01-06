@@ -4,11 +4,15 @@ config.py
 *.pyo
 plugins/*
 !plugins/api_http_endpoint.py
+!plugins/api_mqtt_endpoint.py
+!plugins/api_filehook_endpoint.py
 !plugins/api_clear_log.py
 !plugins/api_clear_session.py
 !plugins/api_exec_inline_code.py
 !plugins/api_xml_generic_import.py
 !plugins/api_user_set_apikey.py
+!plugins/api_mqtt_endpoint.py
+!plugins/api_hook_endpoint.py
 3thparty
 wwwroot/*
 !wwwroot/index.htm
