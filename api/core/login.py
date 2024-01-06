@@ -41,7 +41,7 @@ class Login(Resource):
         log.create_logger(__name__).info(f"{username} {password}")
         session_id=AppInfo.login(username, password)
 
-        log.create_logger(__name__).info(f"{request.accept_mimetypes}")
+        #log.create_logger(__name__).info(f"{request.accept_mimetypes}")
 
         if session_id==None:
             if next==None:

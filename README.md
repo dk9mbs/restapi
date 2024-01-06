@@ -45,3 +45,11 @@ control_config:
 fetchxmlparser.get_columns():
 {"table": table, "database_field": name, "label": column_header, "alias": alias, "formatter": formatter}
 
+
+mqtt topics:
+solutions
+restapi/extension/[solutionname]
+restapi/solution/[solutionname]
+
+core:
+restapi/core/[scope]
