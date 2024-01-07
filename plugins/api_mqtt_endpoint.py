@@ -7,6 +7,7 @@ from services.database import DatabaseServices
 from core import log, jsontools
 
 from services.mqtt_client import MqttClient
+from core.appinfo import AppInfo
 
 logger=log.create_logger(__name__)
 
@@ -16,7 +17,7 @@ def execute(context, plugin_context, params):
     trigger=plugin_context['trigger']
     retain=True
 
-    topic=_get_config_value(config, "endpoint", "restapi/core/event/$publisher/$trigger")
+    topic=_get_config_value(config, "endpoint", "restapi/$instance/core/event/$publisher/$trigger")
     filter=_get_config_value(config, "filter", '[]').replace("'", "\"")
     filter=json.loads(filter)
 
@@ -35,6 +36,7 @@ def execute(context, plugin_context, params):
     topic=topic.replace("$publisher", (plugin_context['publisher']).lower())
     topic=topic.replace("$trigger", (plugin_context['trigger']).lower())
     topic=topic.replace("$type", (plugin_context['type']).lower())
+    topic=topic.replace("$instance", AppInfo.get_current_config("instance","id", "_"))
 
     if trigger.upper()=="INSERT" or trigger.upper()=="UPDATE" or trigger.upper()=="DELETE":
         for key,val in payload.items():
