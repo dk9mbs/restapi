@@ -9,10 +9,10 @@ VENV=$BASEDIR/venv/restapi
 
 mkdir -p "$VENV"
 
-echo "executing hook files ..."
-for FILE in $BASEDIR/init.d/*.sh
+echo "executing before hook files ..."
+for FILE in $BASEDIR/init.d/B*.sh
 do
-    echo "execute hook: $FILE"
+    echo "execute before hook: $FILE"
    . $FILE
 done
 echo "hook files executed!"
@@ -49,6 +49,16 @@ mkdir -p "$FORMATTERPATH"
 export PYTHONPATH=$BASEDIR:$PLUGINPATH:$FORMATTERPATH:../:$(python $BASEDIR/cfgreader.py plugin root)
 export RESTAPIPATH=$BASEDIR
 
+echo "executing after hook files ..."
+for FILE in $BASEDIR/init.d/A*.sh
+do
+    echo "execute after hook: $FILE"
+   . $FILE
+done
+echo "after hook files executed!"
+
 echo "=============================================================="
-echo "PYTHONPATH.......:$PYTHONPATH"
+echo "PYTHONPATH........:$PYTHONPATH"
+echo "RESTAPIPATH.......:$RESTAPIPATH"
 echo "=============================================================="
+

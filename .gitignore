@@ -21,7 +21,8 @@ wwwroot/*
 !wwwroot/templates/
 venv
 init.d/*
-!init.d/001_main.sh
+!init.d/B001_main.sh
+!init.d/A001_main.sh
 shared/*
 !shared/__init__.py
 model/*
