@@ -16,12 +16,12 @@ class JinjaEnvironment:
     def __init__(self, context, loader):
         self._context=context
         self._loader=loader
-        self._environment=self.__create_environment(context,loader)
+        self._environment=self._create_environment(context,loader)
 
     def get_environment(self):
         return self._environment
 
-    def __create_environment(self,context, loader):
+    def _create_environment(self,context, loader):
 
         jenv = jinja2.Environment(
             loader=loader,
