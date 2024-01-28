@@ -578,3 +578,41 @@ CREATE TABLE IF NOT EXISTS api_mqtt_message_bus(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_mqtt_message_bus AUTO_INCREMENT=900000000;
+
+/* EMail */
+CREATE TABLE IF NOT EXISTS api_email_mailbox_type(
+    id varchar(10) NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    PRIMARY KEY(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS api_email_mailbox(
+    id varchar(25) NOT NULL COMMENT '',
+    name varchar(100) NOT NULL COMMENT '',
+    type_id varchar(10) NOT NULL COMMENT '',
+    username varchar(100) NOT NULL COMMENT '',
+    password varchar(100) NOT NULL COMMENT '',
+    imap_folder varchar(100) NULL DEFAULT 'INBOX' COMMENT '',
+    imap_server varchar(250) NULL COMMENT '',
+    imap_port int NULL DEFAULT '993',
+    smtp_server varchar(250) NULL COMMENT '',
+    smtp_port int NULL DEFAULT '587',
+    is_enabled smallint NOT NULL DEFAULT'-1' COMMENT '',
+    PRIMARY KEY(id),
+    FOREIGN KEY(type_id) REFERENCES api_email_mailbox_type(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS api_email(
+    id int NOT NULL AUTO_INCREMENT,
+    mailbox_id varchar(25) NOT NULL,
+    message_id varchar(250) NOT NULL,
+    message_from varchar(250) NOT NULL,
+    message_to text NULL,
+    subject text NULL,
+    body text NULL,
+    spam_level varchar(50) NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(mailbox_id) REFERENCES api_email_mailbox(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/* end EMail */

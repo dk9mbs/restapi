@@ -162,6 +162,14 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (32,'Message Bus Listener','api_mqtt_message_bus', 'api_mqtt_message_bus','id','int','topic',-1);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (33,'EMail Mailbox','api_email_mailbox', 'api_email_mailbox','id','string','name',-1);
+
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (34,'EMail Mailbox Typen','api_email_mailbox_type', 'api_email_mailbox_type','id','string','name',-1);
+
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (35,'EMail','api_email', 'api_email','id','int','subject',-1);
 
 
 /* Bugfixing */
@@ -185,6 +193,24 @@ INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (1
 
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
+
+INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP','Only inbound (IMAP)');
+INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('SMTP','Only outbound (SMTP)');
+INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP+SMTP','Inpund and outbound (IMAP+SMTP)');
+
+/* EMail Mailbox */
+call api_proc_create_table_field_instance(33,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,300, 'type_id','Type','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,400, 'username','Username','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,500, 'password','Password','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,600, 'imap_server','IMAP Server','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,700, 'imap_folder','IMAP Folder','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,800, 'imap_port','IMAP Port','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,900, 'smtp_server','SMTP Server','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1000, 'smtp_port','SMTP Port','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1100, 'is_enabled','Enabled','int',19,'{"disabled": false}', @out_value);
+
 
 /* mqtt_message_bus */
 call api_proc_create_table_field_instance(32,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
@@ -471,6 +497,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1400,1,'Process Log (alle)','/ui/v1.0/data/view/api_process_log/all',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1500,1,'API Keys','/ui/v1.0/data/view/api_user_apikey/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1600,1,'MQTT Message Bus','/ui/v1.0/data/view/api_mqtt_message_bus/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1700,1,'E-Mail Postboxen','/ui/v1.0/data/view/api_email_mailbox/default',1,1);
 
 
 
@@ -1047,7 +1074,14 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 </restapi>',
 '{"id": {},"topic": {},"regex": {},"alias": {}}');
 
-
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+112,'LISTVIEW','default',33,'id',1,'<restapi type="select">
+    <table name="api_email_mailbox" alias="b"/>
+    <orderby>
+        <field name="id" alias="b" sort="ASC"/>
+    </orderby>
+</restapi>',
+'{"id": {},"name": {},"imap_server": {},"imap_folder": {},"__type_id@name": {},"is_enabled": {}}');
 
 /* out_data_formatter */
 INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (1,'$api_sub-table',7,2);

@@ -13,6 +13,7 @@ plugins/*
 !plugins/api_user_set_apikey.py
 !plugins/api_mqtt_endpoint.py
 !plugins/api_hook_endpoint.py
+!plugins/api_imap_mail.py
 3thparty
 wwwroot/*
 !wwwroot/index.htm
