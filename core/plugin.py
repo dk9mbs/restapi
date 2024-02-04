@@ -212,7 +212,7 @@ class ProcessTools(object):
                             status_id,plugin_context['response']['error_text'],datetime.datetime.now(),
                             plugin_context['process_id']])
 
-        if status_id==20:
+        if status_id>=10:
             sql=f"""UPDATE api_event_handler SET status_id=%s WHERE id=%s"""
             cursor.execute(sql,["WAITING", plugin_context['event_handler_id']])
 
