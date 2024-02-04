@@ -171,6 +171,11 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (35,'EMail','api_email', 'api_email','id','int','subject',-1);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (36,'EMailparts','api_email_part', 'api_email_part','id','int','content_type',-1);
+
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (37,'EMail Header','api_email_header', 'api_email_header','id','int','key',0);
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -203,13 +208,23 @@ call api_proc_create_table_field_instance(33,100, 'id','ID','string',1,'{"disabl
 call api_proc_create_table_field_instance(33,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(33,300, 'type_id','Type','string',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(33,400, 'username','Username','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(33,500, 'password','Password','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,500, 'password','Passwort','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(33,600, 'imap_server','IMAP Server','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(33,700, 'imap_folder','IMAP Folder','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(33,800, 'imap_port','IMAP Port','int',14,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(33,900, 'smtp_server','SMTP Server','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(33,1000, 'smtp_port','SMTP Port','int',14,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(33,1100, 'is_enabled','Enabled','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,700, 'imap_folder','IMAP Ordner','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,800, 'imap_imported_folder','IMAP Ordner (Archiv)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,900, 'imap_error_folder','IMAP Ordner (Fehler)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1000, 'imap_delete','Nach IMAP Import E-Mail löschen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1100, 'imap_port','IMAP Port','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1200, 'smtp_server','SMTP Server','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1300, 'smtp_port','SMTP Port','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1400, 'is_enabled','Enabled','int',19,'{"disabled": false}', @out_value);
+
+
+/* email */
+call api_proc_create_table_field_instance(35,1200, '_header','Header','string',200,'{"columns": "header_key,header_value"}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_email_header',referenced_table_id=37,referenced_field_name='email_id'
+    WHERE id=@out_value;
 
 
 /* mqtt_message_bus */
@@ -407,6 +422,7 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (8,'api_clear_session','$timer_every_hour','execute','after',0);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (9,'api_user_set_apikey','api_user_apikey','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async,config) VALUES (10,'api_mqtt_endpoint','dummy','update','after',-1,'{"filter": "[\'id\', \'name\']"}');
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (11,'api_imap_mail','$timer_every_ten_minutes','execute','after',0);
 
 
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (0,'Pending');

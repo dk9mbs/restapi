@@ -53,15 +53,15 @@ class BaseModel(metaclass=MetaModel):
     def get_fields(cls, context: object):
         return cls._get_manager()._get_fields()
 
-    def insert(self, context: Context()) -> bool:
+    def insert(self, context: Context()):
         data=dict()
         for key, value in self.__dict__.items():
             if isinstance(value, Field) and value.dirty:
                 data[key]=value.value
 
-        BaseModel.manager_class(context ,model_class=self.__class__).insert(data)
-
-        return True
+        rs=BaseModel.manager_class(context ,model_class=self.__class__).insert(data)
+        return rs.get_inserted_id()
+        #return True
 
     def update(self, context: Context) -> bool:
         data=dict()

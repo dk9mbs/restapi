@@ -1,20 +1,30 @@
 import datetime
 import requests
 import json
+import re, getpass
+import imaplib, email
+from email.header import decode_header
 
 from core.fetchxmlparser import FetchXmlParser
 from services.database import DatabaseServices
-from core import log, jsontools
+from core import log, jsontools, file as restapi_file
 from shared.model import *
 
-import imaplib
-import email
-from email.header import decode_header
-import os
-
-import email
-
 logger=log.create_logger(__name__)
+
+class _FileProxy:
+    def __init__(self, part):
+        self._part=part
+
+    def read(self):
+        return self._part.get_payload(decode=True)
+
+    @property
+    def filename(self):
+        value, encoding = decode_header(self._part.get_filename())[0]
+        if type(value)==bytes:
+            value=value.decode()
+        return value
 
 def execute(context, plugin_context, params):
     postboxes=api_email_mailbox.objects(context).select().where(api_email_mailbox.type_id=='IMAP'). \
@@ -22,116 +32,146 @@ def execute(context, plugin_context, params):
 
     for postbox in postboxes:
         process_imap(context, postbox.id.value, postbox.imap_server.value, 
-            postbox.imap_folder.value, postbox.username.value, postbox.password.value)
+            postbox.imap_folder.value,postbox.imap_imported_folder.value, postbox.imap_error_folder.value, 
+            postbox.imap_delete.value, postbox.username.value, postbox.password.value)
 
-def process_imap(context, mailbox_id, imap_server, folder, username, password):
+def process_imap(context, mailbox_id, imap_server, folder,folder_archive, folder_error, delete, username, password):
     now=datetime.datetime.now()
 
     def clean(text):
         # clean text for creating a folder
         return "".join(c if c.isalnum() else "_" for c in text)
 
-    # create an IMAP4 class with SSL 
     imap = imaplib.IMAP4_SSL(imap_server)
-    # authenticate
     imap.login(username, password)
-
-    status, messages = imap.select(folder)
-    # number of top emails to fetch
-    #N = 1
-    # total number of emails
-    #messages = int(messages[0])
-
-    status, messages = imap.search(None, '(UNSEEN)')
+    status, messages = imap.select(folder, readonly=False)
+    #use not imap.search. Imap.search returns not a unique id
+    status, messages = imap.uid('search', None, '(ALL)')
+    #print(status)
+    #print(messages)
     messages=[int(s) for s in messages[0].split()]
 
-    #for i in range(messages, messages-N, -1):
     for i in messages:
-        #print(f"################{i} ")
-        # fetch the email message by ID
-        res, msg = imap.fetch(str(i), "(RFC822)")
+        print(f"Message UID: {str(i)}")
+        #res, msg = imap.fetch(str(i), "(RFC822)")
+        #res, msg = imap.uid('fetch', str(i), '(FLAGS BODY[HEADER.FIELDS (FROM DATE SUBJECT)])')
+        res, msg = imap.uid('fetch', str(i), '(RFC822)')
+        if res!="OK":
+            raise Exception(f"Cannot fetch mail from imap server {str(i)}")
+
         for response in msg:
             if isinstance(response, tuple):
-                # parse a bytes email into a message object
                 msg = email.message_from_bytes(response[1])
-                # decode the email subject
                 subject, encoding = decode_header(msg["Subject"])[0]
                 if isinstance(subject, bytes):
-                    # if it's a bytes, decode to str
                     encoding=_get_encoding(encoding)
                     subject = subject.decode(encoding)
-                # decode email sender
+
                 msg_from=_get_header_value(msg, "From")
                 msg_to=_get_header_value(msg, "To", "")
                 msg_id=_get_header_value(msg, "Message-ID")
                 msg_spam_level=_get_header_value(msg, "X-Spam-Level", "")
+                msg_delivery_date=_get_header_value(msg, "Delivery-date")
+                email_parts=[]
+                files=[]
 
-                print("subject:", subject)
-                print("from:", msg_from)
+                print("subject:", f"{subject}"  )
 
-                # if the email message is multipart
                 if msg.is_multipart():
-                    # iterate over email parts
                     for part in msg.walk():
-                        # extract content type of email
+                        email_parts=[]
+                        files=[]
+                        body=None
+                        part_body=None
                         content_type = part.get_content_type()
                         content_disposition = str(part.get("Content-Disposition"))
-                        try:
-                            # get the email body
-                            body = part.get_payload(decode=True).decode()
-                        except:
-                            pass
-                        if content_type == "text/plain" and "attachment" not in content_disposition:
-                            # print text/plain emails and skip attachments
-                            #print(body)
-                            pass
+
+                        if (content_type == "text/plain" and "attachment" not in content_disposition) or content_type == "text/html":
+                            part_body=str(part.get_payload(decode=True), str("utf-8"), "ignore").encode('utf8', 'replace')
+
+                        if content_type == "text/html":
+                            body=part_body
                         elif "attachment" in content_disposition:
-                            # download attachment
                             filename = part.get_filename()
                             if filename:
-                                folder_name = clean(subject)
-                                if not os.path.isdir(folder_name):
-                                    # make a folder for this email (named after the subject)
-                                    os.mkdir(folder_name)
-                                filepath = os.path.join(folder_name, filename)
-                                # download attachment and save it
-                                #open(filepath, "wb").write(part.get_payload(decode=True))
+                                #folder_name = '/tmp/test/'+clean(subject)
+                                #if not os.path.isdir(folder_name):
+                                #    os.mkdir(folder_name)
+                                #    pass
+                                #filepath = os.path.join(folder_name, filename)
+                                #f=open(filepath, "wb")
+                                #f.write(part.get_payload(decode=True))
+                                #f.close()
+
+                                print(f"attachment:{decode_header(filename)[0]}")
+                                proxy=_FileProxy(part)
+                                files.append(proxy)
+
+                        email_part=api_email_part()
+                        email_part.content_type.value=content_type
+                        email_part.body.value=part_body
+                        email_part.content_disposition.value=content_disposition.split(";")[0]
+                        email_parts.append(email_part)
+
                 else:
-                    # extract content type of email
                     content_type = msg.get_content_type()
-                    # get the email body
-                    #body = msg.get_payload(decode=True).decode()
                     body=str(msg.get_payload(decode=True), str("utf-8"), "ignore").encode('utf8', 'replace')
+
                     if content_type == "text/plain":
-                        # print only text email parts
-                        #print(body)
                         pass
 
-                if content_type == "text/html":
-                    # if it's HTML, create a new HTML file and open it in browser
-                    folder_name = clean(subject)
-                    if not os.path.isdir(folder_name):
-                        # make a folder for this email (named after the subject)
-                        #os.mkdir(folder_name)
+                    if content_type == "text/html":
                         pass
 
-                    filename = "index.html"
-                    filepath = os.path.join(folder_name, filename)
-                    # write the file
-                    #open(filepath, "w").write(body)
-                    # open in the default browser
-                    #webbrowser.open(filepath)
+                mail = api_email.objects(context).select().where(api_email.message_id==msg_id).to_entity()
+
+                if mail==None:
                     mail=api_email()
                     mail.mailbox_id.value=mailbox_id
                     mail.message_id.value=msg_id
-                    mail.subject.value=subject.encode('utf-8').decode('utf-8')
-                    #mail.body.value=body
+                    mail.subject.value=subject
+                    mail.body.value=body
                     mail.message_from.value=msg_from
                     mail.message_to.value=msg_to
-                    mail.insert(context)
+                    mail.content_type.value=content_type
+                    mail.folder.value=folder
+                    mail.message_uid.value=i
+                    inserted_id=mail.insert(context)
+
+                    for key in msg.keys():
+                        header=api_email_header()
+                        header.email_id.value=inserted_id
+                        header.header_key.value=key
+                        header.header_value.value=_get_header_value(msg, key)
+                        header.insert(context)
+
+                    for email_part in email_parts:
+                        email_part.email_id.value=inserted_id
+                        email_part.insert(context)
+
+                    for part in files:
+                        try:
+                            file=restapi_file.File()
+                            file.create_file(context, part, f"email/{inserted_id}", 
+                                reference_field_name="email_id", reference_id=inserted_id)
+                        except Exception as e:
+                            import traceback
+                            traceback.print_exc()
+
+                    result = imap.uid('COPY', str(i), folder_archive)
+                    if result[0] == 'OK':
+                        if delete==-1:
+                            mov, data = imap.uid('STORE', str(i) , '+FLAGS', '(\Deleted)')
+                        imap.expunge()
+            
+                else:
+                    result = imap.uid('COPY', str(i), folder_error)
+                    if result[0] == 'OK':
+                        if delete==-1:
+                            mov, data = imap.uid('STORE', str(i) , '+FLAGS', '(\Deleted)')
+                        imap.expunge()
 
 
-                print("="*100)
     # close the connection and logout
     imap.close()
     imap.logout()

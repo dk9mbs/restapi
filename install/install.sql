@@ -22,14 +22,14 @@ BEGIN
     set poid = -1;
 
     IF EXISTS (SELECT * FROM api_table_field WHERE table_id=pitable_id AND name=piname) THEN
-        call api_proc_logger("Field instance exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
+        /* call api_proc_logger("Field instance exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) ); */
         SELECT id INTO poid FROM api_table_field WHERE table_id=pitable_id AND name=piname LIMIT 1;
 
         UPDATE api_table_field set pos=pipos,name=piname,label=pilabel,control_id=picontrol_id,control_config=picontrol_config
             WHERE id=poid AND provider_id='MANUFACTURER';
 
     ELSE
-        call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
+        /* call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );*/
         INSERT INTO api_table_field (pos, table_id,name,field_name,label,type_id,control_id,control_config)
             VALUES
             (pipos, pitable_id, piname,piname, pilabel, pitype_id, picontrol_id, picontrol_config);
@@ -580,39 +580,77 @@ CREATE TABLE IF NOT EXISTS api_mqtt_message_bus(
 ALTER TABLE api_mqtt_message_bus AUTO_INCREMENT=900000000;
 
 /* EMail */
+--ALTER TABLE api_file DROP FOREIGN KEY IF EXISTS foreign_reference_api_email;
+--DROP TABLE IF EXISTS api_email_header;
+--DROP TABLE IF EXISTS api_email_part;
+--DROP TABLE IF EXISTS api_email;
+
+
 CREATE TABLE IF NOT EXISTS api_email_mailbox_type(
     id varchar(10) NOT NULL COMMENT '',
     name varchar(50) NOT NULL COMMENT '',
     PRIMARY KEY(id)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS api_email_mailbox(
-    id varchar(25) NOT NULL COMMENT '',
+    id varchar(10) NOT NULL COMMENT '',
     name varchar(100) NOT NULL COMMENT '',
     type_id varchar(10) NOT NULL COMMENT '',
     username varchar(100) NOT NULL COMMENT '',
     password varchar(100) NOT NULL COMMENT '',
-    imap_folder varchar(100) NULL DEFAULT 'INBOX' COMMENT '',
+    imap_folder varchar(250) NULL DEFAULT 'INBOX' COMMENT '',
     imap_server varchar(250) NULL COMMENT '',
+    imap_imported_folder varchar(250) NULL COMMENT 'Copy the mail to target folder after import',
+    imap_error_folder varchar(25) NULL COMMENT 'Copy all doublets (message_id) in this folder',
+    imap_delete smallint NOT NULL DEFAULT '0' COMMENT 'Delete mail after import',
     imap_port int NULL DEFAULT '993',
     smtp_server varchar(250) NULL COMMENT '',
     smtp_port int NULL DEFAULT '587',
     is_enabled smallint NOT NULL DEFAULT'-1' COMMENT '',
     PRIMARY KEY(id),
     FOREIGN KEY(type_id) REFERENCES api_email_mailbox_type(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS api_email(
     id int NOT NULL AUTO_INCREMENT,
-    mailbox_id varchar(25) NOT NULL,
-    message_id varchar(250) NOT NULL,
+    mailbox_id varchar(10) NOT NULL,
+    message_id varchar(250) NULL COMMENT 'in case of outgoing mail null',
+    message_uid int NULL COMMENT 'uid from imap server',
     message_from varchar(250) NOT NULL,
     message_to text NULL,
+    folder varchar(250) NOT NULL,
     subject text NULL,
-    body text NULL,
+    content_type varchar(100) NULL,
+    body longtext NULL,
     spam_level varchar(50) NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
     PRIMARY KEY(id),
-    FOREIGN KEY(mailbox_id) REFERENCES api_email_mailbox(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    FOREIGN KEY(mailbox_id) REFERENCES api_email_mailbox(id),
+    UNIQUE KEY (mailbox_id, message_id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS api_email_part(
+    id int NOT NULL AUTO_INCREMENT,
+    email_id int not NULL,
+    content_type varchar(100) NULL,
+    content_disposition varchar(50) NULL,
+    body longtext NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(email_id) REFERENCES api_email(id) ON DELETE CASCADE
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_email_header(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    email_id int NOT NULL COMMENT '',
+    header_key varchar(50) NOT NULL COMMENT '',
+    header_value text NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    FOREIGN KEY(email_id) REFERENCES api_email(id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+ALTER TABLE api_file ADD column IF NOT EXISTS email_id int NULL COMMENT 'unique id from the email' AFTER file;
+ALTER TABLE api_file ADD CONSTRAINT `foreign_reference_api_email` FOREIGN KEY IF NOT EXISTS (email_id) REFERENCES api_email(id) ON DELETE CASCADE;
 /* end EMail */
