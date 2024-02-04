@@ -152,7 +152,7 @@ def process_imap(context, mailbox_id, imap_server, folder,folder_archive, folder
                     for part in files:
                         try:
                             file=restapi_file.File()
-                            print(f"**** FILENAME****:{part.filename}")
+                            #print(f"**** FILENAME****:{part.filename}")
                             file.create_file(context, part, f"email/{inserted_id}", 
                                 reference_field_name="email_id", reference_id=inserted_id)
                         except Exception as e:
