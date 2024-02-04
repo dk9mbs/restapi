@@ -78,11 +78,11 @@ def process_imap(context, mailbox_id, imap_server, folder,folder_archive, folder
                 print("subject:", f"{subject}"  )
 
                 if msg.is_multipart():
+                    email_parts=[]
+                    files=[]
+                    body=None
+                    part_body=None
                     for part in msg.walk():
-                        email_parts=[]
-                        files=[]
-                        body=None
-                        part_body=None
                         content_type = part.get_content_type()
                         content_disposition = str(part.get("Content-Disposition"))
 
@@ -152,6 +152,7 @@ def process_imap(context, mailbox_id, imap_server, folder,folder_archive, folder
                     for part in files:
                         try:
                             file=restapi_file.File()
+                            print(f"**** FILENAME****:{part.filename}")
                             file.create_file(context, part, f"email/{inserted_id}", 
                                 reference_field_name="email_id", reference_id=inserted_id)
                         except Exception as e:

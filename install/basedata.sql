@@ -221,9 +221,14 @@ call api_proc_create_table_field_instance(33,1400, 'is_enabled','Enabled','int',
 
 
 /* email */
-call api_proc_create_table_field_instance(35,1200, '_header','Header','string',200,'{"columns": "header_key,header_value"}', @out_value);
+call api_proc_create_table_field_instance(35,1200, '_header','Header','string',200,'{"columns": "id,header_key,header_value"}', @out_value);
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_email_header',referenced_table_id=37,referenced_field_name='email_id'
+    WHERE id=@out_value;
+
+call api_proc_create_table_field_instance(35,1300, '_parts','Parts','string',200,'{"columns": "id,content_type"}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_email_part',referenced_table_id=37,referenced_field_name='email_id'
     WHERE id=@out_value;
 
 

@@ -50,9 +50,13 @@ class File:
             logger.info(f"Extension: {extension}")
 
         if not f"{extension}" in mimetypes.types_map:
-            raise UnknownMimeType(f"Extension: {extension}")
+            if extension==".p7s":
+                mime_type="application/pkcs7-signature"
+            else:
+                raise UnknownMimeType(f"Extension: {extension}")
+        else:
+            mime_type=mimetypes.types_map[extension]
 
-        mime_type=mimetypes.types_map[extension]
         full_path=os.path.join(remote_path, file_name)
 
         sql=f"""
