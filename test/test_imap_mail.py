@@ -1,11 +1,8 @@
 import unittest
 
 from core.database import CommandBuilderFactory
-#from core.database import FetchXmlParser
 from config import CONFIG
 from core.appinfo import AppInfo
-#from core.plugin import Plugin
-#from core.xml_reader import XmlReader
 from plugins.api_imap_mail import execute as test_exec
 
 class TestPluginExecution(unittest.TestCase):

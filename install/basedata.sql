@@ -177,6 +177,9 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (37,'EMail Header','api_email_header', 'api_email_header','id','int','key',0);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (38,'Eventhandler Status','api_event_handler_status', 'api_event_handler_status','id','string','name',0);
+
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
 UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
@@ -304,6 +307,10 @@ call api_proc_create_table_field_instance(9,700, 'solution_id','Lösung','int',2
 UPDATE api_table_field SET referenced_table_name='api_solution', referenced_table_id=25, referenced_field_name='id', is_lookup=-1 WHERE id=@out_value;
 call api_proc_create_table_field_instance(9,800, 'run_async','Asynchron','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,900, 'run_queue','Queue','int',19,'{"disabled": false}', @out_value);
+
+call api_proc_create_table_field_instance(9,910, 'status_id','Single Instanz Status','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,920, 'is_single_instance','Single Instanz','int',19,'{"disabled": false}', @out_value);
+
 call api_proc_create_table_field_instance(9,1000, 'is_enabled','Aktiv','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,1100, 'config','Configuration','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,1100, 'inline_code','Inline Code','string',101,'{"disabled": false, "mode":"ace/mode/python"}', @out_value);
@@ -417,6 +424,9 @@ UPDATE api_table_field
     WHERE id=@out_value;
 
 
+INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
+INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('RUNNING', 'running',-1,0);
+
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (3,'plugin_test','dummy','update','before');
@@ -429,6 +439,7 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type)
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async,config) VALUES (10,'api_mqtt_endpoint','dummy','update','after',-1,'{"filter": "[\'id\', \'name\']"}');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (11,'api_imap_mail','$timer_every_ten_minutes','execute','after',0);
 
+UPDATE api_event_handler SET status_id='WAITING' WHERE status_id IS NULL;
 
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (0,'Pending');
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (5,'Worker');

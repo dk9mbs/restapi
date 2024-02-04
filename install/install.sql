@@ -293,6 +293,17 @@ CREATE TABLE IF NOT EXISTS api_event_type(
     UNIQUE KEY (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS api_event_handler_status(
+    id varchar(10) NOT NULL,
+    name varchar(50) NOT NULL,
+    is_running smallint NOT NULL DEFAULT '0',
+    is_waiting smallint NOT NULL DEFAULT '0',
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
+    PRIMARY KEY(id),
+    UNIQUE KEY (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS api_event_handler (
     id int NOT NULL AUTO_INCREMENT,
     plugin_module_name varchar(500) NOT NULL COMMENT 'Namespace to the register function',
@@ -304,11 +315,14 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
     run_async smallint NOT NULL DEFAULT '0' COMMENT '-1: run async 0=not async',
     run_queue smallint NOT NULL DEFAULT '0' COMMENT '-1: enabled 0=disabled run via timerservice',
     is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled',
+    status_id varchar(10) NULL COMMENT 'Waitung or Running only for single instance',
+    is_single_instance smallint NOT NULL DEFAULT '0' COMMENT 'Can only execute one per time',
     config text NULL COMMENT 'locale event handler config',
     inline_code text NULL COMMENT 'inline python code to execute',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
     FOREIGN KEY(type) REFERENCES api_event_type(id),
+    FOREIGN KEY(status_id) REFERENCES api_event_handler_status(id),
     INDEX (publisher, event),
     INDEX (publisher, event, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -319,6 +333,11 @@ ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_queue smallint NOT NU
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL default '0' COMMENT '-1: run async 0=not async' AFTER solution_id;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS config text NULL COMMENT 'locale event handler config' AFTER is_enabled;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS inline_code text NULL COMMENT 'inline python code to execute' AFTER config;
+
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS status_id varchar(10) NULL COMMENT 'Waitung or Running only for single instance' AFTER is_enabled;
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS is_single_instance smallint NOT NULL DEFAULT '0' COMMENT 'Can only execute one per time' AFTER status_id;
+ALTER TABLE api_event_handler ADD CONSTRAINT `event_handler_event_handler_status` FOREIGN KEY IF NOT EXISTS (status_id) REFERENCES api_event_handler_status(id);
+
 
 DROP TABLE IF EXISTS api_table_action;
 CREATE TABLE IF NOT EXISTS api_table_action(

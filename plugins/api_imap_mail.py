@@ -23,7 +23,10 @@ class _FileProxy:
     def filename(self):
         value, encoding = decode_header(self._part.get_filename())[0]
         if type(value)==bytes:
-            value=value.decode()
+            if encoding==None:
+                value=value.decode()
+            else:
+                value=value.decode(encoding=encoding)
         return value
 
 def execute(context, plugin_context, params):
@@ -150,14 +153,9 @@ def process_imap(context, mailbox_id, imap_server, folder,folder_archive, folder
                         email_part.insert(context)
 
                     for part in files:
-                        try:
-                            file=restapi_file.File()
-                            #print(f"**** FILENAME****:{part.filename}")
-                            file.create_file(context, part, f"email/{inserted_id}", 
-                                reference_field_name="email_id", reference_id=inserted_id)
-                        except Exception as e:
-                            import traceback
-                            traceback.print_exc()
+                        file=restapi_file.File()
+                        file.create_file(context, part, f"email/{inserted_id}", 
+                            reference_field_name="email_id", reference_id=inserted_id)
 
                     result = imap.uid('COPY', str(i), folder_archive)
                     if result[0] == 'OK':

@@ -113,6 +113,7 @@ class Plugin:
                 from api_event_handler p
                 WHERE
                 p.publisher=%s AND p.event=%s AND p.is_enabled=-1
+                AND (p.is_single_instance=0 OR (p.is_single_instance=-1 AND p.status_id='WAITING'))
                 ORDER BY sorting,id
             """
             params=[self._publisher, self._trigger]
@@ -125,6 +126,7 @@ class Plugin:
                 INNER JOIN api_process_log l ON p.id=l.event_handler_id
                 WHERE
                 l.id=%s AND p.is_enabled=-1
+                AND (p.is_single_instance=0 OR (p.is_single_instance=-1 AND p.status_id='WAITING'))
                 ORDER BY sorting,p.id
             """
             params=[self._process_id]
@@ -187,6 +189,11 @@ class ProcessTools(object):
                     json.dumps(params, default=json_serial), plugin_context['event_handler_id'],
                     plugin_context['run_async'], str(plugin_context['config'])
                 ])
+
+
+        sql=f"""UPDATE api_event_handler SET status_id=%s WHERE id=%s"""
+        cursor.execute(sql,["RUNNING", plugin_context['event_handler_id']])
+
         connection.commit()
 
 
@@ -205,7 +212,12 @@ class ProcessTools(object):
                             status_id,plugin_context['response']['error_text'],datetime.datetime.now(),
                             plugin_context['process_id']])
 
+        if status_id==20:
+            sql=f"""UPDATE api_event_handler SET status_id=%s WHERE id=%s"""
+            cursor.execute(sql,["WAITING", plugin_context['event_handler_id']])
+
         connection.commit()
+
 
     @staticmethod
     def create_context(publisher, trigger, type, event_handler_id, run_async, plugin_config, process_id, inline_code, **kwargs):

@@ -52,6 +52,8 @@ class File:
         if not f"{extension}" in mimetypes.types_map:
             if extension==".p7s":
                 mime_type="application/pkcs7-signature"
+            elif extension==".sig" or extension==".asc" or file_name=="OpenPGP_signature":
+                mime_type="application/pgp-signature"
             else:
                 raise UnknownMimeType(f"Extension: {extension}")
         else:
