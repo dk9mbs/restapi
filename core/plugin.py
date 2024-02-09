@@ -109,7 +109,7 @@ class Plugin:
             sql=f"""
             select p.plugin_module_name,p.type,
                 p.run_async,p.id,p.run_async,p.config,
-                null AS process_id, p.run_queue, p.inline_code
+                null AS process_id, p.run_queue, p.inline_code,p.is_single_instance
                 from api_event_handler p
                 WHERE
                 p.publisher=%s AND p.event=%s AND p.is_enabled=-1
@@ -121,7 +121,7 @@ class Plugin:
             sql=f"""
             select p.plugin_module_name,p.type,
                 p.run_async,p.id,p.run_async,p.config,
-                l.id AS process_id, 0 AS run_queue, p.inline_code
+                l.id AS process_id, 0 AS run_queue, p.inline_code,p.is_single_instance
                 from api_event_handler p
                 INNER JOIN api_process_log l ON p.id=l.event_handler_id
                 WHERE
@@ -144,7 +144,8 @@ class Plugin:
             if p['type']==type:
                 plugin_context=ProcessTools.create_context(publisher=self._publisher, trigger=self._trigger,
                                 type=type, event_handler_id=p['id'], run_async=p['run_async'],
-                                plugin_config=p['config'], process_id=p['process_id'], inline_code=p['inline_code'])
+                                plugin_config=p['config'], process_id=p['process_id'],
+                                inline_code=p['inline_code'],is_single_instance=p['is_single_instance'])
 
                 mod=importlib.import_module(p['plugin_module_name'])
                 config=Config(mod)
@@ -190,9 +191,12 @@ class ProcessTools(object):
                     plugin_context['run_async'], str(plugin_context['config'])
                 ])
 
-
-        sql=f"""UPDATE api_event_handler SET status_id=%s WHERE id=%s"""
-        cursor.execute(sql,["RUNNING", plugin_context['event_handler_id']])
+        if plugin_context['is_single_instance']==0:
+            sql=f"""UPDATE api_event_handler SET status_id=%s WHERE id=%s"""
+            cursor.execute(sql,["WAITING", plugin_context['event_handler_id']])
+        else:
+            sql=f"""UPDATE api_event_handler SET status_id=%s WHERE id=%s"""
+            cursor.execute(sql,["RUNNING", plugin_context['event_handler_id']])
 
         connection.commit()
 
@@ -220,7 +224,7 @@ class ProcessTools(object):
 
 
     @staticmethod
-    def create_context(publisher, trigger, type, event_handler_id, run_async, plugin_config, process_id, inline_code, **kwargs):
+    def create_context(publisher, trigger, type, event_handler_id, run_async, plugin_config, process_id, inline_code,is_single_instance, **kwargs):
         if process_id==None:
             process_id=str(uuid.uuid4())
 
@@ -234,7 +238,9 @@ class ProcessTools(object):
         if not plugin_config==None and not plugin_config=="":
             config=json.loads(plugin_config)
 
-        return {"publisher":publisher, "trigger":trigger, "type":type,
+        return {"publisher":publisher,
+                "trigger":trigger,
+                "type":type,
                 "process_id":process_id,
                 "cancel":False,
                 "event_handler_id": event_handler_id,
@@ -242,7 +248,8 @@ class ProcessTools(object):
                 "config": config,
                 "created_on": datetime.datetime.now(),
                 "response": response,
-                "inline_code": inline_code }
+                "inline_code": inline_code,
+                "is_single_instance": is_single_instance }
 
 
 

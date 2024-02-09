@@ -65,7 +65,9 @@ def process_imap(context, mailbox_id, imap_server, folder,folder_archive, folder
         for response in msg:
             if isinstance(response, tuple):
                 msg = email.message_from_bytes(response[1])
-                subject, encoding = decode_header(msg["Subject"])[0]
+                subject=""
+                if "Subject" in msg:
+                    subject, encoding = decode_header(msg["Subject"])[0]
                 if isinstance(subject, bytes):
                     encoding=_get_encoding(encoding)
                     subject = subject.decode(encoding)

@@ -1115,6 +1115,17 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 </restapi>',
 '{"id": {},"name": {},"imap_server": {},"imap_folder": {},"__type_id@name": {},"is_enabled": {}}');
 
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+113,'LISTVIEW','default',35,'id',1,'<restapi type="select">
+    <table name="api_email" alias="e"/>
+    <orderby>
+        <field name="id" alias="e" sort="DESC"/>
+    </orderby>
+</restapi>',
+'{"id": {},"__mailbox_id@name": {},"message_from": {},"subject": {},"created_on": {}}');
+
+
+
 /* out_data_formatter */
 INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (1,'$api_sub-table',7,2);
 
