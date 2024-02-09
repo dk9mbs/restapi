@@ -38,7 +38,7 @@
             <input type="checkbox" class="form-check-input form-check-input-sm" id="{{ name }}" name="{{ name }}" value="1">
         {% else -%}      
             <input {{ show }} type="{{ type }}" class="form-control form-control-sm" id="{{ name }}" name="{{ name }}" 
-                        placeholder="{{ placeholder }}" value="{{ value }}">
+                        placeholder="{{ placeholder }}" value="{{ escape_html(value) }}">
         {% endif -%}
     </div>
 
@@ -63,7 +63,7 @@
     {% endif -%}
 
     <div class="col-sm-{{ col }}">
-      <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}">{{ value }}</textarea>
+      <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}">{{ escape_html(value) }}</textarea>
     </div>
 
     {{ caller() }}
