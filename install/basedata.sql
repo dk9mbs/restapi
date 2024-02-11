@@ -224,15 +224,35 @@ call api_proc_create_table_field_instance(33,1400, 'is_enabled','Enabled','int',
 
 
 /* email */
-call api_proc_create_table_field_instance(35,1200, '_header','Header','string',200,'{"columns": "id,header_key,header_value"}', @out_value);
+call api_proc_create_table_field_instance(35,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,200, 'mailbox_id','Konto','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(35,300, 'subject','Titel','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(35,400, 'message_from','Von','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(35,600, 'body','Mail','string',100,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(35,700, 'created_on','Erstellt am','datetime',5,'{"disabled": true}', @out_value);
+
+call api_proc_create_table_field_instance(35,800, '_documents','Dokumente','string',200,'{"columns": "id,name,description"}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_file',referenced_table_id=20,referenced_field_name='email_id'
+    WHERE id=@out_value;
+
+call api_proc_create_table_field_instance(35,900, '_header','Header','string',200,'{"columns": "id,header_key,header_value"}', @out_value);
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_email_header',referenced_table_id=37,referenced_field_name='email_id'
     WHERE id=@out_value;
 
-call api_proc_create_table_field_instance(35,1300, '_parts','Parts','string',200,'{"columns": "id,content_type"}', @out_value);
+call api_proc_create_table_field_instance(35,1000, '_parts','Parts','string',200,'{"columns": "id,content_type"}', @out_value);
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_email_part',referenced_table_id=37,referenced_field_name='email_id'
     WHERE id=@out_value;
+
+
+call api_proc_create_table_field_instance(35,2000, 'message_id','Nachrichten ID','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2100, 'message_uid','UID (IMAP Server)','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2200, 'folder','Ordner','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2300, 'content_type','Content Typ','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2400, 'spam_level','Spam Level','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2500, 'message_to','An','string',1,'{"disabled": false}', @out_value);
 
 
 /* mqtt_message_bus */
