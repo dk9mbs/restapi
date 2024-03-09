@@ -22,14 +22,14 @@ BEGIN
     set poid = -1;
 
     IF EXISTS (SELECT * FROM api_table_field WHERE table_id=pitable_id AND name=piname) THEN
-        call api_proc_logger("Field instance exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
+        /* call api_proc_logger("Field instance exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) ); */
         SELECT id INTO poid FROM api_table_field WHERE table_id=pitable_id AND name=piname LIMIT 1;
 
         UPDATE api_table_field set pos=pipos,name=piname,label=pilabel,control_id=picontrol_id,control_config=picontrol_config
             WHERE id=poid AND provider_id='MANUFACTURER';
 
     ELSE
-        call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );
+        /* call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );*/
         INSERT INTO api_table_field (pos, table_id,name,field_name,label,type_id,control_id,control_config)
             VALUES
             (pipos, pitable_id, piname,piname, pilabel, pitype_id, picontrol_id, picontrol_config);
@@ -133,6 +133,7 @@ CREATE TABLE IF NOT EXISTS api_data_formatter(
     template_header text NULL COMMENT 'Jinja header template',
     template_line text NULL COMMENT 'Jinja body template',
     template_footer text NULL COMMENT 'Jinja footer template',
+    template_file varchar(250) NULL COMMENT 'Template File (Jinja)',
     line_separator varchar(5) NULL COMMENT 'Line seperatur',
     file_name varchar(250) NULL COMMENT 'Filename in case of download the file',
     content_disposition varchar(50) NULL COMMENT 'Using in http header',
@@ -152,6 +153,7 @@ ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  provider_id varchar(50)
 ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  line_separator varchar(5) NULL COMMENT 'Line seperatur' AFTER template_footer;
 ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  file_name varchar(250) NULL COMMENT 'Filename in case of download the file' AFTER line_separator;
 ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  content_disposition varchar(50) NULL COMMENT 'Using in http header' AFTER file_name;
+ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  template_file varchar(250) NULL COMMENT 'Template File (Jinja)' AFTER template_footer;
 
 ALTER TABLE api_data_formatter ADD FOREIGN KEY IF NOT EXISTS (provider_id) REFERENCES api_provider(id);
 ALTER TABLE api_data_formatter ADD UNIQUE KEY IF NOT EXISTS (name, table_id, type_id);
@@ -293,6 +295,17 @@ CREATE TABLE IF NOT EXISTS api_event_type(
     UNIQUE KEY (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS api_event_handler_status(
+    id varchar(10) NOT NULL,
+    name varchar(50) NOT NULL,
+    is_running smallint NOT NULL DEFAULT '0',
+    is_waiting smallint NOT NULL DEFAULT '0',
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY (solution_id) REFERENCES api_solution(id),
+    PRIMARY KEY(id),
+    UNIQUE KEY (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS api_event_handler (
     id int NOT NULL AUTO_INCREMENT,
     plugin_module_name varchar(500) NOT NULL COMMENT 'Namespace to the register function',
@@ -304,11 +317,14 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
     run_async smallint NOT NULL DEFAULT '0' COMMENT '-1: run async 0=not async',
     run_queue smallint NOT NULL DEFAULT '0' COMMENT '-1: enabled 0=disabled run via timerservice',
     is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled',
+    status_id varchar(10) NULL COMMENT 'Waitung or Running only for single instance',
+    is_single_instance smallint NOT NULL DEFAULT '0' COMMENT 'Can only execute one per time',
     config text NULL COMMENT 'locale event handler config',
     inline_code text NULL COMMENT 'inline python code to execute',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id),
     FOREIGN KEY(type) REFERENCES api_event_type(id),
+    FOREIGN KEY(status_id) REFERENCES api_event_handler_status(id),
     INDEX (publisher, event),
     INDEX (publisher, event, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -319,6 +335,11 @@ ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_queue smallint NOT NU
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS run_async smallint NOT NULL default '0' COMMENT '-1: run async 0=not async' AFTER solution_id;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS config text NULL COMMENT 'locale event handler config' AFTER is_enabled;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS inline_code text NULL COMMENT 'inline python code to execute' AFTER config;
+
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS status_id varchar(10) NULL COMMENT 'Waitung or Running only for single instance' AFTER is_enabled;
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS is_single_instance smallint NOT NULL DEFAULT '0' COMMENT 'Can only execute one per time' AFTER status_id;
+ALTER TABLE api_event_handler ADD CONSTRAINT `event_handler_event_handler_status` FOREIGN KEY IF NOT EXISTS (status_id) REFERENCES api_event_handler_status(id);
+
 
 DROP TABLE IF EXISTS api_table_action;
 CREATE TABLE IF NOT EXISTS api_table_action(
@@ -578,3 +599,79 @@ CREATE TABLE IF NOT EXISTS api_mqtt_message_bus(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_mqtt_message_bus AUTO_INCREMENT=900000000;
+
+/* EMail */
+--ALTER TABLE api_file DROP FOREIGN KEY IF EXISTS foreign_reference_api_email;
+--DROP TABLE IF EXISTS api_email_header;
+--DROP TABLE IF EXISTS api_email_part;
+--DROP TABLE IF EXISTS api_email;
+
+
+CREATE TABLE IF NOT EXISTS api_email_mailbox_type(
+    id varchar(10) NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    PRIMARY KEY(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_email_mailbox(
+    id varchar(10) NOT NULL COMMENT '',
+    name varchar(100) NOT NULL COMMENT '',
+    type_id varchar(10) NOT NULL COMMENT '',
+    username varchar(100) NOT NULL COMMENT '',
+    password varchar(100) NOT NULL COMMENT '',
+    imap_folder varchar(250) NULL DEFAULT 'INBOX' COMMENT '',
+    imap_server varchar(250) NULL COMMENT '',
+    imap_imported_folder varchar(250) NULL COMMENT 'Copy the mail to target folder after import',
+    imap_error_folder varchar(25) NULL COMMENT 'Copy all doublets (message_id) in this folder',
+    imap_delete smallint NOT NULL DEFAULT '0' COMMENT 'Delete mail after import',
+    imap_port int NULL DEFAULT '993',
+    smtp_server varchar(250) NULL COMMENT '',
+    smtp_port int NULL DEFAULT '587',
+    is_enabled smallint NOT NULL DEFAULT'-1' COMMENT '',
+    PRIMARY KEY(id),
+    FOREIGN KEY(type_id) REFERENCES api_email_mailbox_type(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_email(
+    id int NOT NULL AUTO_INCREMENT,
+    mailbox_id varchar(10) NOT NULL,
+    message_id varchar(250) NULL COMMENT 'in case of outgoing mail null',
+    message_uid int NULL COMMENT 'uid from imap server',
+    message_from varchar(250) NOT NULL,
+    message_to text NULL,
+    folder varchar(250) NOT NULL,
+    subject text NULL,
+    content_type varchar(100) NULL,
+    body longtext NULL,
+    spam_level varchar(50) NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(mailbox_id) REFERENCES api_email_mailbox(id),
+    UNIQUE KEY (mailbox_id, message_id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_email_part(
+    id int NOT NULL AUTO_INCREMENT,
+    email_id int not NULL,
+    content_type varchar(100) NULL,
+    content_disposition varchar(50) NULL,
+    body longtext NULL,
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(email_id) REFERENCES api_email(id) ON DELETE CASCADE
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_email_header(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    email_id int NOT NULL COMMENT '',
+    header_key varchar(50) NOT NULL COMMENT '',
+    header_value text NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    FOREIGN KEY(email_id) REFERENCES api_email(id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+ALTER TABLE api_file ADD column IF NOT EXISTS email_id int NULL COMMENT 'unique id from the email' AFTER file;
+ALTER TABLE api_file ADD CONSTRAINT `foreign_reference_api_email` FOREIGN KEY IF NOT EXISTS (email_id) REFERENCES api_email(id) ON DELETE CASCADE;
+/* end EMail */

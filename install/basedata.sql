@@ -30,6 +30,7 @@ INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUE
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (100,'nicEdit','NIC-EDIT','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (101,'ace Edit','ACE-EDIT','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (200,'SubTable','SUB-TABLE','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (201,'SubTableFile','SUB-TABLE-FILE','{}');
 
 UPDATE api_table_field_control SET control_config='{"type": "text"}' WHERE id=1;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=2;
@@ -54,6 +55,7 @@ UPDATE api_table_field_control SET control_config='{}' WHERE id=20;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=100;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=101;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=200;
+UPDATE api_table_field_control SET control_config='{}' WHERE id=201;
 
 
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('default','Default',1) ON DUPLICATE KEY UPDATE control_id=1;
@@ -162,7 +164,23 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (32,'Message Bus Listener','api_mqtt_message_bus', 'api_mqtt_message_bus','id','int','topic',-1);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (33,'EMail Mailbox','api_email_mailbox', 'api_email_mailbox','id','string','name',-1);
 
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (34,'EMail Mailbox Typen','api_email_mailbox_type', 'api_email_mailbox_type','id','string','name',-1);
+
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (35,'EMail','api_email', 'api_email','id','int','subject',-1);
+
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (36,'EMailparts','api_email_part', 'api_email_part','id','int','content_type',-1);
+
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (37,'EMail Header','api_email_header', 'api_email_header','id','int','key',0);
+
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (38,'Eventhandler Status','api_event_handler_status', 'api_event_handler_status','id','string','name',0);
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -185,6 +203,59 @@ INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (1
 
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
+
+INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP','Only inbound (IMAP)');
+INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('SMTP','Only outbound (SMTP)');
+INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP+SMTP','Inpund and outbound (IMAP+SMTP)');
+
+/* EMail Mailbox */
+call api_proc_create_table_field_instance(33,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,300, 'type_id','Type','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,400, 'username','Username','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,500, 'password','Passwort','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,600, 'imap_server','IMAP Server','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,700, 'imap_folder','IMAP Ordner','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,800, 'imap_imported_folder','IMAP Ordner (Archiv)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,900, 'imap_error_folder','IMAP Ordner (Fehler)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1000, 'imap_delete','Nach IMAP Import E-Mail löschen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1100, 'imap_port','IMAP Port','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1200, 'smtp_server','SMTP Server','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1300, 'smtp_port','SMTP Port','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(33,1400, 'is_enabled','Enabled','int',19,'{"disabled": false}', @out_value);
+
+
+/* email */
+call api_proc_create_table_field_instance(35,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,200, 'mailbox_id','Konto','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(35,300, 'subject','Titel','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(35,400, 'message_from','Von','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(35,600, 'body','Mail','string',100,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(35,700, 'created_on','Erstellt am','datetime',5,'{"disabled": true}', @out_value);
+
+call api_proc_create_table_field_instance(35,800, '_documents','Dokumente','string',201,'{}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_file',referenced_table_id=20,referenced_field_name='email_id'
+    WHERE id=@out_value;
+
+call api_proc_create_table_field_instance(35,900, '_header','Header','string',200,'{"columns": "id,header_key,header_value"}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_email_header',referenced_table_id=37,referenced_field_name='email_id'
+    WHERE id=@out_value;
+
+call api_proc_create_table_field_instance(35,1000, '_parts','Parts','string',200,'{"columns": "id,content_type"}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_email_part',referenced_table_id=37,referenced_field_name='email_id'
+    WHERE id=@out_value;
+
+
+call api_proc_create_table_field_instance(35,2000, 'message_id','Nachrichten ID','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2100, 'message_uid','UID (IMAP Server)','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2200, 'folder','Ordner','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2300, 'content_type','Content Typ','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2400, 'spam_level','Spam Level','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(35,2500, 'message_to','An','string',1,'{"disabled": false}', @out_value);
+
 
 /* mqtt_message_bus */
 call api_proc_create_table_field_instance(32,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
@@ -238,6 +309,7 @@ call api_proc_create_table_field_instance(30,400, 'mime_type','Mime Typ','string
 call api_proc_create_table_field_instance(30,500, 'template_header','Kopf Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
 call api_proc_create_table_field_instance(30,600, 'template_line','Daten Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
 call api_proc_create_table_field_instance(30,700, 'template_footer','Fuss Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
+call api_proc_create_table_field_instance(30,705, 'template_file','Jinja Template','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,710, 'line_separator','Datensatz Trenner','string',20,
     '{"disabled": false, "listitems":";Kein|@n;New Line(Unix)|@r@n;New Line (Windows)"}', @out_value);
 call api_proc_create_table_field_instance(30,720, 'file_name','Dateiname','string',1,'{"disabled": false}', @out_value);
@@ -258,6 +330,10 @@ call api_proc_create_table_field_instance(9,700, 'solution_id','Lösung','int',2
 UPDATE api_table_field SET referenced_table_name='api_solution', referenced_table_id=25, referenced_field_name='id', is_lookup=-1 WHERE id=@out_value;
 call api_proc_create_table_field_instance(9,800, 'run_async','Asynchron','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,900, 'run_queue','Queue','int',19,'{"disabled": false}', @out_value);
+
+call api_proc_create_table_field_instance(9,910, 'status_id','Single Instanz Status','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,920, 'is_single_instance','Single Instanz','int',19,'{"disabled": false}', @out_value);
+
 call api_proc_create_table_field_instance(9,1000, 'is_enabled','Aktiv','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,1100, 'config','Configuration','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,1100, 'inline_code','Inline Code','string',101,'{"disabled": false, "mode":"ace/mode/python"}', @out_value);
@@ -371,6 +447,9 @@ UPDATE api_table_field
     WHERE id=@out_value;
 
 
+INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
+INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('RUNNING', 'running',-1,0);
+
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (1,'plugin_test','dummy','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (2,'plugin_test','dummy','insert','after');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (3,'plugin_test','dummy','update','before');
@@ -381,7 +460,9 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (8,'api_clear_session','$timer_every_hour','execute','after',0);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (9,'api_user_set_apikey','api_user_apikey','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async,config) VALUES (10,'api_mqtt_endpoint','dummy','update','after',-1,'{"filter": "[\'id\', \'name\']"}');
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (11,'api_imap_mail','$timer_every_ten_minutes','execute','after',0);
 
+UPDATE api_event_handler SET status_id='WAITING' WHERE status_id IS NULL;
 
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (0,'Pending');
 INSERT IGNORE INTO api_process_log_status(id,name) VALUES (5,'Worker');
@@ -444,6 +525,10 @@ INSERT IGNORE INTO api_ui_app (id, name,description,home_url,solution_id)
 VALUES (
 1,'Default','System Verwaltungs App','/ui/v1.0/data/view/api_user/default?app_id=1',1);
 
+INSERT IGNORE INTO api_ui_app (id, name,description,home_url,solution_id)
+VALUES (
+2,'E-Mail','E-mail App','/ui/v1.0/data/view/api_email/default?app_id=2',1);
+
 
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (1,1, 'Sidebar');
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (2,1, 'Navbar');
@@ -471,6 +556,9 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1400,1,'Process Log (alle)','/ui/v1.0/data/view/api_process_log/all',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1500,1,'API Keys','/ui/v1.0/data/view/api_user_apikey/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1600,1,'MQTT Message Bus','/ui/v1.0/data/view/api_mqtt_message_bus/default',1,1);
+
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2000,2,'E-Mail Postboxen','/ui/v1.0/data/view/api_email_mailbox/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2010,2,'E-Mails','/ui/v1.0/data/view/api_email/default',1,1);
 
 
 
@@ -1047,6 +1135,24 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 </restapi>',
 '{"id": {},"topic": {},"regex": {},"alias": {}}');
 
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+112,'LISTVIEW','default',33,'id',1,'<restapi type="select">
+    <table name="api_email_mailbox" alias="b"/>
+    <orderby>
+        <field name="id" alias="b" sort="ASC"/>
+    </orderby>
+</restapi>',
+'{"id": {},"name": {},"imap_server": {},"imap_folder": {},"__type_id@name": {},"is_enabled": {}}');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+113,'LISTVIEW','default',35,'id',1,'<restapi type="select">
+    <table name="api_email" alias="e"/>
+    <orderby>
+        <field name="id" alias="e" sort="DESC"/>
+    </orderby>
+</restapi>',
+'{"id": {},"__mailbox_id@name": {},"message_from": {},"subject": {},"created_on": {}}');
+
 
 
 /* out_data_formatter */
@@ -1183,18 +1289,73 @@ template_footer='
 
 
 Page:{{ next_page }}
-
-<!--     
-getSubList("{{ name }}", "{{ referenced_table_alias }}","{{ referenced_field_name }}","{{ value }}", "{{ columns }}","0", "5");
-function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size)
-
-{\'view\': \'$html_table\', \'filter_field_name\': \'group_id\', \'filter_value\': \'100\', 
-\'view_columns\': \'id,mode_read,mode_create,mode_update,mode_delete,__table_id@name\', 
-\'page\': \'0\', \'page_size\': \'5\', \'view_tag1\': \'__permission\'}
-
--->
 '
 WHERE id=3 AND provider_id='MANUFACTURER';
 
+/* sublist with file link */
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (4,'$html_table_file',Null,2);
 
+UPDATE api_data_formatter SET
+name='$html_table_file',
+mime_type='text/html',
+template_header='{% set cols=context.get_arg("view_columns","").split(\',\') -%}
+<div class="table-responsive">
+<table class="table table-hover table-sm">
+<thead>
+<th>ID</th>
+<th>File</th>
+</thead>
+<tbody>',
+template_line='
+{% set cols=context.get_arg("view_columns","").split(\',\') -%}
+<tr>
+
+<td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[\'id\'] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}" target="_blank">{{ data[\'id\'] }}</a>
+<td><a href="/api/v1.0/file/{{ data[\'path\'] }}" target="_blank">{{ data[\'name\'] }}</a></td>
+
+<tr>
+',
+template_footer='
+</tbody>
+</table>
+</div>
+<div>
+{% set dbg_level=get_debug_level(context) -%}
+{% if dbg_level==0 -%}
+    <div style="margin-top:2px;padding-left:10px;background-color: #FFCCCB;font-weight:bold;border-radius: 18px">
+    {{ context.get_args() }}
+    </div>
+{% endif -%}
+
+{% set div_name=context.get_arg("view_tag1","") -%}
+{% set referenced_field_name=context.get_arg("filter_field_name","") -%}
+{% set filter_value=context.get_arg("filter_value","") -%}
+{% set cols=context.get_arg("view_columns","") -%}
+{% set page=context.get_arg("page","0") | int -%}
+{% set page_size=context.get_arg("page_size","5") -%}
+{% set next_page=page+1 -%}
+{% set previous_page=page-1 -%}
+{% if previous_page<0 -%}
+    {% set previous_page=0 -%}
+{% endif -%}
+
+<div class="btn-group btn-group-sm" role="group" aria-label="...">
+<button type="button" class="btn btn-outline-primary" onclick=\'window.location="/ui/v1.0/data/{{ table_alias }}";\'>Neu</button>
+
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}", "$html_table_file")
+;\'>Aktualisieren</button>
+
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}", "$html_table_file")
+;\'><</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}", "$html_table_file")
+;\'><<</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}", "$html_table_file")
+;\'>>></button>
+<button type="button" class="btn btn-outline-primary" onclick=\'alert("Last");\'>></button>
+</div>
+
+
+Page:{{ next_page }}
+'
+WHERE id=4 AND provider_id='MANUFACTURER';
 

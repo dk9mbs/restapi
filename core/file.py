@@ -8,6 +8,7 @@ from core.exceptions import RestApiNotAllowed, FileNotFoundInDatabase, UnknownMi
 from core import log
 from core.meta import read_table_meta
 from core.exceptions import TableMetaDataNotFound
+from core.setting import Setting
 
 logger=log.create_logger(__name__)
 
@@ -35,19 +36,29 @@ class File:
         return result
 
 
-    def create_file(self, context, file, remote_path):
+    def create_file(self, context, file, remote_path, **args):
         connection=context.get_connection()
 
         file_bytes=file.read()
-        extension=pathlib.Path(file.filename).suffix.lower()
-
-        if not f"{extension}" in mimetypes.types_map:
-            raise UnknownMimeType(f"Extension: {extension}")
-
-
-        mime_type=mimetypes.types_map[extension]
         size=len(file_bytes)
         file_name=file.filename
+
+        extension=pathlib.Path(file_name).suffix.lower()
+
+        if Setting.get_value(context, "core.debug.level")=='0':
+            logger.info(f"Filename: {file_name}")
+            logger.info(f"Extension: {extension}")
+
+        if not f"{extension}" in mimetypes.types_map:
+            if extension==".p7s":
+                mime_type="application/pkcs7-signature"
+            elif extension==".sig" or extension==".asc" or file_name=="OpenPGP_signature":
+                mime_type="application/pgp-signature"
+            else:
+                raise UnknownMimeType(f"Extension: {extension}")
+        else:
+            mime_type=mimetypes.types_map[extension]
+
         full_path=os.path.join(remote_path, file_name)
 
         sql=f"""
@@ -58,6 +69,17 @@ class File:
         cursor.execute(sql, [file.filename,file_bytes,size,mime_type,full_path,full_path])
         self._file_id=cursor.lastrowid
         cursor.fetchall()
+
+        # create the reference
+        if "reference_field_name" in args:
+            reference_field_name=args['reference_field_name']
+            reference_id=args['reference_id']
+            sql=f"""
+            update api_file SET {reference_field_name}=%s WHERE id=%s;
+            """
+        cursor.execute(sql, [reference_id, self._file_id])
+        cursor.fetchall()
+
         cursor.close()
 
     def update_file(self, context, file, remote_path):

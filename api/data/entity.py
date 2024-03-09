@@ -13,7 +13,7 @@ from core.appinfo import AppInfo
 from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
-from core.jsontools import json_serial
+from core.jsontools import json_serial, merge
 from core.exceptions import RestApiNotAllowed
 from core import log
 from services.outdataformatter import OutDataFormatter
@@ -101,6 +101,12 @@ class Entity(Resource):
 
                 fields_meta=read_table_field_meta(context, table_alias=table)
                 table_meta=read_table_meta(context, alias=table)
+
+                for field in fields_meta:
+                    json1=json.loads(field['control_config'])
+                    json2=json.loads(field['overwrite_control_config'])
+                    cfg=merge(json1, json2)
+                    field['control_config']=cfg
 
                 formatter=OutDataFormatter(context,view,1, table, rs)
                 formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
