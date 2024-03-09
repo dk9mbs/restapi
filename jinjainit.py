@@ -166,10 +166,14 @@ def _filter_from_json(value, default={}):
     else:
         return json.loads(value)
 
-def _filter_value_from_json(json, name, default=None):
-    #logger.info(json)
-    if name in json:
-        return json[name]
+def _filter_value_from_json(json_value, name, default=None):
+    #logger.info(f"{name} {json}")
+    import json
+    if type(json_value)==str:
+        json_value=json.loads(json_value)
+
+    if name in json_value:
+        return json_value[name]
 
     return default
 

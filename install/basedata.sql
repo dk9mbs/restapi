@@ -309,6 +309,7 @@ call api_proc_create_table_field_instance(30,400, 'mime_type','Mime Typ','string
 call api_proc_create_table_field_instance(30,500, 'template_header','Kopf Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
 call api_proc_create_table_field_instance(30,600, 'template_line','Daten Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
 call api_proc_create_table_field_instance(30,700, 'template_footer','Fuss Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
+call api_proc_create_table_field_instance(30,705, 'template_file','Jinja Template','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,710, 'line_separator','Datensatz Trenner','string',20,
     '{"disabled": false, "listitems":";Kein|@n;New Line(Unix)|@r@n;New Line (Windows)"}', @out_value);
 call api_proc_create_table_field_instance(30,720, 'file_name','Dateiname','string',1,'{"disabled": false}', @out_value);

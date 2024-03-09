@@ -18,6 +18,7 @@ class OutDataFormatter(object):
         self._template_data={}
         self._columns={}
         self._data={}
+        self._template_file=None
 
         if type(data)==Recordset:
             self._data=data.get_result()
@@ -42,6 +43,7 @@ class OutDataFormatter(object):
                     <field name="template_header"/>
                     <field name="template_line"/>
                     <field name="template_footer"/>
+                    <field name="template_file"/>
                     <field name="mime_type"/>
                     <field name="line_separator"/>
                     <field name="file_name"/>
@@ -70,6 +72,9 @@ class OutDataFormatter(object):
         self._template_footer=rs.get_result()[0]['template_footer']
         self._mime_type=rs.get_result()[0]['mime_type']
         self._line_separator=rs.get_result()[0]['line_separator']
+        self._template_file=rs.get_result()[0]['template_file']
+        if self._template_file=="":
+            self._template_file=None
         if self._line_separator=='@n':
             self._line_separator='\n'
         elif self._line_separator=='@r@n':
@@ -84,9 +89,14 @@ class OutDataFormatter(object):
         #table=TableInfo(self._context, table_alias=self._table_alias)
         table=self._table_info
 
-        template_header=JinjaTemplate.create_string_template(self._context,self._template_header)
-        template_line=JinjaTemplate.create_string_template(self._context,self._template_line)
-        template_footer=JinjaTemplate.create_string_template(self._context,self._template_footer)
+        if self._template_file==None:
+            template_header=JinjaTemplate.create_string_template(self._context,self._template_header)
+            template_line=JinjaTemplate.create_string_template(self._context,self._template_line)
+            template_footer=JinjaTemplate.create_string_template(self._context,self._template_footer)
+        else:
+            template_line=None
+            template_footer=None
+            template_header=JinjaTemplate.create_file_template(self._context,self._template_file)
 
         result=template_header.render({"context": self._context,
                 "table_alias":table.table_alias, 
@@ -98,28 +108,30 @@ class OutDataFormatter(object):
             }
         )+self._line_separator
 
-        temp_data={}
-        for key, value in self._template_data.items():
-            temp_data[key]=value
+        if not template_line==None:
+            temp_data={}
+            for key, value in self._template_data.items():
+                temp_data[key]=value
 
-        for rec in self._data:
-            temp_data['data']=rec
-            temp_data['columns']=self._columns
-            temp_data['table_alias']=table.table_alias
-            temp_data['table_meta']=table.table_meta_data
-            temp_data['page']=self._page
-            temp_data['page_size']=self._page_size
-            result=result+template_line.render(temp_data)+self._line_separator
+            for rec in self._data:
+                temp_data['data']=rec
+                temp_data['columns']=self._columns
+                temp_data['table_alias']=table.table_alias
+                temp_data['table_meta']=table.table_meta_data
+                temp_data['page']=self._page
+                temp_data['page_size']=self._page_size
+                result=result+template_line.render(temp_data)+self._line_separator
 
-        result=result+template_footer.render({"context": self._context,
-                "table_alias": table.table_alias, 
-                "data": self._data, 
-                "columns": self._columns, 
-                "page":self._page, 
-                "page_size": self._page_size,
-                "fields": self._table_info.fields
-            }
-        )
+        if not template_footer==None:
+            result=result+template_footer.render({"context": self._context,
+                    "table_alias": table.table_alias, 
+                    "data": self._data, 
+                    "columns": self._columns, 
+                    "page":self._page, 
+                    "page_size": self._page_size,
+                    "fields": self._table_info.fields
+                }
+            )
 
         return result
 

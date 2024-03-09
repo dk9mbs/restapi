@@ -72,7 +72,7 @@ def before_request():
                 #abort(400, f"Session_id found in session context: error raised: {err}")
 
         if not login:
-            auto_logoff=True
+            auto_logoff=False
             username=""
             password=""
 
