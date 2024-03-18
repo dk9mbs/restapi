@@ -306,10 +306,10 @@ call api_proc_create_table_field_instance(30,200, 'name','Bezeichnung','string',
 call api_proc_create_table_field_instance(30,300, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,300, 'type_id','Typ','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,400, 'mime_type','Mime Typ','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,410, 'template_file','Jinja Templatefile','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,500, 'template_header','Kopf Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
 call api_proc_create_table_field_instance(30,600, 'template_line','Daten Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
 call api_proc_create_table_field_instance(30,700, 'template_footer','Fuss Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
-call api_proc_create_table_field_instance(30,705, 'template_file','Jinja Template','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,710, 'line_separator','Datensatz Trenner','string',20,
     '{"disabled": false, "listitems":";Kein|@n;New Line(Unix)|@r@n;New Line (Windows)"}', @out_value);
 call api_proc_create_table_field_instance(30,720, 'file_name','Dateiname','string',1,'{"disabled": false}', @out_value);
@@ -1358,4 +1358,30 @@ template_footer='
 Page:{{ next_page }}
 '
 WHERE id=4 AND provider_id='MANUFACTURER';
+
+
+
+
+
+/* default jinja template ui via rest api */
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (5,'$default_ui',Null,1);
+
+UPDATE api_data_formatter SET
+name='$default_ui',
+mime_type='text/html',
+template_header=null,
+template_line=null,
+template_footer=null,
+template_file='templates/base/dataform.htm'
+WHERE id=5 AND provider_id='MANUFACTURER';
+
+
+
+
+
+
+
+
+
+
 

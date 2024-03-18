@@ -200,6 +200,14 @@ def read_table_field_meta(context, table_alias=None, table_id=None):
     cursor.execute(sql,params)
     meta=cursor.fetchall()
 
+    from core.jsontools import merge
+    import json
+    for field in meta:
+        json1=json.loads(field['control_config'])
+        json2=json.loads(field['overwrite_control_config'])
+        cfg=merge(json1, json2)
+        field['control_config']=json.dumps(cfg)
+
     return meta
 
 

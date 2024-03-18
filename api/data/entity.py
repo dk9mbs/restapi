@@ -102,12 +102,6 @@ class Entity(Resource):
                 fields_meta=read_table_field_meta(context, table_alias=table)
                 table_meta=read_table_meta(context, alias=table)
 
-                for field in fields_meta:
-                    json1=json.loads(field['control_config'])
-                    json2=json.loads(field['overwrite_control_config'])
-                    cfg=merge(json1, json2)
-                    field['control_config']=cfg
-
                 formatter=OutDataFormatter(context,view,1, table, rs)
                 formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
                 formatter.add_template_var("context", context)
@@ -117,13 +111,6 @@ class Entity(Resource):
                 formatter.add_template_var("data", rs.get_result())
                 formatter.add_template_var("fields", fields_meta)
                 formatter.add_template_var("title",  f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}")
-
-                #response = make_response(template.render({"table": table,
-                #        "pagemode": "dataformupdate",
-                #        "id": id, "data": rs.get_result(), "context": context, "fields": fields_meta,
-                #        "table_meta": table_meta,
-                #        "title": f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}"
-                #        }))
 
                 httpresponse=HTTPResponse(formatter.render())
                 httpresponse.disable_client_cache()
