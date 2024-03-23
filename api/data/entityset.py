@@ -64,6 +64,14 @@ class EntitySet(Resource):
                 #table_meta set in table_info.render automaticly
                 #formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
                 formatter.add_template_var("context", context)
+                #formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
+                formatter.add_template_var("context", context)
+                formatter.add_template_var("table", table)
+                formatter.add_template_var("pagemode", "dataforminsert")
+                formatter.add_template_var("id", '')
+                formatter.add_template_var("data", rs.get_result())
+                #formatter.add_template_var("fields", fields_meta)
+                #formatter.add_template_var("title",  f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}")
 
                 httpresponse=HTTPResponse(formatter.render())
                 httpresponse.disable_client_cache()
