@@ -315,6 +315,7 @@ call api_proc_create_table_field_instance(30,710, 'line_separator','Datensatz Tr
 call api_proc_create_table_field_instance(30,720, 'file_name','Dateiname','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,730, 'content_disposition','CONTENT_DISPOSITION','string',20,
     '{"disabled": false, "listitems":"inline;inline|attachment;attachment"}', @out_value);
+call api_proc_create_table_field_instance(30,750, 'page_mode','Page mode for base tamplates','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,800, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(30,900, 'provider_id','Besitzer','string',2,'{"disabled": false}', @out_value);
 
@@ -1365,17 +1366,34 @@ WHERE id=4 AND provider_id='MANUFACTURER';
 
 /* default jinja template ui via rest api */
 INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (5,'$default_ui',Null,1);
-
 UPDATE api_data_formatter SET
-name='$default_ui',
 mime_type='text/html',
 template_header=null,
 template_line=null,
 template_footer=null,
-template_file='templates/base/dataform.htm'
+template_file='templates/base/dataform.htm',
+page_mode='dataformupdate'
 WHERE id=5 AND provider_id='MANUFACTURER';
 
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (6,'$default_ui',Null,2);
+UPDATE api_data_formatter SET
+mime_type='text/html',
+template_header=null,
+template_line=null,
+template_footer=null,
+template_file='templates/base/dataform.htm',
+page_mode='dataforminsert'
+WHERE id=6 AND provider_id='MANUFACTURER';
 
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (7,'$default_ui_list',Null,2);
+UPDATE api_data_formatter SET
+mime_type='text/html',
+template_header=null,
+template_line=null,
+template_footer=null,
+template_file='templates/base/datalist.htm',
+page_mode='dataformlist'
+WHERE id=7 AND provider_id='MANUFACTURER';
 
 
 

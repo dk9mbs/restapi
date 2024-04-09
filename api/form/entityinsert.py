@@ -41,14 +41,24 @@ class EntityAdd(Resource):
                     
                     del json[key]
 
+            view=context.get_arg('view', None)
+
             fetch=build_fetchxml_by_alias(context,table,None, json, type="insert")
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
             result={"rows_affected": rs.get_cursor().rowcount, "inserted_id": rs.get_inserted_id()}
 
             next=HTTPRequest.redirect(request, default=f"/ui/v1.0/data/{table}/{rs.get_inserted_id()}", id=rs.get_inserted_id())
+            query_string=""
 
-            return redirect(next, code=302)
+            if action.upper()!='UNDEFINED' and action!=None and action!='' and action.upper()!='DEFAULT':
+                query_string=f"__action={action}"
+            
+            if view!=None:
+                query_string=f"{query_string}&view={view}"
+
+            #return redirect(next, code=302)
+            return redirect(f"{next}&{query_string}", code=302)
 
         except RestApiNotAllowed as err:
             logger.info(f"RestApiNotAllowed Exception: {err}")

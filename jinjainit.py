@@ -148,6 +148,9 @@ def _is_item_in_dict(jsondict, key):
 
     return False
 
+def _ui_view_name(context):
+    return {"view": "$default_ui"}
+
 """
 Result all Fields from a tabe
 used for create the datamodel with jinja for the orm mapper
@@ -196,7 +199,7 @@ def init():
     JinjaEnvironment.register_template_function('escape_html', _escape_html)
     JinjaEnvironment.register_template_function('is_item_in_dict', _is_item_in_dict)
     JinjaEnvironment.register_template_function('metadata_table_fields', _metadata_table_fields)
-
+    JinjaEnvironment.register_template_function('ui_view_name', _ui_view_name)
 
     JinjaEnvironment.register_filter_function('from_json', _filter_from_json)
     JinjaEnvironment.register_filter_function('value_from_json', _filter_value_from_json)

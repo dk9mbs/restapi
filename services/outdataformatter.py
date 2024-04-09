@@ -19,6 +19,7 @@ class OutDataFormatter(object):
         self._columns={}
         self._data={}
         self._template_file=None
+        self._page_mode=None
 
         if type(data)==Recordset:
             self._data=data.get_result()
@@ -48,6 +49,7 @@ class OutDataFormatter(object):
                     <field name="line_separator"/>
                     <field name="file_name"/>
                     <field name="content_disposition"/>
+                    <field name="page_mode"/>
                 </select>
             <filter type="and">
                 <condition field="name" value="{format_name}" operator="="/>
@@ -65,6 +67,7 @@ class OutDataFormatter(object):
         if rs.get_eof():
             raise OutDataFormatterNotFound(f"OutDataFormatter not found {format_name} for type_id {self._type_id}")
 
+        self._page_mode=rs.get_result()[0]['page_mode']
         self._file_name=rs.get_result()[0]['file_name']
         self._content_disposition=rs.get_result()[0]['content_disposition']
         self._template_header=rs.get_result()[0]['template_header']
@@ -104,7 +107,9 @@ class OutDataFormatter(object):
                 "columns": self._columns,
                 "page":self._page, 
                 "page_size": self._page_size,
-                "fields": self._table_info.fields
+                "fields": self._table_info.fields,
+                "table_meta": table.table_meta_data,
+                "pagemode": self._page_mode
             }
 
         for key, value in self._template_data.items():

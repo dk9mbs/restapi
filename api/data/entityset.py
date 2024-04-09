@@ -12,6 +12,7 @@ from core.fetchxmlparser import FetchXmlParser
 from core.jsontools import json_serial
 from core.exceptions import RestApiNotAllowed
 from core import log
+from core.setting import Setting
 
 from services.fetchxml import build_fetchxml_by_alias, build_fetchxml_lookup
 from services.database import DatabaseServices
@@ -37,7 +38,7 @@ class EntitySet(Resource):
 
     api=AppInfo.get_api()
     @api.doc(parser=create_parser())
-    def get(self, table):
+    def get(self, table, table_view='default'):
         try:
             create_parser().parse_args()
             context=g.context
@@ -57,8 +58,67 @@ class EntitySet(Resource):
             
             view=context.get_arg("view", None)
 
-            if not view==None:
-                from core.meta import read_table_meta
+            if view!=None:
+                from core.meta import read_table_view_meta, read_table_meta
+                from services.jinjatemplate import JinjaTemplate
+                # list implemented
+                #file=f"templates/base/datalist.htm"
+                query_key=f"dataformlist_query_{table}"
+                operator_key=f"dataformlist_op_{table}"
+
+                page=int(context.get_arg('page', default=0))
+                #page_size=int(context.get_arg('page_size', default=0))
+                page_size=int(Setting.get_value(context, "datalist.page_size","10"))
+
+                if page<=0:
+                    page=0
+
+                query=context.get_arg('query', default=None)
+                operator=context.get_arg('operator', None)
+
+                if query==None:
+                    query=context.get_session_value(query_key, None)
+                else:
+                    context.set_session_value(query_key, query)
+
+                if query==None:
+                    query=""
+
+                query=query.replace("*","%")
+
+                if operator==None:
+                    operator="like"
+
+                if operator=="like":
+                    query=f"{query}%"
+
+                table_meta=read_table_meta(context,alias=table)
+                view_meta=read_table_view_meta(context, table_meta['id'], table_view, 'LISTVIEW')
+
+                fetch=view_meta['fetch_xml']
+
+                fetch=fetch.replace("$$query$$", query)
+                fetch=fetch.replace("$$operator$$", operator)
+
+                fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
+                rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
+
+                #template=JinjaTemplate.create_file_template(context, file)
+                #response = make_response(template.render({"data": rs.get_result(),
+                #            "columns": fetchparser.get_columns(),
+                #            "table": table,
+                #            "table_meta": table_meta,
+                #            "view_meta": view_meta,
+                #            "pagemode": "dataformlist",
+                #            "context": context,
+                #            "query": query.replace("%",""),
+                #            "page": page,
+                #            "page_size": page_size, "page_count": rs.get_page_count() }))
+                #response.headers['content-type'] = 'text/html'
+                #return response
+                #
+                # ****************** end list ************************
+                #
 
                 formatter=OutDataFormatter(context,view,2, table, rs)
                 #table_meta set in table_info.render automaticly
@@ -67,11 +127,23 @@ class EntitySet(Resource):
                 #formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
                 formatter.add_template_var("context", context)
                 formatter.add_template_var("table", table)
-                formatter.add_template_var("pagemode", "dataforminsert")
+                #formatter.add_template_var("pagemode", "dataforminsert")
                 formatter.add_template_var("id", '')
                 formatter.add_template_var("data", rs.get_result())
                 #formatter.add_template_var("fields", fields_meta)
                 #formatter.add_template_var("title",  f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}")
+
+                # List
+                formatter.add_template_var("columns", fetchparser.get_columns())
+                formatter.add_template_var("view_meta", view_meta )
+                #formatter.add_template_var("pagemode", "dataformlist" )
+                formatter.add_template_var("query", query.replace("%","") )
+                formatter.add_template_var("page", page)
+                formatter.add_template_var("page_size", page_size)
+                formatter.add_template_var("page_count", rs.get_page_count() )
+                #formatter.add_template_var("table_meta", table_meta )
+                # end list
+
 
                 httpresponse=HTTPResponse(formatter.render())
                 httpresponse.disable_client_cache()

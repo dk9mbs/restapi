@@ -1,6 +1,7 @@
 {% extends "templates/base/base.htm" -%} 
 {% import "templates/base/uitools.htm" as forms -%} 
 {% import "templates/base/uitable.htm" as uitable -%}
+{% set ui_params={"view": "$default_ui"} -%}
 {% block title -%}{{ table }}{% endblock -%}
 
 {% block head %}

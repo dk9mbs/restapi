@@ -1,6 +1,6 @@
 {% set ui_app, ui_app_nav_items=ui_app_info(context)  -%}
 {% set app_id=context.get_arg("app_id",1) -%}
-{% set ui_params={"view": "$default_ui"} -%}
+{% set ui_params=ui_view_name(context) -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -164,7 +164,7 @@
             <a class="nav-link" href="#" onclick="document.getElementById('frmData').submit();return false">Save <span class="sr-only"></span></a>
         </li>
         <li class="nav-item active">
-            <a class="nav-link" href="#" onclick="window.location='/api/v1.0/data/view/{{ table }}/default{{ build_query_string(context, ui_params) }}';return false;">List <span class="sr-only"></span></a>
+            <a class="nav-link" href="#" onclick="window.location='/ui/v1.0/data/view/{{ table }}/default{{ build_query_string(context, ui_params) }}';return false;">List <span class="sr-only"></span></a>
         </li>
         {% endif %}
 

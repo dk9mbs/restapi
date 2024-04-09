@@ -38,6 +38,7 @@ class Entity(Resource):
             context=g.context
 
             action="default"
+            # remove the __action from the json body
             json=request.form.to_dict()
             for key in list(json):
                 if key.startswith("__"):
@@ -46,12 +47,21 @@ class Entity(Resource):
                     
                     del json[key]
 
+            view=context.get_arg('view', None)
+
             fetch=build_fetchxml_by_alias(context, table, id, json, type="update")
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
             next=HTTPRequest.redirect(request, default=f"/ui/v1.0/data/{table}/$$id$$", id=id)
+            query_string=""
 
-            return redirect(f"{next}&__action={action}", code=302)
+            if action.upper()!='UNDEFINED' and action!=None and action!='' and action.upper()!='DEFAULT':
+                query_string=f"__action={action}"
+            
+            if view!=None:
+                query_string=f"{query_string}&view={view}"
+
+            return redirect(f"{next}&{query_string}", code=302)
 
         except RestApiNotAllowed as err:
             logger.exception(f"RestApiNotAllowed Exception: {err}")
