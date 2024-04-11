@@ -39,7 +39,7 @@ class EntityList(Resource):
     @api.doc(parser=create_parser())
     def get(self, table, view="default"):
 
-        return redirect(f"/api/v1.0/data/{table}?view=$default_ui_list&app_id={g.context.get_arg('app_id', '1')}", code=302)
+        return redirect(f"/api/v1.0/data/{table}?view=$default_ui_list&app_id={g.context.get_arg('app_id', '1')}&page={g.context.get_arg('page','0')}", code=302)
 
 """         try:
             parser=create_parser().parse_args()
