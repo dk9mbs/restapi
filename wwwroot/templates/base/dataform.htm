@@ -82,6 +82,40 @@
         {% endcall -%}
 
     {% endcall -%}
+
+    <script>
+    function test(){
+        frm=document.getElementById("frmData");
+        fd=new FormData(frm);
+        url='/api/v1.0/data/'+table+'/'+id;
+
+        var object = {};
+        formData.forEach(function(value, key){
+            object[key] = value;
+        });
+        var json = JSON.stringify(object);
+
+        axios({
+            method: "put",
+            url: url,
+            data: json,
+            headers: { "Content-Type": "application/json" },
+            }).then(function (response) {
+                alert('ok');
+                console.log(response);
+              })
+              .catch(function (error) {
+                alert('cannot delete the record');
+                console.log(error);
+              })
+              .then(function () {
+                // always executed
+              });
+
+    }
+    </script>
+    <button onclick=test();>Save all</button>
+
 {% endblock -%}
 
 
