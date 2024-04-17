@@ -59,9 +59,17 @@ class Entity(Resource):
         try:
             create_parser_put().parse_args()
             context=g.context
+            action=None
 
             if request.json==None:
                 abort(400, "cannot extract json data in body %s %s" % (table,id))
+
+            for key in list(request.json):
+                if key.startswith("__"):
+                    if key=="__action":
+                        action=request.json[key]
+
+                    del request.json[key]
 
             fetch=build_fetchxml_by_alias(context, table, id, request.json, type="update")
             fetchparser=FetchXmlParser(fetch, context)

@@ -134,7 +134,7 @@ class EntitySet(Resource):
                 #formatter.add_template_var("title",  f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}")
 
                 # List
-                formatter.add_template_var("columns", fetchparser.get_columns())
+                formatter.add_template_var("data_columns", fetchparser.get_columns())
                 formatter.add_template_var("view_meta", view_meta )
                 #formatter.add_template_var("pagemode", "dataformlist" )
                 formatter.add_template_var("query", query.replace("%","") )
