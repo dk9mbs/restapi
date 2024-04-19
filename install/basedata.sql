@@ -705,7 +705,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 9,'LISTVIEW','default',4,'id',1,'<restapi type="select">
     <table name="api_user_group" alias="ug"/>
     <filter type="and">
-        <condition field="groupname" value="$$query$$" operator=" like "/>
+        <condition field="groupname" alias="g" value="$$query$$" operator=" like "/>
     </filter>
     <joins>
         <join type="inner" table="api_user" alias="u" condition="ug.user_id=u.id"/> 
@@ -715,8 +715,6 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="id" table_alias="ug"/>
         <field name="username" table_alias="u"/>
         <field name="groupname" table_alias="g"/>
-        <field name="is_admin" table_alias="u" alias="Adminuser" formatter="boolean"/>
-        <field name="is_admin" table_alias="g" alias="Admingroup" formatter="boolean"/>
     </select>
 </restapi>');
 
@@ -1157,6 +1155,8 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 
 
 /* out_data_formatter */
+DELETE FROM api_data_formatter WHERE provider_id='MANUFACTURER';
+
 INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (1,'$api_sub-table',7,2);
 
 UPDATE api_data_formatter SET
@@ -1172,7 +1172,7 @@ template_header='<div class="table-responsive">
 </thead>
 <tbody>
 ',
-template_line='<tr onclick="url=\'/ui/v1.0/data/{{ table_meta[\'alias\'] }}/{{ data[table_meta[\'id_field_name\']] }}{{ build_query_string(context) }}\';alert(url); ">
+template_line='<tr onclick="url=\'/api/v1.0/data/{{ table_meta[\'alias\'] }}/{{ data[table_meta[\'id_field_name\']] }}{{ build_query_string(context) }}\';alert(url); ">
 <td>{{ data[\'id\'] }}</td>
 <td>{{ data[\'user_id\'] }}</td>
 <td>{{ data[\'last_access_on\'] }}</td>
@@ -1241,7 +1241,7 @@ template_line='
 {% for col in cols %}
 
     {% if col=="id" -%}
-        <td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[col] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}" target="_blank">{{ data[col] }}</a>
+        <td><a href="/api/v1.0/data/{{ table_alias }}/{{ data[col] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}&view=$default_ui" target="_blank">{{ data[col] }}</a>
     {% else -%}
         <td>{{ data[col] }}</td>
     {% endif -%}
@@ -1311,7 +1311,7 @@ template_line='
 {% set cols=context.get_arg("view_columns","").split(\',\') -%}
 <tr>
 
-<td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[\'id\'] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}" target="_blank">{{ data[\'id\'] }}</a>
+<td><a href="/api/v1.0/data/{{ table_alias }}/{{ data[\'id\'] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}&view=$default_ui" target="_blank">{{ data[\'id\'] }}</a>
 <td><a href="/api/v1.0/file/{{ data[\'path\'] }}" target="_blank">{{ data[\'name\'] }}</a></td>
 
 <tr>

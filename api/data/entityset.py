@@ -13,11 +13,13 @@ from core.jsontools import json_serial
 from core.exceptions import RestApiNotAllowed
 from core import log
 from core.setting import Setting
+from core.meta import read_table_view_meta, read_table_meta
 
 from services.fetchxml import build_fetchxml_by_alias, build_fetchxml_lookup
 from services.database import DatabaseServices
 from services.outdataformatter import OutDataFormatter
 from services.httpresponse import HTTPResponse
+from services.jinjatemplate import JinjaTemplate
 
 logger=log.create_logger(__name__)
 
@@ -38,31 +40,74 @@ class EntitySet(Resource):
 
     api=AppInfo.get_api()
     @api.doc(parser=create_parser())
-    def get(self, table, table_view='default'):
+    def get(self, table, table_view=None):
         try:
             create_parser().parse_args()
             context=g.context
-            args={}
-            args['filter_field_name']=context.get_arg("filter_field_name", None)
-            args['filter_value']=context.get_arg("filter_value", None)
+            view_meta=None
+            query=""
+            
+            if table_view==None:
+                args={}
+                args['filter_field_name']=context.get_arg("filter_field_name", None)
+                args['filter_value']=context.get_arg("filter_value", None)
 
-            page=int(context.get_arg("page",0))
-            page_size=int(context.get_arg("page_size", 5000))
+                page=int(context.get_arg("page",0))
+                page_size=int(context.get_arg("page_size", 5000))
 
-            fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),
-                context.get_arg("filter_value",None))
+                fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),
+                    context.get_arg("filter_value",None))
 
-            fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
+                fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
+            else:
+                query_key=f"dataformlist_query_{table}"
+                operator_key=f"dataformlist_op_{table}"
+
+                page=int(context.get_arg('page', default=0))
+                #page_size=int(context.get_arg('page_size', default=0))
+                page_size=int(Setting.get_value(context, "datalist.page_size","10"))
+
+                if page<=0:
+                    page=0
+
+                query=context.get_arg('query', default=None)
+                operator=context.get_arg('operator', None)
+
+                if query==None:
+                    query=context.get_session_value(query_key, None)
+                else:
+                    context.set_session_value(query_key, query)
+
+                if query==None:
+                    query=""
+
+                query=query.replace("*","%")
+
+                if operator==None:
+                    operator="like"
+
+                if operator=="like":
+                    query=f"{query}%"
+
+                table_meta=read_table_meta(context,alias=table)
+                view_meta=read_table_view_meta(context, table_meta['id'], table_view, 'LISTVIEW')
+
+                fetch=view_meta['fetch_xml']
+
+                fetch=fetch.replace("$$query$$", query)
+                fetch=fetch.replace("$$operator$$", operator)
+
+                fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
+
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             result=rs.get_result()
-            
+                        
             view=context.get_arg("view", None)
 
             if view!=None:
-                from core.meta import read_table_view_meta, read_table_meta
-                from services.jinjatemplate import JinjaTemplate
                 # list implemented
                 #file=f"templates/base/datalist.htm"
+                """
                 query_key=f"dataformlist_query_{table}"
                 operator_key=f"dataformlist_op_{table}"
 
@@ -102,6 +147,7 @@ class EntitySet(Resource):
 
                 fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
                 rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
+                """
 
                 #template=JinjaTemplate.create_file_template(context, file)
                 #response = make_response(template.render({"data": rs.get_result(),

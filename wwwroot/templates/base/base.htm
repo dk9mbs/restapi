@@ -85,7 +85,7 @@
         '&app_id='+appId+
         '&api_token='+div_name+'_'+referenced_table_alias+'_'+referenced_field_name
 
-      //alert(url);
+      console.log(url);
       axios.get(url)
       .then(function (response) {
         console.log(response.data);
