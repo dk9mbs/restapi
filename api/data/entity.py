@@ -114,7 +114,7 @@ class Entity(Resource):
                 formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
                 formatter.add_template_var("context", context)
                 formatter.add_template_var("table", table)
-                formatter.add_template_var("pagemode", "dataformupdate")
+                formatter.add_template_var("pagemode", context.get_arg("__pagemode", "dataformupdate"))
                 formatter.add_template_var("id", id)
                 formatter.add_template_var("data", rs.get_result())
                 formatter.add_template_var("fields", fields_meta)

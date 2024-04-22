@@ -1,13 +1,15 @@
 {% set ui_app, ui_app_nav_items=ui_app_info(context)  -%}
 {% set app_id=context.get_arg("app_id",1) -%}
-{% set ui_params=ui_view_name(context) -%}
+{% set ui_params=ui_view_name(context, False) -%}
+{% set ui_list_params=ui_view_name(context, True) -%}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <script>
         var table="{{ table }}";
         var recordId="{{ id }}";
-        var queryString="{{ build_query_string(context)[1:] }}";
+        var queryString="{{ build_query_string(context, {'view': ui_list_params['view']})[1:] }}";
         var appId="{{ context.get_arg('app_id',1) }}";
         var pagemode="{{ pagemode }}";
     </script>
@@ -16,9 +18,12 @@
     function deleteRecord(table, id) {
         if (confirm("Delete record?") == true) {
             text = "You pressed OK!";
-            axios.delete('/api/v1.0/data/{{ table }}/{{ id }}')
+            urlDelete='/api/v1.0/data/'+table+'/'+id;
+            urlRedirect='/api/v1.0/data/view/'+table+'/default?'+queryString
+
+            axios.delete(urlDelete)
               .then(function (response) {
-                window.location='/ui/v1.0/data/view/{{ table }}/default{{ build_query_string(context) }}'
+                window.location=urlRedirect
                 console.log(response);
               })
               .catch(function (error) {

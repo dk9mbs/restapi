@@ -588,6 +588,7 @@ CREATE TABLE IF NOT EXISTS api_setting (
     PRIMARY KEY(id),
     UNIQUE KEY(setting)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE api_mqtt_mesapi_settingsage_bus AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_mqtt_message_bus(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
@@ -599,8 +600,8 @@ CREATE TABLE IF NOT EXISTS api_mqtt_message_bus(
     FOREIGN KEY(solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 ALTER TABLE api_mqtt_message_bus AUTO_INCREMENT=900000000;
+
 
 /* EMail */
 --ALTER TABLE api_file DROP FOREIGN KEY IF EXISTS foreign_reference_api_email;
@@ -614,6 +615,7 @@ CREATE TABLE IF NOT EXISTS api_email_mailbox_type(
     name varchar(50) NOT NULL COMMENT '',
     PRIMARY KEY(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_email_mailbox_type AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_email_mailbox(
     id varchar(10) NOT NULL COMMENT '',

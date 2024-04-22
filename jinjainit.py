@@ -148,8 +148,11 @@ def _is_item_in_dict(jsondict, key):
 
     return False
 
-def _ui_view_name(context):
-    return {"view": "$default_ui"}
+def _ui_view_name(context, list: bool=False):
+    if list==True:
+        return {"view": "$default_ui_list"}
+    else:
+        return {"view": "$default_ui"}
 
 """
 Result all Fields from a tabe
