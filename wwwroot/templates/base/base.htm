@@ -2,7 +2,6 @@
 {% set app_id=context.get_arg("app_id",1) -%}
 {% set ui_params=ui_view_name(context, False) -%}
 {% set ui_list_params=ui_view_name(context, True) -%}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,7 +41,7 @@
         frm=document.getElementById("frmData");
         fd=new FormData(frm);
 
-        if (pagemode=="dataformupdate") {
+        if (pagemode=="dataformupdate" | pagemode=="dataformupdateclose") {
             url='/api/v1.0/data/'+table+'/'+id;
             method='put';
         } else if (pagemode=="dataforminsert") {
@@ -63,6 +62,9 @@
             headers: { "Content-Type": "application/json" },
             }).then(function (response) {
                 console.log(response);
+                if (pagemode=='dataformupdateclose') {
+                  window.close();
+                }
               })
               .catch(function (error) {
                 alert('cannot save the record');
@@ -105,20 +107,6 @@
       });
     }
     </script>
-
-    <script>
-      function submitData(action) {
-        document.getElementById('__action').value=action;
-        document.getElementById('frmData').submit();
-      }
-    </script>
-
-    {% if context.get_arg("__action","default")=="close" -%}
-    <script>
-      window.close();
-    </script>
-    {% endif -%}
-
 
     {% block head %}
     <title>{% block title %}{% endblock title %} - {{ app_id }}</title>
@@ -195,10 +183,10 @@
           <a class="nav-link" href="#" onclick="window.close();return false;">Close <span class="sr-only"></span></a>
         </li>
         <li class="nav-item active">
-          <a class="nav-link" href="#" onclick="submitData('default');return false;">Save<span class="sr-only"></span></a>
+          <a class="nav-link" href="#" onclick="saveRecord(table, recordId);return false;">Save<span class="sr-only"></span></a>
         </li>
         <li class="nav-item active">
-          <a class="nav-link" href="#" onclick="submitData('close');return false;">Save and close<span class="sr-only"></span></a>
+          <a class="nav-link" href="#" onclick="saveRecord(table, recordId);return false;">Save and close<span class="sr-only"></span></a>
         </li>
         <li class="nav-item active">
           <a class="nav-link" href="#" onclick="deleteRecord(table,id);return false;">Delete <span class="sr-only"></span></a>

@@ -447,6 +447,23 @@ UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_group_permission',referenced_table_id=5,referenced_field_name='group_id'
     WHERE id=@out_value;
 
+/* api_file */
+call api_proc_create_table_field_instance(20,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,200, 'name','Name','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,300, 'size','Size','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,400, 'mime_type','Mime Type','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,500, 'path','Pfad','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,600, 'path_hash','Hash (Pfad)','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,700, 'description','Beschreibung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(20,800, 'text_content','Text file (raw)','string',101,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(20,900, 'file','Binary file (BASE64)','string',18,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,1000, 'email_id','Verknüpfte EMail','int',2,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,1100, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
+
+
+
+
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('RUNNING', 'running',-1,0);

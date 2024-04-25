@@ -570,13 +570,19 @@ CREATE TABLE IF NOT EXISTS api_file(
     path text NOT NULL COMMENT '',
     path_hash varchar(128) NOT NULL COMMENT '',
     description text NULL,
-    file LONGBLOB NOT NULL COMMENT 'BLOB data',
+    file LONGBLOB NULL COMMENT 'BLOB data',
+    text LONGTEXT NULL COMMENT 'Text based blob data',
+    mode varchar(10) NOT NULL DEFAULT 'file' COMMENT 'file, text',
     created_on datetime NOT NULL DEFAULT current_timestamp,
     PRIMARY KEY(id),
     UNIQUE KEY(path_hash),
     INDEX(name),
     INDEX(path_hash)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_file MODIFY COLUMN file LONGBLOB NULL COMMENT 'Binary blob data';
+ALTER TABLE api_file ADD COLUMN IF NOT EXISTS text LONGTEXT NULL COMMENT 'Text based blob data' AFTER file;
+ALTER TABLE api_file ADD COLUMN IF NOT EXISTS mode varchar(10) NOT NULL DEFAULT 'file' COMMENT 'file, text' after text;
 
 CREATE TABLE IF NOT EXISTS api_setting (
     id int NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
@@ -601,7 +607,6 @@ CREATE TABLE IF NOT EXISTS api_mqtt_message_bus(
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ALTER TABLE api_mqtt_message_bus AUTO_INCREMENT=900000000;
-
 
 /* EMail */
 --ALTER TABLE api_file DROP FOREIGN KEY IF EXISTS foreign_reference_api_email;
