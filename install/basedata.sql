@@ -455,7 +455,7 @@ call api_proc_create_table_field_instance(20,400, 'mime_type','Mime Type','strin
 call api_proc_create_table_field_instance(20,500, 'path','Pfad','string',1,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(20,600, 'path_hash','Hash (Pfad)','string',1,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(20,700, 'description','Beschreibung','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(20,800, 'text_content','Text file (raw)','string',101,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(20,800, 'text','Text file (raw)','string',101,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(20,900, 'file','Binary file (BASE64)','string',18,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(20,1000, 'email_id','Verknüpfte EMail','int',2,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(20,1100, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
@@ -1414,7 +1414,97 @@ WHERE id=7 AND provider_id='MANUFACTURER';
 
 
 
+/* api_file (system files) */
+INSERT IGNORE INTO api_file (name,path,text,mode,mime_type) VALUES 
+    ('restapi_form.js','wwwroot/js/restapi_form.js','
+    function deleteRecord(table, id) {
+        if (confirm("Delete record?") == true) {
+            text = "You pressed OK!";
+            urlDelete=\'/api/v1.0/data/\'+table+\'/\'+id;
+            urlRedirect=\'/api/v1.0/data/view/\'+table+\'/default?\'+queryString
 
+            axios.delete(urlDelete)
+              .then(function (response) {
+                window.location=urlRedirect
+                console.log(response);
+              })
+              .catch(function (error) {
+                alert(\'cannot delete the record\');
+                console.log(error);
+              })
+              .then(function () {
+                // always executed
+              });
+        }
+    }
+
+    function saveRecord(table, id){
+        frm=document.getElementById("frmData");
+        fd=new FormData(frm);
+
+        if (pagemode=="dataformupdate" | pagemode=="dataformupdateclose") {
+            url=\'/api/v1.0/data/\'+table+\'/\'+id;
+            method=\'put\';
+        } else if (pagemode=="dataforminsert") {
+            url=\'/api/v1.0/data/\'+table;
+            method=\'post\';
+        }
+
+        var object = {};
+        fd.forEach(function(value, key){
+            object[key] = value;
+        });
+        var json = JSON.stringify(object);
+        
+        axios({
+            method: method,
+            url: url,
+            data: json,
+            headers: { "Content-Type": "application/json" },
+            }).then(function (response) {
+                console.log(response);
+                if (pagemode==\'dataformupdateclose\') {
+                  window.close();
+                }
+              })
+              .catch(function (error) {
+                alert(\'cannot save the record\');
+                console.log(error);
+              })
+              .then(function () {
+                // always executed
+              });
+
+    }
+
+    function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size, view="$html_table") {
+      var url=\'/api/v1.0/data/\'+referenced_table_alias+
+        \'?view=\'+view+
+        \'&filter_field_name=\'+referenced_field_name+
+        \'&filter_value=\'+value+
+        \'&view_columns=\'+columns+
+        \'&page=\'+page+
+        \'&page_size=\'+page_size+
+        \'&view_tag1=\'+div_name+
+        \'&api_cmd=save\'+
+        \'&app_id=\'+appId+
+        \'&api_token=\'+div_name+\'_\'+referenced_table_alias+\'_\'+referenced_field_name
+
+      console.log(url);
+      axios.get(url)
+      .then(function (response) {
+        console.log(response.data);
+        document.getElementById("div_sub_table_"+div_name).innerHTML=response.data;
+      })
+      .catch(function (error) {
+        document.getElementById("div_sub_table_"+div_name).innerHTML=error;
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
+    }
+','text','text/js');
 
 
 

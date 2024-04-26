@@ -39,11 +39,13 @@ class PostFile(Resource):
 
             file=File()
             result=file.read_file(context, path)
+            mode=result['mode']
 
             if result==None:
                 return make_response({"status": "Err","error": f"File not found: {path}" }, 404)
 
-            response = make_response(result['file'])
+            response = make_response(result[mode])
+
             response.headers.set('Content-Type', result['mime_type'])
             #response.headers.set('Content-Disposition', 'attachment', filename='test.jpg')
             response.headers.set('Content-Disposition', 'inline', filename=result['name'])

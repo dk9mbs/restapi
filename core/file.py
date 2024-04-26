@@ -23,7 +23,7 @@ class File:
         connection=context.get_connection()
 
         sql=f"""
-        SELECT a.file, a.mime_type,a.name FROM api_file a
+        SELECT a.file, a.mime_type,a.name,a.text,a.mode FROM api_file a
         WHERE a.path_hash=PASSWORD(%s);
         """
         logger.info(f"GET file {remote_path}")

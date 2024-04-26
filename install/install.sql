@@ -584,6 +584,31 @@ ALTER TABLE api_file MODIFY COLUMN file LONGBLOB NULL COMMENT 'Binary blob data'
 ALTER TABLE api_file ADD COLUMN IF NOT EXISTS text LONGTEXT NULL COMMENT 'Text based blob data' AFTER file;
 ALTER TABLE api_file ADD COLUMN IF NOT EXISTS mode varchar(10) NOT NULL DEFAULT 'file' COMMENT 'file, text' after text;
 
+DROP TRIGGER IF EXISTS api_file_before_insert;
+DROP TRIGGER IF EXISTS api_file_before_update;
+delimiter //
+create trigger api_file_before_insert before insert on api_file
+for each row
+begin
+   if (NEW.path_hash is null or NEW.path_hash='' ) then
+      set NEW.path_hash=password(NEW.path);
+   end if;
+end
+//
+delimiter ;
+
+delimiter //
+create trigger api_file_before_update before update on api_file
+for each row
+begin
+    set NEW.path_hash=password(NEW.path);
+end
+//
+delimiter ;
+
+
+
+
 CREATE TABLE IF NOT EXISTS api_setting (
     id int NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
     setting varchar(250) NOT NULL,
