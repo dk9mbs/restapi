@@ -416,8 +416,8 @@ call api_proc_create_table_field_instance(12,800, 'solution_id','Lösung','int',
 /* api_portal */
 call api_proc_create_table_field_instance(8,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(8,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(8,300, 'template','Template','string',18,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(8,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,300, 'template','Template','string',101,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,400, 'solution_id','Lösung','int',2,'{"disabled": false, "mode":"ace/mode/html"}', @out_value);
 UPDATE api_table_field SET referenced_table_name='api_solution', referenced_table_id=25, referenced_field_name='id', is_lookup=-1 WHERE id=@out_value;
 
 /* api_user_apikey */
@@ -1416,7 +1416,11 @@ WHERE id=7 AND provider_id='MANUFACTURER';
 
 /* api_file (system files) */
 INSERT IGNORE INTO api_file (name,path,text,mode,mime_type) VALUES 
-    ('restapi_form.js','wwwroot/js/restapi_form.js','
+    ('restapi_form.js','wwwroot/js/restapi_form.js','','text','text/js');
+
+UPDATE api_file SET text='
+    // do not change this code!
+    // see basedata.sql
     function deleteRecord(table, id) {
         if (confirm("Delete record?") == true) {
             text = "You pressed OK!";
@@ -1463,12 +1467,14 @@ INSERT IGNORE INTO api_file (name,path,text,mode,mime_type) VALUES
             headers: { "Content-Type": "application/json" },
             }).then(function (response) {
                 console.log(response);
+                setDataStatus(false, \'\');
                 if (pagemode==\'dataformupdateclose\') {
                   window.close();
                 }
               })
               .catch(function (error) {
                 alert(\'cannot save the record\');
+                setDataStatus(true, error);
                 console.log(error);
               })
               .then(function () {
@@ -1504,9 +1510,11 @@ INSERT IGNORE INTO api_file (name,path,text,mode,mime_type) VALUES
         // always executed
       });
     }
-','text','text/js');
 
-
+    function setDataStatus(dirty, msg) {
+        onChangeDataStatus(dirty, msg);   
+    }
+' WHERE path='wwwroot/js/restapi_form.js'
 
 
 
