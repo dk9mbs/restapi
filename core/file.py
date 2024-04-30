@@ -77,8 +77,8 @@ class File:
             sql=f"""
             update api_file SET {reference_field_name}=%s WHERE id=%s;
             """
-        cursor.execute(sql, [reference_id, self._file_id])
-        cursor.fetchall()
+            cursor.execute(sql, [reference_id, self._file_id])
+            cursor.fetchall()
 
         cursor.close()
 
