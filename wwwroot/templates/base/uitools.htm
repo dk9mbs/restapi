@@ -35,7 +35,7 @@
 
     <div class="col-sm-{{ col }}">
         {% if type=='checkbox' -%}
-            <input type="checkbox" class="form-check-input form-check-input-sm" id="{{ name }}" name="{{ name }}" value="1">
+            <input type="checkbox" class="form-check-input form-check-input-sm" id="{{ name }}" name="{{ name }}" value="1" onchange="setDataStatus(true, '');">
         {% else -%}      
             <input {{ show }} type="{{ type }}" class="form-control form-control-sm" id="{{ name }}" name="{{ name }}" 
                         placeholder="{{ placeholder }}" value="{{ escape_html(value) }}" onchange="setDataStatus(true, '');">
@@ -63,7 +63,7 @@
     {% endif -%}
 
     <div class="col-sm-{{ col }}">
-      <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}">{{ escape_html(value) }}</textarea>
+      <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" onchange="setDataStatus(true, '');">{{ escape_html(value) }}</textarea>
     </div>
 
     {{ caller() }}
@@ -91,7 +91,7 @@
         {% endif -%}
 
         <div class="col-sm-{{ col }}">
-        <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
+        <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example" onchange="setDataStatus(true, '');">
         <option value=""></option>
         {% for option in datacomboview(table_alias,view_name,query) -%}
             {% if option['id']==value -%}
@@ -125,7 +125,7 @@
     {% endif -%}
 
     <div class="col-sm-{{ col }}">
-    <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
+    <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example" onchange="setDataStatus(true, '');">
     {% for option in listitems2json(listitems) -%}
         {% if option['key']==value -%}
             <option selected value="{{ option['key'] }}">{{ option['value'] }}</option>
@@ -197,7 +197,7 @@
     {% endif -%}
 
     <div class="col-sm-{{ col }}">
-      <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}">{{ value }}</textarea>
+      <textarea {{ show }} type="{{ type }}" class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}" onchange="setDataStatus(true, '');">{{ value }}</textarea>
     </div>
 
     <!-- Enable nic-Edit -->
@@ -263,7 +263,7 @@
         editor_{{ name }}.resize()
 
         editor_{{ name }}.getSession().on("change", function () {
-            document.getElementById('{{ name }}').value = editor_{{ name }}.getSession().getValue();
+            document.getElementById('{{ name }}').value = editor_{{ name }}.getSession().getValue();setDataStatus(true, '');
         });
     </script>
     <!-- end of enbale nicEdit -->
@@ -291,7 +291,7 @@
     {% endif -%}
 
     <div class="col-sm-{{ col }}">
-    <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example">
+    <select {{ show }} id="{{ name }}" name="{{ name }}" class="form-select form-select-sm" aria-label=".form-select-sm example" onchange="setDataStatus(true, '');">
 
         {% if value==0 or value==None -%}
             <option selected value="0">No</option>
