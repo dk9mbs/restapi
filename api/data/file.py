@@ -57,11 +57,14 @@ class PostFile(Resource):
 
 
     @api.doc(parser=create_parser())
-    def post(self, path):
+    def post(self, path=""):
         try:
             context=g.context
             connection=context.get_connection()
             result=[]
+
+            if path=="":
+                path=context.get_arg("path", "")
 
             for f in request.files.getlist('file'):
                 file=File()

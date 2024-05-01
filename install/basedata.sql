@@ -936,6 +936,9 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="id" table_alias="a" alias="id"/>
         <field name="name" table_alias="a" alias="Name"/>
     </select>
+    <orderby>
+        <field name="id" alias="a" sort="DESC"/>
+    </orderby>
 </restapi>');
 
 INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
@@ -1421,6 +1424,10 @@ INSERT IGNORE INTO api_file (name,path,text,mode,mime_type) VALUES
 UPDATE api_file SET text='
     // do not change this code!
     // see basedata.sql
+    function _(el) {
+        return document.getElementById(el);
+    }
+
     function deleteRecord(table, id) {
         if (confirm("Delete record?") == true) {
             text = "You pressed OK!";
@@ -1513,6 +1520,17 @@ UPDATE api_file SET text='
 
     function setDataStatus(dirty, msg) {
         onChangeDataStatus(dirty, msg);   
+    }
+
+    function uploadFile() {
+        var formdata = new FormData(_("formfileupload"));
+        var ajax = new XMLHttpRequest();
+        ajax.upload.addEventListener("progress", onFileUpliadProgress, false);
+        ajax.addEventListener("load", onFileUploadComplete, false);
+        ajax.addEventListener("error", onFileUploadError, false);
+        ajax.addEventListener("abort", onFileUploadAbort, false);
+        ajax.open("POST", "/api/v1.0/file"); 
+        ajax.send(formdata);
     }
 ' WHERE path='wwwroot/js/restapi_form.js'
 
