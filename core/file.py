@@ -82,10 +82,17 @@ class File:
 
         cursor.close()
 
-    def update_file(self, context, file, remote_path):
+    def exists_file(self, context, remote_path):
+        try:
+            self._file_id_by_path(context,context.get_connection() , remote_path)
+            return True
+        except:
+            return False
+
+    def update_file(self, context, file, remote_path, **args):
         connection=context.get_connection()
         file_bytes=file.read()
-        self.__file_id_by_path(context,connection,remote_path)
+        self._file_id_by_path(context,connection,remote_path)
 
         sql=f"""
         UPDATE api_file SET file=%s WHERE path_hash=PASSWORD(%s)
@@ -97,7 +104,7 @@ class File:
         cursor.close()
 
 
-    def __file_id_by_path(self,context, connection,remote_path):
+    def _file_id_by_path(self,context, connection,remote_path):
 
         sql=f"""
         SELECT a.id FROM api_file a

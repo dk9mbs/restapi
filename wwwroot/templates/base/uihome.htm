@@ -73,7 +73,7 @@
 
 <script>
 function onFileUpliadProgress(event) {
-    _("loaded_n_total").innerHTML = "Uploaded " + event.loaded + " bytes of " + event.total;
+    //_("loaded_n_total").innerHTML = "Uploaded " + event.loaded + " bytes of " + event.total;
     var percent = (event.loaded / event.total) * 100;
     _("progressBar").value = Math.round(percent);
     //_("status").innerHTML = Math.round(percent) + "% uploaded... please wait";
@@ -98,12 +98,8 @@ function onFileUploadAbort(event) {
         <div class="card-body">
             <h5 class="card-title">Datei Upload</h5>
             <p class="card-text">
-            <!-- /api/v1.0/file/test/bild?redirect=/ui/home -->
             <form method="POST" name="formfileupload" id="formfileupload" action="/api/v1.0/file?redirect=/ui/home" enctype = "multipart/form-data">
-            <input class="form-control form-control-sm" id="file" name="file" type="file"/>
-            <input class="form-control form-control-sm" id="path" name="path" type="text" value="upload/bilder/" />
-            <p></p>
-            <!--<input class="btn btn-sm btn-primary" type="submit" value="Import">-->
+            <input class="form-control form-control-sm" id="file" name="file" type="file" multiple/>
             <progress id="progressBar" value="0" max="100" style="width:16rem;"></progress>
             <p id="status"></p>
             <p id="loaded_n_total"></p>

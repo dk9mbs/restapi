@@ -83,6 +83,15 @@
 
     {% endcall -%}
 
+    <div>
+        <form method="POST" name="formfileupload" id="formfileupload" action="/api/v1.0/file/restapi/documents/table/{{ table }}/{{ id }}" enctype = "multipart/form-data">
+            <input class="form-control form-control-sm" id="file" name="file" type="file" multiple/>
+            <progress id="progressBar" value="0" max="100" style="width:16rem;"></progress>
+            <p id="status"></p>
+            <p id="loaded_n_total"></p>
+        </form>
+        <button class="btn btn-sm btn-primary" onclick="uploadFile();return false;">Upload</button>
+    </div>
 
     <!-- <button onclick="saveRecord(table, id);">Save all</button> -->
     <!-- -->
