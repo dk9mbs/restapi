@@ -71,28 +71,8 @@
     </div>
 </div>
 
-<script>
-function onFileUpliadProgress(event) {
-    //_("loaded_n_total").innerHTML = "Uploaded " + event.loaded + " bytes of " + event.total;
-    var percent = (event.loaded / event.total) * 100;
-    _("progressBar").value = Math.round(percent);
-    //_("status").innerHTML = Math.round(percent) + "% uploaded... please wait";
-}
 
-function onFileUploadComplete(event) {
-    _("status").innerHTML = event.target.responseText;
-    _("progressBar").value = 0;
-}
-
-function onFileUploadError(event) {
-    _("status").innerHTML = "Upload Failed";
-}
-
-function onFileUploadAbort(event) {
-    _("status").innerHTML = "Upload Aborted";
-}
-</script>
-
+<!--
 <div class="col">
     <div class="card" style="width: 18rem;height: 12rem;">
         <div class="card-body">
@@ -110,7 +90,7 @@ function onFileUploadAbort(event) {
         </div>
     </div>
 </div>
-
+-->
 
 </div>
 

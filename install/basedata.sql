@@ -31,6 +31,7 @@ INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUE
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (101,'ace Edit','ACE-EDIT','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (200,'SubTable','SUB-TABLE','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (201,'SubTableFile','SUB-TABLE-FILE','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (300,'Add Document','ADD_DOCUMENT','{}');
 
 UPDATE api_table_field_control SET control_config='{"type": "text"}' WHERE id=1;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=2;
@@ -56,6 +57,7 @@ UPDATE api_table_field_control SET control_config='{}' WHERE id=100;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=101;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=200;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=201;
+UPDATE api_table_field_control SET control_config='{}' WHERE id=300;
 
 
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('default','Default',1) ON DUPLICATE KEY UPDATE control_id=1;
@@ -1522,14 +1524,26 @@ UPDATE api_file SET text='
         onChangeDataStatus(dirty, msg);   
     }
 
-    function uploadFile() {
-        var formdata = new FormData(_("formfileupload"));
+    function uploadFile(formElement=\'\', path=\'\') {
+        if(formElement==\'\')
+            formElement=\'formfileupload\';
+            
+        var formdata = new FormData(_(formElement));
         var ajax = new XMLHttpRequest();
-        ajax.upload.addEventListener("progress", onFileUpliadProgress, false);
-        ajax.addEventListener("load", onFileUploadComplete, false);
-        ajax.addEventListener("error", onFileUploadError, false);
-        ajax.addEventListener("abort", onFileUploadAbort, false);
-        ajax.open("POST", "/api/v1.0/file"); 
+        
+        if(typeof onFileUpliadProgress === "function")
+            ajax.upload.addEventListener("progress", onFileUpliadProgress, false);
+        
+        if(typeof onFileUploadComplete === "function")
+            ajax.addEventListener("load", onFileUploadComplete, false);
+
+        if(typeof onFileUploadError === "function")
+            ajax.addEventListener("error", onFileUploadError, false);
+
+        if(typeof onFileUploadAbort === "function")
+            ajax.addEventListener("abort", onFileUploadAbort, false);
+
+        ajax.open("POST", "/api/v1.0/file/"+path); 
         ajax.send(formdata);
     }
 ' WHERE path='wwwroot/js/restapi_form.js'

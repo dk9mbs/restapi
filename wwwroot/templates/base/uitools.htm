@@ -45,6 +45,62 @@
     {{ caller() }}
 {%- endmacro -%}
 
+{% macro add_document(name, label='', id='', table='' , config={}) -%}
+    {% set disabled=config | value_from_json("disabled", false) -%}
+
+    <script>
+        function onFileUpliadProgress(event) {
+            //_("loaded_n_total").innerHTML = "Uploaded " + event.loaded + " bytes of " + event.total;
+            var percent = (event.loaded / event.total) * 100;
+            _("progressBar").value = Math.round(percent);
+            _("status").innerHTML = Math.round(percent) + "% uploaded... please wait";
+        }
+        
+        function onFileUploadComplete(event) {
+            var status=JSON.parse(event.target.responseText);
+
+            if (status['status']=="ok") {
+                _("status").innerHTML = "Upload successfull!";
+                _('file_upload_control_bar').style.display='none';
+            } else {
+                _("status").innerHTML = err=status['error'];;
+            }
+
+            _("progressBar").value = 0;
+        }
+        
+        function onFileUploadError(event) {
+            _("status").innerHTML = "Upload Failed";
+        }
+        
+        function onFileUploadAbort(event) {
+            _("status").innerHTML = "Upload Aborted";
+        }
+    </script>
+
+
+    <label for="{{ name }}" class="col-sm-2 col-form-label col-form-label-sm" style="border-bottom: 1px dashed silver">{{ label }}</label>
+
+    <div class="col-sm-10">
+        <form method="POST" name="{{ name }}" id="{{ name }}" action="/api/v1.0/file" enctype = "multipart/form-data">
+            <input class="form-control form-control-sm" id="file" name="file" type="file" 
+                onchange="_('file_upload_control_bar').style.display='block';
+                    uploadFile('formfileupload','restapi/dms/tables/{{ table }}/{{ id }}');" multiple/>
+        </form>
+
+        <div id="file_upload_control_bar" style="display: none">
+        <progress id="progressBar" value="0" max="100" style="width:100%;"></progress>
+        <p id="status"></p>
+        <p id="loaded_n_total"></p>
+        <!-- <button class="btn btn-sm btn-primary" onclick="uploadFile();return false;">Upload</button>-->
+        </div>
+    </div>
+
+    {{ caller() }}
+{%- endmacro -%}
+
+
+
 {% macro input_multiline(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
     {% set disabled=config | value_from_json("disabled", false) -%}
 
