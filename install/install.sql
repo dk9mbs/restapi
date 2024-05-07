@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS api_table (
     id_field_type varchar(50) NOT NULL COMMENT 'String,Int',
     desc_field_name varchar(250) NOT NULL COMMENT 'Name of the description field',
     enable_audit_log smallint NOT NULL DEFAULT '0',
+    enable_record_auth smallint NOT NULL DEFAULT '0' COMMENT '0=Disable -1=Enable',
     solution_id int NOT NULL DEFAULT '1',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     FOREIGN KEY(id_field_type) REFERENCES api_table_field_type(id),
@@ -117,6 +118,7 @@ CREATE TABLE IF NOT EXISTS api_table (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAULT '' AFTER id;
+ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_record_auth smallint NOT NULL DEFAULT '0' COMMENT '0=Disable -1=Enable' AFTER enable_audit_log;
 
 /* formatter */
 CREATE TABLE IF NOT EXISTS api_data_formatter_type(
@@ -275,6 +277,13 @@ CREATE TABLE IF NOT EXISTS api_group_permission(
     FOREIGN KEY(group_id) REFERENCES api_group(id),
     FOREIGN KEY(table_id) REFERENCES api_table(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*
+CREATE TABLE IF NOT EXISTS api_record_share(
+    id int NOT NULL AUTO_INCREMENT,
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+*/
 
 CREATE TABLE IF NOT EXISTS api_session (
     id varchar(100) NOT NULL,
