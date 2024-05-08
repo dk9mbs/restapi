@@ -108,7 +108,8 @@ CREATE TABLE IF NOT EXISTS api_table (
     id_field_type varchar(50) NOT NULL COMMENT 'String,Int',
     desc_field_name varchar(250) NOT NULL COMMENT 'Name of the description field',
     enable_audit_log smallint NOT NULL DEFAULT '0',
-    enable_record_auth smallint NOT NULL DEFAULT '0' COMMENT '0=Disable -1=Enable',
+    enable_record_permission smallint NOT NULL DEFAULT '0' COMMENT '0=disabled -1=enabled',
+    enable_dms smallint NOT NULL DEFAULT '0' COMMENT 'Activate DMS for this table',
     solution_id int NOT NULL DEFAULT '1',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     FOREIGN KEY(id_field_type) REFERENCES api_table_field_type(id),
@@ -118,7 +119,8 @@ CREATE TABLE IF NOT EXISTS api_table (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAULT '' AFTER id;
-ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_record_auth smallint NOT NULL DEFAULT '0' COMMENT '0=Disable -1=Enable' AFTER enable_audit_log;
+ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_record_permission smallint NOT NULL DEFAULT '0' COMMENT '' AFTER enable_audit_log;
+ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_dms smallint NOT NULL DEFAULT '0' COMMENT 'Activate DMS for this table' AFTER enable_record_permission;
 
 /* formatter */
 CREATE TABLE IF NOT EXISTS api_data_formatter_type(
@@ -278,12 +280,24 @@ CREATE TABLE IF NOT EXISTS api_group_permission(
     FOREIGN KEY(table_id) REFERENCES api_table(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-/*
-CREATE TABLE IF NOT EXISTS api_record_share(
+CREATE TABLE IF NOT EXISTS api_group_record_permission(
     id int NOT NULL AUTO_INCREMENT,
-
+    group_id int NOT NULL COMMENT 'user group id',
+    table_id int NOT NULL COMMENT 'table id',
+    record_id_str varchar(50) NULL COMMENT 'string based recordid',
+    record_id_int int NULL COMMENT 'integer based recordid',
+    mode_create smallint NOT NULL DEFAULT '0' COMMENT 'create',
+    mode_read smallint NOT NULL DEFAULT '0' COMMENT 'read',
+    mode_update smallint NOT NULL DEFAULT '0' COMMENT 'update',
+    mode_delete smallint NOT NULL DEFAULT '0' COMMENT 'delete',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(group_id) REFERENCES api_group(id),
+    FOREIGN KEY(table_id) REFERENCES api_table(id),
+    UNIQUE KEY(group_id, table_id, record_id_str),
+    UNIQUE KEY(group_id, table_id, record_id_int)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-*/
+
 
 CREATE TABLE IF NOT EXISTS api_session (
     id varchar(100) NOT NULL,

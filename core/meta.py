@@ -257,6 +257,7 @@ def __convert_boolean(value):
 
 def __convert_field_type(field_name, value, referenced_table_id=None):
     if field_name.startswith("is_") and value.startswith("smallint") : return "boolean"
+    if field_name.startswith("enable_") and value.startswith("smallint") : return "boolean"
     if not referenced_table_id==None:
         return "lookup"
 

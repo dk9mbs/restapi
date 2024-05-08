@@ -363,6 +363,21 @@ call api_proc_create_table_field_instance(1,10, 'id','ID','int',14,'{"disabled":
 call api_proc_create_table_field_instance(1,20, 'name','Name','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(1,30, 'Port','Port','int',14,'{"disabled": false}', @out_value);
 
+/* api_table */
+call api_proc_create_table_field_instance(10,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(10,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,300, 'alias','API Tabellenname (Alias)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,400, 'table_name','SQL Tablename','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,500, 'id_field_name','Feldname unique Key','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,600, 'id_field_type','Datentyp unique key','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,700, 'desc_field_name','Beschreibungs Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,800, 'enable_audit_log','Audit Log','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,900, 'enable_record_permission','Datensatzsicherheit','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,950, 'enable_dms','Dokumenten anhängen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,1000, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+
+
+
 /* api_table_field */
 call api_proc_create_table_field_instance(13,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,200, 'pos','Position','int',14,'{"disabled": false}', @out_value);
