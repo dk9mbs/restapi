@@ -38,6 +38,42 @@ BEGIN
 END//
 delimiter ;
 
+/*
+Record based security core function
+*/
+DROP FUNCTION IF EXISTS api_fn_rec_permission;
+DELIMITER //
+
+CREATE FUNCTION api_fn_rec_permission (
+    user_name varchar(50), 
+    table_alias varchar(50), 
+    record_id int, 
+    node varchar(50) 
+)
+RETURNS INT
+BEGIN
+    DECLARE permission int;
+    DECLARE table_id int;
+    DECLARE user_id int;
+
+    SELECT id INTO user_id FROM api_user WHERE username=user_name;
+    SELECT id INTO table_id FROM api_table WHERE alias=table_alias;
+
+    select p.id INTO permission from api_group_rec_permission p 
+        INNER JOIN api_user_group ug ON ug.group_id=p.group_id
+        WHERE ug.user_id=user_id 
+            AND p.table_id=table_id 
+            AND p.record_id_int=record_id 
+            AND p.mode_read=-1 LIMIT 1;
+
+    RETURN permission;
+END; //
+DELIMITER ;
+
+/*
+select id,api_fn_rec_permission('root','api_file',id, 'READ') AS group_rec_permission_id from api_file 
+    WHERE api_fn_rec_permission('root','api_file',id, 'READ')>0;
+*/
 
 CREATE TABLE IF NOT EXISTS dummy (
     id int NOT NULL auto_increment,
@@ -280,13 +316,21 @@ CREATE TABLE IF NOT EXISTS api_group_permission(
     FOREIGN KEY(table_id) REFERENCES api_table(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS api_group_record_permission(
+CREATE TABLE IF NOT EXISTS api_group_rec_permission_type(
     id int NOT NULL AUTO_INCREMENT,
+    name varchar(50) NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_group_rec_permission_type AUTO_INCREMENT=900000000;
+
+DROP TABLE IF EXISTS api_group_record_permission;
+CREATE TABLE IF NOT EXISTS api_group_rec_permission(
+    id int NOT NULL AUTO_INCREMENT,
+    type_id int NOT NULL DEFAULT '1',
     group_id int NOT NULL COMMENT 'user group id',
     table_id int NOT NULL COMMENT 'table id',
     record_id_str varchar(50) NULL COMMENT 'string based recordid',
     record_id_int int NULL COMMENT 'integer based recordid',
-    mode_create smallint NOT NULL DEFAULT '0' COMMENT 'create',
     mode_read smallint NOT NULL DEFAULT '0' COMMENT 'read',
     mode_update smallint NOT NULL DEFAULT '0' COMMENT 'update',
     mode_delete smallint NOT NULL DEFAULT '0' COMMENT 'delete',
@@ -294,6 +338,7 @@ CREATE TABLE IF NOT EXISTS api_group_record_permission(
     PRIMARY KEY(id),
     FOREIGN KEY(group_id) REFERENCES api_group(id),
     FOREIGN KEY(table_id) REFERENCES api_table(id),
+    FOREIGN KEY(type_id) REFERENCES api_group_rec_permission_type(id),
     UNIQUE KEY(group_id, table_id, record_id_str),
     UNIQUE KEY(group_id, table_id, record_id_int)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
