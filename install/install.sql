@@ -47,8 +47,8 @@ DELIMITER //
 CREATE FUNCTION api_fn_rec_permission (
     user_name varchar(50), 
     table_alias varchar(50), 
-    record_id int, 
-    node varchar(50) 
+    record_id varchar(50),
+    mode varchar(50)
 )
 RETURNS INT
 BEGIN
