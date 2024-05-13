@@ -671,7 +671,7 @@ class FetchXmlParser(BaseParser):
                 sql=sql+self._build_where(item, op)
 
         #ToDo: test this call:
-        self._get_record_permission_clause(sql)
+        sql=self._get_record_permission_clause(sql)
         return "("+sql+")"
 
     def _append_alias(self, table, alias=None):

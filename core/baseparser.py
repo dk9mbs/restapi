@@ -31,9 +31,8 @@ class BaseParser:
 
             if where_clause!="" and where_clause!=None and result!="":
                 where_clause=f"({where_clause}) AND ({result})"
-            #elif where_clause=="":
-            #    where_clause=f"{result}"                
-
+            else:
+                where_clause=f"{where_clause}{result}"                
 
             return where_clause
 
