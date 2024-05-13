@@ -5,7 +5,7 @@ import os
 from core.database import CommandBuilderFactory
 from core.database import FetchXmlParser
 from core.appinfo import AppInfo
-from core.meta import build_table_fields_meta
+from core.meta_builder import build_table_fields_meta
 from config import CONFIG
 from core.log import create_logger
 from core.database import Recordset

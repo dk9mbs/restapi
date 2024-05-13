@@ -18,6 +18,25 @@ class BaseParser:
         self._fields=''
         self._main_table_join=''
         self._auto_commit=False
+        self._table_aliases={}
+
+    def _get_record_permission_clause(self, where_clause: str):
+        result=""
+        for key, value in self._table_aliases.items():
+            if result != "":
+                result=f"{result} AND "
+
+            if value['meta']['enable_record_permission']!=0:
+                result=f"{result} api_fn_rec_permission('"+self._context.get_username()+"','"+f"{value['name']}"+"',"+f"{value['alias']}.id"+", 'READ') "
+
+            if where_clause!="" and where_clause!=None and result!="":
+                where_clause=f"({where_clause}) AND ({result})"
+            #elif where_clause=="":
+            #    where_clause=f"{result}"                
+
+
+            return where_clause
+
 
     def get_select(self):
         return ("", [])
