@@ -1537,8 +1537,8 @@ UPDATE api_file SET text='
                   window.close();
                 }
                 console.log(response[\'data\']);
-                data=JSON.parse(response[\'data\']);
-                window.location=\'/api/v1.0/data/\'+table+\'/\'+data[\'inserted_id\'];
+                data=response[\'data\'];
+                window.location=\'/api/v1.0/data/\'+table+\'/\'+data[\'inserted_id\']+\'?view=$default_ui\';
               })
               .catch(function (error) {
                 alert(\'cannot save the record\');
