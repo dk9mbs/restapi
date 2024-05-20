@@ -88,11 +88,13 @@
 
     {% endcall -%}
 
-    {% call forms.row() -%}
-        {% call forms.add_document(name='formfileupload', label='Dokument hinzufügen', id=id, 
-            table=table, config={}) -%}
+    {% if pagemode=="dataformupdateclose" or pagemode=="dataformupdate" and table_meta['enable_dms']==-1 %}
+        {% call forms.row() -%}
+            {% call forms.add_document(name='formfileupload', label='Dokument hinzufügen', id=id, 
+                table=table, config={"reference_field_name": ""}) -%}
+            {% endcall -%}
         {% endcall -%}
-    {% endcall -%}
+    {% endif -%}
 
     <!-- <button onclick="saveRecord(table, id);">Save all</button> -->
     <!-- -->

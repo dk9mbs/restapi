@@ -1536,9 +1536,11 @@ UPDATE api_file SET text='
                 if (pagemode==\'dataformupdateclose\') {
                   window.close();
                 }
-                console.log(response[\'data\']);
-                data=response[\'data\'];
-                window.location=\'/api/v1.0/data/\'+table+\'/\'+data[\'inserted_id\']+\'?view=$default_ui\';
+
+                if (pagemode==\'dataforminsert\') {
+                    data=response[\'data\'];
+                    window.location=\'/api/v1.0/data/\'+table+\'/\'+data[\'inserted_id\']+\'?view=$default_ui\';
+                }
               })
               .catch(function (error) {
                 alert(\'cannot save the record\');
@@ -1583,10 +1585,16 @@ UPDATE api_file SET text='
         onChangeDataStatus(dirty, msg);   
     }
 
-    function uploadFile(formElement=\'\', path=\'\') {
+    function uploadFile(formElement=\'\', path=\'\', reference_field_name=\'\', reference_id=\'\') {
         if(formElement==\'\')
             formElement=\'formfileupload\';
-            
+        
+        var args=\'\';    
+
+        if (reference_field_name!=\'\') {
+            args=\'reference_field_name=\'+reference_field_name+\'&reference_id=\'+reference_id;
+        }
+        
         var formdata = new FormData(_(formElement));
         var ajax = new XMLHttpRequest();
         
@@ -1602,7 +1610,7 @@ UPDATE api_file SET text='
         if(typeof onFileUploadAbort === "function")
             ajax.addEventListener("abort", onFileUploadAbort, false);
 
-        ajax.open("POST", "/api/v1.0/file/"+path); 
+        ajax.open("POST", "/api/v1.0/file/"+path+\'?\'+args); 
         ajax.send(formdata);
     }
 ' WHERE path='wwwroot/js/restapi_form.js'
