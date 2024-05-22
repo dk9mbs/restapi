@@ -4,12 +4,18 @@
     {% block head %}
     <title>App Center</title>
 
+    <script src="/api/v1.0/file/wwwroot/js/restapi_form.js" lang="javascript"></script>
+
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!-- axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js" integrity="sha512-u9akINsQsAkG9xjc1cnGF4zw5TFDwkxuc9vUp5dltDWYCSmyd0meygbvgXrlc/z7/o4a19Fb5V0OUE58J7dcyw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- End axios -->
 
     <style>
     body {
@@ -65,21 +71,26 @@
     </div>
 </div>
 
+
+<!--
 <div class="col">
     <div class="card" style="width: 18rem;height: 12rem;">
         <div class="card-body">
             <h5 class="card-title">Datei Upload</h5>
             <p class="card-text">
-            <form method="POST" name="formfileupload" id="formfileupload" action="/api/v1.0/file/test/bild?redirect=/ui/home" enctype = "multipart/form-data">
-            <input class="form-control form-control-sm" id="file" name="file" type="file" />
-            <p></p>
-            <input class="btn btn-sm btn-primary" type="submit" value="Import">
+            <form method="POST" name="formfileupload" id="formfileupload" action="/api/v1.0/file?redirect=/ui/home" enctype = "multipart/form-data">
+            <input class="form-control form-control-sm" id="file" name="file" type="file" multiple/>
+            <progress id="progressBar" value="0" max="100" style="width:16rem;"></progress>
+            <p id="status"></p>
+            <p id="loaded_n_total"></p>
+
             </form>
+            <button class="btn btn-sm btn-primary" onclick="uploadFile();return false;">Upload</button>
             </p>
         </div>
     </div>
 </div>
-
+-->
 
 </div>
 

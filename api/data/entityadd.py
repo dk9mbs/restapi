@@ -30,9 +30,17 @@ class EntityAdd(Resource):
     def post(self, table):
         try:
             context=g.context
-
+            action=None
+            
             if request.json==None:
                 abort(400, "cannot extract json data in http request for insert %s" % (table))
+
+            for key in list(request.json):
+                if key.startswith("__"):
+                    if key=="__action":
+                        action=request.json[key]
+
+                    del request.json[key]
 
             fetch=build_fetchxml_by_alias(context,table,None, request.json, type="insert")
             fetchparser=FetchXmlParser(fetch, context)

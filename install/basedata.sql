@@ -31,6 +31,7 @@ INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUE
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (101,'ace Edit','ACE-EDIT','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (200,'SubTable','SUB-TABLE','{}');
 INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (201,'SubTableFile','SUB-TABLE-FILE','{}');
+INSERT IGNORE INTO api_table_field_control(id,name,control,control_config) VALUES (300,'Add Document','ADD_DOCUMENT','{}');
 
 UPDATE api_table_field_control SET control_config='{"type": "text"}' WHERE id=1;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=2;
@@ -56,6 +57,7 @@ UPDATE api_table_field_control SET control_config='{}' WHERE id=100;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=101;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=200;
 UPDATE api_table_field_control SET control_config='{}' WHERE id=201;
+UPDATE api_table_field_control SET control_config='{}' WHERE id=300;
 
 
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('default','Default',1) ON DUPLICATE KEY UPDATE control_id=1;
@@ -182,12 +184,20 @@ INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_typ
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (38,'Eventhandler Status','api_event_handler_status', 'api_event_handler_status','id','string','name',0);
 
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (39,'Datensatz Berechtigungs Typ','api_group_rec_permission_type','api_group_rec_permission_type','id','int','name',-1);
+
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (40,'Datensatz Berechtigung','api_group_rec_permission','api_group_rec_permission','id','int','group_id',-1);
+
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
 UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
 UPDATE api_table set name=alias WHERE name IS NULL OR name='';
 /* */
 
+INSERT IGNORE INTO api_group_rec_permission_type(id,name) VALUES (1, 'Permanent');
+INSERT IGNORE INTO api_group_rec_permission_type(id,name) VALUES (2, 'Share');
 
 INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (1,'root','password',0,-1);
 INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (99,'system','password',0,-1);
@@ -306,15 +316,16 @@ call api_proc_create_table_field_instance(30,200, 'name','Bezeichnung','string',
 call api_proc_create_table_field_instance(30,300, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,300, 'type_id','Typ','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,400, 'mime_type','Mime Typ','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(30,410, 'template_file','Jinja Templatefile','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,500, 'template_header','Kopf Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
 call api_proc_create_table_field_instance(30,600, 'template_line','Daten Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
 call api_proc_create_table_field_instance(30,700, 'template_footer','Fuss Bereich','string',101,'{"disabled": false, "mode":"ace/mode/text"}', @out_value);
-call api_proc_create_table_field_instance(30,705, 'template_file','Jinja Template','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,710, 'line_separator','Datensatz Trenner','string',20,
     '{"disabled": false, "listitems":";Kein|@n;New Line(Unix)|@r@n;New Line (Windows)"}', @out_value);
 call api_proc_create_table_field_instance(30,720, 'file_name','Dateiname','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,730, 'content_disposition','CONTENT_DISPOSITION','string',20,
     '{"disabled": false, "listitems":"inline;inline|attachment;attachment"}', @out_value);
+call api_proc_create_table_field_instance(30,750, 'page_mode','Page mode for base tamplates','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(30,800, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(30,900, 'provider_id','Besitzer','string',2,'{"disabled": false}', @out_value);
 
@@ -359,6 +370,21 @@ UPDATE api_table_field
 call api_proc_create_table_field_instance(1,10, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(1,20, 'name','Name','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(1,30, 'Port','Port','int',14,'{"disabled": false}', @out_value);
+
+/* api_table */
+call api_proc_create_table_field_instance(10,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(10,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,300, 'alias','API Tabellenname (Alias)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,400, 'table_name','SQL Tablename','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,500, 'id_field_name','Feldname unique Key','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,600, 'id_field_type','Datentyp unique key','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,700, 'desc_field_name','Beschreibungs Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,800, 'enable_audit_log','Audit Log','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,900, 'enable_record_permission','Datensatzsicherheit','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,950, 'enable_dms','Dokumenten anhängen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,1000, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+
+
 
 /* api_table_field */
 call api_proc_create_table_field_instance(13,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
@@ -415,8 +441,8 @@ call api_proc_create_table_field_instance(12,800, 'solution_id','Lösung','int',
 /* api_portal */
 call api_proc_create_table_field_instance(8,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(8,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(8,300, 'template','Template','string',18,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(8,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,300, 'template','Template','string',101,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(8,400, 'solution_id','Lösung','int',2,'{"disabled": false, "mode":"ace/mode/html"}', @out_value);
 UPDATE api_table_field SET referenced_table_name='api_solution', referenced_table_id=25, referenced_field_name='id', is_lookup=-1 WHERE id=@out_value;
 
 /* api_user_apikey */
@@ -445,6 +471,33 @@ call api_proc_create_table_field_instance(3,500, '_permissions','Berechtigungen'
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_group_permission',referenced_table_id=5,referenced_field_name='group_id'
     WHERE id=@out_value;
+
+/* api_file */
+call api_proc_create_table_field_instance(20,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,200, 'name','Name','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,300, 'size','Size','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,400, 'mime_type','Mime Type','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,500, 'path','Pfad','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,600, 'path_hash','Hash (Pfad)','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,700, 'description','Beschreibung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(20,800, 'text','Text file (raw)','string',101,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(20,900, 'file','Binary file (BASE64)','string',18,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,1000, 'email_id','Verknüpfte EMail','int',2,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(20,1100, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
+
+/* api_group_rec_permission */
+call api_proc_create_table_field_instance(40,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(40,200, 'type_id','Type','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(40,300, 'group_id','Benutzer Gruppe','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(40,400, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(40,500, 'record_id_str','Datensatz ID (String)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(40,600, 'record_id_int','Datensatz ID (Integer)','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(40,700, 'mode_read','Lesen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(40,800, 'mode_update','Ändern','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(40,900, 'mode_delete','Löschen','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(40,1000, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
 
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
@@ -529,6 +582,9 @@ INSERT IGNORE INTO api_ui_app (id, name,description,home_url,solution_id)
 VALUES (
 2,'E-Mail','E-mail App','/ui/v1.0/data/view/api_email/default?app_id=2',1);
 
+INSERT IGNORE INTO api_ui_app (id, name,description,home_url,solution_id)
+VALUES (
+3,'Sicherheit','Sicherheits App','/ui/v1.0/data/view/api_user/default?app_id=3',1);
 
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (1,1, 'Sidebar');
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (2,1, 'Navbar');
@@ -536,10 +592,6 @@ INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (2,1, 
 
 DELETE FROM api_ui_app_nav_item WHERE solution_id=1;
 
-INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (100,1,'Benutzer','/ui/v1.0/data/view/api_user/default',1,1);
-INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (105,1,'Sitzungen','/ui/v1.0/data/view/api_session/default',1,1);
-INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (110,1,'Berechtigungen','/ui/v1.0/data/view/api_group_permission/default',1,1);
-INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (101,1,'Benutzergruppen','/ui/v1.0/data/view/api_group/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (200,1,'Tabellen','/ui/v1.0/data/view/api_table/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (205,1,'Sichten','/ui/v1.0/data/view/api_table_view/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (210,1,'Daten Formatierungs Type','/ui/v1.0/data/view/api_data_formatter_type/default',1,1);
@@ -554,12 +606,18 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1200,1,'Eventhandler','/ui/v1.0/data/view/api_event_handler/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1300,1,'Process Log (nur Fehler)','/ui/v1.0/data/view/api_process_log/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1400,1,'Process Log (alle)','/ui/v1.0/data/view/api_process_log/all',1,1);
-INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1500,1,'API Keys','/ui/v1.0/data/view/api_user_apikey/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1600,1,'MQTT Message Bus','/ui/v1.0/data/view/api_mqtt_message_bus/default',1,1);
 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2000,2,'E-Mail Postboxen','/ui/v1.0/data/view/api_email_mailbox/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2010,2,'E-Mails','/ui/v1.0/data/view/api_email/default',1,1);
 
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3100,3,'Benutzer','/ui/v1.0/data/view/api_user/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3110,3,'Berechtigungen','/ui/v1.0/data/view/api_group_permission/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3101,3,'Benutzergruppen','/ui/v1.0/data/view/api_group/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3111,3,'Freigabe Typen','/ui/v1.0/data/view/api_group_rec_permission_type/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3120,3,'Datensatz Berechtigungen','/ui/v1.0/data/view/api_group_rec_permission/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3130,3,'API Keys','/ui/v1.0/data/view/api_user_apikey/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3140,3,'Sitzungen','/ui/v1.0/data/view/api_session/default',1,1);
 
 
 /*
@@ -704,7 +762,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 9,'LISTVIEW','default',4,'id',1,'<restapi type="select">
     <table name="api_user_group" alias="ug"/>
     <filter type="and">
-        <condition field="groupname" value="$$query$$" operator=" like "/>
+        <condition field="groupname" alias="g" value="$$query$$" operator=" like "/>
     </filter>
     <joins>
         <join type="inner" table="api_user" alias="u" condition="ug.user_id=u.id"/> 
@@ -714,8 +772,6 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="id" table_alias="ug"/>
         <field name="username" table_alias="u"/>
         <field name="groupname" table_alias="g"/>
-        <field name="is_admin" table_alias="u" alias="Adminuser" formatter="boolean"/>
-        <field name="is_admin" table_alias="g" alias="Admingroup" formatter="boolean"/>
     </select>
 </restapi>');
 
@@ -920,6 +976,9 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="id" table_alias="a" alias="id"/>
         <field name="name" table_alias="a" alias="Name"/>
     </select>
+    <orderby>
+        <field name="id" alias="a" sort="DESC"/>
+    </orderby>
 </restapi>');
 
 INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml) VALUES (
@@ -1153,9 +1212,29 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 </restapi>',
 '{"id": {},"__mailbox_id@name": {},"message_from": {},"subject": {},"created_on": {}}');
 
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+114,'LISTVIEW','default',39,'id',1,'<restapi type="select">
+    <table name="api_group_rec_permission_type" alias="p"/>
+    <orderby>
+        <field name="id" alias="p" sort="ASC"/>
+    </orderby>
+</restapi>',
+'{"id": {},"name": {}}');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+115,'LISTVIEW','default',40,'id',1,'<restapi type="select">
+    <table name="api_group_rec_permission" alias="p"/>
+    <orderby>
+        <field name="table_id" alias="p" sort="ASC"/>
+        <field name="group_id" alias="p" sort="ASC"/>
+    </orderby>
+</restapi>',
+'{"id": {},"__type_id@name": {}, "__group_id@name": {}, "mode_read": {}, "mode_update": {}, "mode_delete": {}, "record_id_int": {}}');
 
 
 /* out_data_formatter */
+DELETE FROM api_data_formatter WHERE provider_id='MANUFACTURER';
+
 INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (1,'$api_sub-table',7,2);
 
 UPDATE api_data_formatter SET
@@ -1171,7 +1250,7 @@ template_header='<div class="table-responsive">
 </thead>
 <tbody>
 ',
-template_line='<tr onclick="url=\'/ui/v1.0/data/{{ table_meta[\'alias\'] }}/{{ data[table_meta[\'id_field_name\']] }}{{ build_query_string(context) }}\';alert(url); ">
+template_line='<tr onclick="url=\'/api/v1.0/data/{{ table_meta[\'alias\'] }}/{{ data[table_meta[\'id_field_name\']] }}{{ build_query_string(context) }}\';alert(url); ">
 <td>{{ data[\'id\'] }}</td>
 <td>{{ data[\'user_id\'] }}</td>
 <td>{{ data[\'last_access_on\'] }}</td>
@@ -1240,7 +1319,7 @@ template_line='
 {% for col in cols %}
 
     {% if col=="id" -%}
-        <td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[col] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}" target="_blank">{{ data[col] }}</a>
+        <td><a href="/api/v1.0/data/{{ table_alias }}/{{ data[col] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}&view=$default_ui" target="_blank">{{ data[col] }}</a>
     {% else -%}
         <td>{{ data[col] }}</td>
     {% endif -%}
@@ -1273,7 +1352,7 @@ template_footer='
 {% endif -%}
 
 <div class="btn-group btn-group-sm" role="group" aria-label="...">
-<button type="button" class="btn btn-outline-primary" onclick=\'window.location="/ui/v1.0/data/{{ table_alias }}";\'>Neu</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'window.location="/api/v1.0/data/{{ table_alias }}?view=$default_ui";\'>Neu</button>
 
 <button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}")
 ;\'>Aktualisieren</button>
@@ -1310,7 +1389,7 @@ template_line='
 {% set cols=context.get_arg("view_columns","").split(\',\') -%}
 <tr>
 
-<td><a href="/ui/v1.0/data/{{ table_alias }}/{{ data[\'id\'] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}" target="_blank">{{ data[\'id\'] }}</a>
+<td><a href="/api/v1.0/data/{{ table_alias }}/{{ data[\'id\'] }}?__pagemode=dataformupdateclose&app_id={{ context.get_arg("app_id","1") }}&view=$default_ui" target="_blank">{{ data[\'id\'] }}</a>
 <td><a href="/api/v1.0/file/{{ data[\'path\'] }}" target="_blank">{{ data[\'name\'] }}</a></td>
 
 <tr>
@@ -1358,4 +1437,183 @@ template_footer='
 Page:{{ next_page }}
 '
 WHERE id=4 AND provider_id='MANUFACTURER';
+
+
+
+
+
+/* default jinja template ui via rest api */
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (5,'$default_ui',Null,1);
+UPDATE api_data_formatter SET
+mime_type='text/html',
+template_header=null,
+template_line=null,
+template_footer=null,
+template_file='templates/base/dataform.htm',
+page_mode='dataformupdate'
+WHERE id=5 AND provider_id='MANUFACTURER';
+
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (6,'$default_ui',Null,2);
+UPDATE api_data_formatter SET
+mime_type='text/html',
+template_header=null,
+template_line=null,
+template_footer=null,
+template_file='templates/base/dataform.htm',
+page_mode='dataforminsert'
+WHERE id=6 AND provider_id='MANUFACTURER';
+
+INSERT IGNORE INTO api_data_formatter(id,name, table_id,type_id) VALUES (7,'$default_ui_list',Null,2);
+UPDATE api_data_formatter SET
+mime_type='text/html',
+template_header=null,
+template_line=null,
+template_footer=null,
+template_file='templates/base/datalist.htm',
+page_mode='dataformlist'
+WHERE id=7 AND provider_id='MANUFACTURER';
+
+
+
+/* api_file (system files) */
+INSERT IGNORE INTO api_file (name,path,text,mode,mime_type) VALUES 
+    ('restapi_form.js','wwwroot/js/restapi_form.js','','text','text/js');
+
+UPDATE api_file SET text='
+    // do not change this code!
+    // see basedata.sql
+    function _(el) {
+        return document.getElementById(el);
+    }
+
+    function deleteRecord(table, id) {
+        if (confirm("Delete record?") == true) {
+            text = "You pressed OK!";
+            urlDelete=\'/api/v1.0/data/\'+table+\'/\'+id;
+            urlRedirect=\'/api/v1.0/data/view/\'+table+\'/default?\'+queryString
+
+            axios.delete(urlDelete)
+              .then(function (response) {
+                window.location=urlRedirect
+                console.log(response);
+              })
+              .catch(function (error) {
+                alert(\'cannot delete the record\');
+                console.log(error);
+              })
+              .then(function () {
+                // always executed
+              });
+        }
+    }
+
+    function saveRecord(table, id){
+        frm=document.getElementById("frmData");
+        fd=new FormData(frm);
+
+        if (pagemode=="dataformupdate" | pagemode=="dataformupdateclose") {
+            url=\'/api/v1.0/data/\'+table+\'/\'+id;
+            method=\'put\';
+        } else if (pagemode=="dataforminsert") {
+            url=\'/api/v1.0/data/\'+table;
+            method=\'post\';
+        }
+
+        var object = {};
+        fd.forEach(function(value, key){
+            object[key] = value;
+        });
+        var json = JSON.stringify(object);
+        
+        axios({
+            method: method,
+            url: url,
+            data: json,
+            headers: { "Content-Type": "application/json" },
+            }).then(function (response) {
+                console.log(response);
+                setDataStatus(false, \'\');
+                if (pagemode==\'dataformupdateclose\') {
+                  window.close();
+                }
+
+                if (pagemode==\'dataforminsert\') {
+                    data=response[\'data\'];
+                    window.location=\'/api/v1.0/data/\'+table+\'/\'+data[\'inserted_id\']+\'?view=$default_ui\';
+                }
+              })
+              .catch(function (error) {
+                alert(\'cannot save the record\');
+                setDataStatus(true, error);
+                console.log(error);
+              })
+              .then(function () {
+                // always executed
+              });
+
+    }
+
+    function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size, view="$html_table") {
+      var url=\'/api/v1.0/data/\'+referenced_table_alias+
+        \'?view=\'+view+
+        \'&filter_field_name=\'+referenced_field_name+
+        \'&filter_value=\'+value+
+        \'&view_columns=\'+columns+
+        \'&page=\'+page+
+        \'&page_size=\'+page_size+
+        \'&view_tag1=\'+div_name+
+        \'&api_cmd=save\'+
+        \'&app_id=\'+appId+
+        \'&api_token=\'+div_name+\'_\'+referenced_table_alias+\'_\'+referenced_field_name
+
+      console.log(url);
+      axios.get(url)
+      .then(function (response) {
+        console.log(response.data);
+        document.getElementById("div_sub_table_"+div_name).innerHTML=response.data;
+      })
+      .catch(function (error) {
+        document.getElementById("div_sub_table_"+div_name).innerHTML=error;
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
+    }
+
+    function setDataStatus(dirty, msg) {
+        onChangeDataStatus(dirty, msg);   
+    }
+
+    function uploadFile(formElement=\'\', path=\'\', reference_field_name=\'\', reference_id=\'\') {
+        if(formElement==\'\')
+            formElement=\'formfileupload\';
+        
+        var args=\'\';    
+
+        if (reference_field_name!=\'\') {
+            args=\'reference_field_name=\'+reference_field_name+\'&reference_id=\'+reference_id;
+        }
+        
+        var formdata = new FormData(_(formElement));
+        var ajax = new XMLHttpRequest();
+        
+        if(typeof onFileUpliadProgress === "function")
+            ajax.upload.addEventListener("progress", onFileUpliadProgress, false);
+        
+        if(typeof onFileUploadComplete === "function")
+            ajax.addEventListener("load", onFileUploadComplete, false);
+
+        if(typeof onFileUploadError === "function")
+            ajax.addEventListener("error", onFileUploadError, false);
+
+        if(typeof onFileUploadAbort === "function")
+            ajax.addEventListener("abort", onFileUploadAbort, false);
+
+        ajax.open("POST", "/api/v1.0/file/"+path+\'?\'+args); 
+        ajax.send(formdata);
+    }
+' WHERE path='wwwroot/js/restapi_form.js'
+
+
 

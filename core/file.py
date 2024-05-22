@@ -23,7 +23,7 @@ class File:
         connection=context.get_connection()
 
         sql=f"""
-        SELECT a.file, a.mime_type,a.name FROM api_file a
+        SELECT a.file, a.mime_type,a.name,a.text,a.mode FROM api_file a
         WHERE a.path_hash=PASSWORD(%s);
         """
         logger.info(f"GET file {remote_path}")
@@ -77,15 +77,22 @@ class File:
             sql=f"""
             update api_file SET {reference_field_name}=%s WHERE id=%s;
             """
-        cursor.execute(sql, [reference_id, self._file_id])
-        cursor.fetchall()
+            cursor.execute(sql, [reference_id, self._file_id])
+            cursor.fetchall()
 
         cursor.close()
 
-    def update_file(self, context, file, remote_path):
+    def exists_file(self, context, remote_path):
+        try:
+            self._file_id_by_path(context,context.get_connection() , remote_path)
+            return True
+        except:
+            return False
+
+    def update_file(self, context, file, remote_path, **args):
         connection=context.get_connection()
         file_bytes=file.read()
-        self.__file_id_by_path(context,connection,remote_path)
+        self._file_id_by_path(context,connection,remote_path)
 
         sql=f"""
         UPDATE api_file SET file=%s WHERE path_hash=PASSWORD(%s)
@@ -97,7 +104,7 @@ class File:
         cursor.close()
 
 
-    def __file_id_by_path(self,context, connection,remote_path):
+    def _file_id_by_path(self,context, connection,remote_path):
 
         sql=f"""
         SELECT a.id FROM api_file a

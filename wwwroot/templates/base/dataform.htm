@@ -1,6 +1,7 @@
 {% extends "templates/base/base.htm" -%} 
 {% import "templates/base/uitools.htm" as forms -%} 
 {% import "templates/base/uitable.htm" as uitable -%}
+{% set ui_params={"view": "$default_ui"} -%}
 {% block title -%}{{ table }}{% endblock -%}
 
 {% block head %}
@@ -74,6 +75,11 @@
                                     config=config) -%}
                     {% endcall -%}
                 {% endif -%}
+
+                {% if field['control']=="ADD_DOCUMENT" -%}
+                {% endif -%}
+
+
             {% endcall -%}
         {% endfor -%}
 
@@ -81,6 +87,17 @@
         {% endcall -%}
 
     {% endcall -%}
+
+    {% if pagemode=="dataformupdateclose" or pagemode=="dataformupdate" and table_meta['enable_dms']==-1 %}
+        {% call forms.row() -%}
+            {% call forms.add_document(name='formfileupload', label='Dokument hinzufügen', id=id, 
+                table=table, config={"reference_field_name": ""}) -%}
+            {% endcall -%}
+        {% endcall -%}
+    {% endif -%}
+
+    <!-- <button onclick="saveRecord(table, id);">Save all</button> -->
+    <!-- -->
 {% endblock -%}
 
 

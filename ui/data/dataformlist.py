@@ -38,7 +38,10 @@ class EntityList(Resource):
     api=AppInfo.get_api("ui")
     @api.doc(parser=create_parser())
     def get(self, table, view="default"):
-        try:
+
+        return redirect(f"/api/v1.0/view/{table}/{view}?view=$default_ui_list&app_id={g.context.get_arg('app_id', '1')}&page={g.context.get_arg('page','0')}", code=302)
+
+"""         try:
             parser=create_parser().parse_args()
             context=g.context
 
@@ -118,7 +121,7 @@ class EntityList(Resource):
         except Exception as err:
             logger.exception(f"Exception: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
-
+ """
 
 
 def get_endpoint():

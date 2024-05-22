@@ -38,6 +38,42 @@ BEGIN
 END//
 delimiter ;
 
+/*
+Record based security core function
+*/
+DROP FUNCTION IF EXISTS api_fn_rec_permission;
+DELIMITER //
+
+CREATE FUNCTION api_fn_rec_permission (
+    user_name varchar(50), 
+    table_alias varchar(50), 
+    record_id varchar(50),
+    mode varchar(50)
+)
+RETURNS INT
+BEGIN
+    DECLARE permission int;
+    DECLARE table_id int;
+    DECLARE user_id int;
+
+    SELECT id INTO user_id FROM api_user WHERE username=user_name;
+    SELECT id INTO table_id FROM api_table WHERE alias=table_alias;
+
+    select p.id INTO permission from api_group_rec_permission p 
+        INNER JOIN api_user_group ug ON ug.group_id=p.group_id
+        WHERE ug.user_id=user_id 
+            AND p.table_id=table_id 
+            AND p.record_id_int=record_id 
+            AND p.mode_read=-1 LIMIT 1;
+
+    RETURN permission;
+END; //
+DELIMITER ;
+
+/*
+select id,api_fn_rec_permission('root','api_file',id, 'READ') AS group_rec_permission_id from api_file 
+    WHERE api_fn_rec_permission('root','api_file',id, 'READ')>0;
+*/
 
 CREATE TABLE IF NOT EXISTS dummy (
     id int NOT NULL auto_increment,
@@ -108,6 +144,8 @@ CREATE TABLE IF NOT EXISTS api_table (
     id_field_type varchar(50) NOT NULL COMMENT 'String,Int',
     desc_field_name varchar(250) NOT NULL COMMENT 'Name of the description field',
     enable_audit_log smallint NOT NULL DEFAULT '0',
+    enable_record_permission smallint NOT NULL DEFAULT '0' COMMENT '0=disabled -1=enabled',
+    enable_dms smallint NOT NULL DEFAULT '0' COMMENT 'Activate DMS for this table',
     solution_id int NOT NULL DEFAULT '1',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     FOREIGN KEY(id_field_type) REFERENCES api_table_field_type(id),
@@ -117,6 +155,8 @@ CREATE TABLE IF NOT EXISTS api_table (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAULT '' AFTER id;
+ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_record_permission smallint NOT NULL DEFAULT '0' COMMENT '' AFTER enable_audit_log;
+ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_dms smallint NOT NULL DEFAULT '0' COMMENT 'Activate DMS for this table' AFTER enable_record_permission;
 
 /* formatter */
 CREATE TABLE IF NOT EXISTS api_data_formatter_type(
@@ -139,6 +179,7 @@ CREATE TABLE IF NOT EXISTS api_data_formatter(
     content_disposition varchar(50) NULL COMMENT 'Using in http header',
     type_id int NOT NULL,
     mime_type varchar(100) NOT NULL DEFAULT 'application/text',
+    page_mode varchar(50) NULL COMMENT 'Pagemode for Jinja file base templates',
     provider_id varchar(50) NOT NULL DEFAULT 'MANUFACTURER',
     created_on datetime NOT NULL DEFAULT current_timestamp,
     PRIMARY KEY(id),
@@ -154,6 +195,7 @@ ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  line_separator varchar(
 ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  file_name varchar(250) NULL COMMENT 'Filename in case of download the file' AFTER line_separator;
 ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  content_disposition varchar(50) NULL COMMENT 'Using in http header' AFTER file_name;
 ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS  template_file varchar(250) NULL COMMENT 'Template File (Jinja)' AFTER template_footer;
+ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS page_mode varchar(50) NULL COMMENT 'Pagemode for Jinja file base templates' AFTER mime_type;
 
 ALTER TABLE api_data_formatter ADD FOREIGN KEY IF NOT EXISTS (provider_id) REFERENCES api_provider(id);
 ALTER TABLE api_data_formatter ADD UNIQUE KEY IF NOT EXISTS (name, table_id, type_id);
@@ -273,6 +315,34 @@ CREATE TABLE IF NOT EXISTS api_group_permission(
     FOREIGN KEY(group_id) REFERENCES api_group(id),
     FOREIGN KEY(table_id) REFERENCES api_table(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS api_group_rec_permission_type(
+    id int NOT NULL AUTO_INCREMENT,
+    name varchar(50) NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_group_rec_permission_type AUTO_INCREMENT=900000000;
+
+DROP TABLE IF EXISTS api_group_record_permission;
+CREATE TABLE IF NOT EXISTS api_group_rec_permission(
+    id int NOT NULL AUTO_INCREMENT,
+    type_id int NOT NULL DEFAULT '1',
+    group_id int NOT NULL COMMENT 'user group id',
+    table_id int NOT NULL COMMENT 'table id',
+    record_id_str varchar(50) NULL COMMENT 'string based recordid',
+    record_id_int int NULL COMMENT 'integer based recordid',
+    mode_read smallint NOT NULL DEFAULT '0' COMMENT 'read',
+    mode_update smallint NOT NULL DEFAULT '0' COMMENT 'update',
+    mode_delete smallint NOT NULL DEFAULT '0' COMMENT 'delete',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    FOREIGN KEY(group_id) REFERENCES api_group(id),
+    FOREIGN KEY(table_id) REFERENCES api_table(id),
+    FOREIGN KEY(type_id) REFERENCES api_group_rec_permission_type(id),
+    UNIQUE KEY(group_id, table_id, record_id_str),
+    UNIQUE KEY(group_id, table_id, record_id_int)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 CREATE TABLE IF NOT EXISTS api_session (
     id varchar(100) NOT NULL,
@@ -568,13 +638,44 @@ CREATE TABLE IF NOT EXISTS api_file(
     path text NOT NULL COMMENT '',
     path_hash varchar(128) NOT NULL COMMENT '',
     description text NULL,
-    file LONGBLOB NOT NULL COMMENT 'BLOB data',
+    file LONGBLOB NULL COMMENT 'BLOB data',
+    text LONGTEXT NULL COMMENT 'Text based blob data',
+    mode varchar(10) NOT NULL DEFAULT 'file' COMMENT 'file, text',
     created_on datetime NOT NULL DEFAULT current_timestamp,
     PRIMARY KEY(id),
     UNIQUE KEY(path_hash),
     INDEX(name),
     INDEX(path_hash)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_file MODIFY COLUMN file LONGBLOB NULL COMMENT 'Binary blob data';
+ALTER TABLE api_file ADD COLUMN IF NOT EXISTS text LONGTEXT NULL COMMENT 'Text based blob data' AFTER file;
+ALTER TABLE api_file ADD COLUMN IF NOT EXISTS mode varchar(10) NOT NULL DEFAULT 'file' COMMENT 'file, text' after text;
+
+DROP TRIGGER IF EXISTS api_file_before_insert;
+DROP TRIGGER IF EXISTS api_file_before_update;
+delimiter //
+create trigger api_file_before_insert before insert on api_file
+for each row
+begin
+   if (NEW.path_hash is null or NEW.path_hash='' ) then
+      set NEW.path_hash=password(NEW.path);
+   end if;
+end
+//
+delimiter ;
+
+delimiter //
+create trigger api_file_before_update before update on api_file
+for each row
+begin
+    set NEW.path_hash=password(NEW.path);
+end
+//
+delimiter ;
+
+
+
 
 CREATE TABLE IF NOT EXISTS api_setting (
     id int NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
@@ -586,6 +687,7 @@ CREATE TABLE IF NOT EXISTS api_setting (
     PRIMARY KEY(id),
     UNIQUE KEY(setting)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE api_setting AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_mqtt_message_bus(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
@@ -597,7 +699,6 @@ CREATE TABLE IF NOT EXISTS api_mqtt_message_bus(
     FOREIGN KEY(solution_id) REFERENCES api_solution(id),
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 ALTER TABLE api_mqtt_message_bus AUTO_INCREMENT=900000000;
 
 /* EMail */
@@ -612,6 +713,7 @@ CREATE TABLE IF NOT EXISTS api_email_mailbox_type(
     name varchar(50) NOT NULL COMMENT '',
     PRIMARY KEY(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_email_mailbox_type AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_email_mailbox(
     id varchar(10) NOT NULL COMMENT '',

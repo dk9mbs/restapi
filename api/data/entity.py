@@ -59,9 +59,17 @@ class Entity(Resource):
         try:
             create_parser_put().parse_args()
             context=g.context
+            action=None
 
             if request.json==None:
                 abort(400, "cannot extract json data in body %s %s" % (table,id))
+
+            for key in list(request.json):
+                if key.startswith("__"):
+                    if key=="__action":
+                        action=request.json[key]
+
+                    del request.json[key]
 
             fetch=build_fetchxml_by_alias(context, table, id, request.json, type="update")
             fetchparser=FetchXmlParser(fetch, context)
@@ -102,28 +110,15 @@ class Entity(Resource):
                 fields_meta=read_table_field_meta(context, table_alias=table)
                 table_meta=read_table_meta(context, alias=table)
 
-                for field in fields_meta:
-                    json1=json.loads(field['control_config'])
-                    json2=json.loads(field['overwrite_control_config'])
-                    cfg=merge(json1, json2)
-                    field['control_config']=cfg
-
                 formatter=OutDataFormatter(context,view,1, table, rs)
                 formatter.add_template_var("table_meta", read_table_meta(context, alias=table))
                 formatter.add_template_var("context", context)
                 formatter.add_template_var("table", table)
-                formatter.add_template_var("pagemode", "dataformupdate")
+                formatter.add_template_var("pagemode", context.get_arg("__pagemode", "dataformupdate"))
                 formatter.add_template_var("id", id)
                 formatter.add_template_var("data", rs.get_result())
                 formatter.add_template_var("fields", fields_meta)
                 formatter.add_template_var("title",  f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}")
-
-                #response = make_response(template.render({"table": table,
-                #        "pagemode": "dataformupdate",
-                #        "id": id, "data": rs.get_result(), "context": context, "fields": fields_meta,
-                #        "table_meta": table_meta,
-                #        "title": f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}"
-                #        }))
 
                 httpresponse=HTTPResponse(formatter.render())
                 httpresponse.disable_client_cache()

@@ -4,13 +4,15 @@ from core import log
 from core.exceptions import TableAliasNotFoundInFetchXml, FieldNotFoundInMetaData, MissingFieldPermisson, TableMetaDataNotFound, FetchXmlFormat
 from core.exceptions import SpecialCharsInFetchXml, MissingArgumentInFetchXml, OperatorNotAllowedInFetchXml
 from core.setting import Setting
+from core.meta import read_table_meta
+from core.baseparser import BaseParser
 
 logger=log.create_logger(__name__)
 
 """
 
 """
-class FetchXmlParser:
+class FetchXmlParser(BaseParser):
 
     def __init__(self, fetch_xml, context, page=0, page_size=0):
         self._logger=log.create_logger(__name__)
@@ -269,6 +271,9 @@ class FetchXmlParser:
                 self._build_comment(node)
             elif node.tag == "orderby":
                 self._build_order(node)
+
+        #Todo: create own function!
+        #self._get_record_permission_clause("")
 
     def _escape_string(self, input, scope="somewhere"):
         not_allowed=[";","--","\0","\b","\n","\t","\r"]
@@ -665,13 +670,17 @@ class FetchXmlParser:
 
                 sql=sql+self._build_where(item, op)
 
+        #ToDo: test this call:
+        sql=self._get_record_permission_clause(sql)
         return "("+sql+")"
 
     def _append_alias(self, table, alias=None):
         if alias==None or alias=="":
             alias=table
 
-        self._table_aliases[alias]={"name": table, "alias": alias}
+        #Todo:read metadata
+        meta=read_table_meta(self._context, alias=table)
+        self._table_aliases[alias]={"name": table, "alias": alias, "meta": meta}
 
     def _validate_table_alias(self, context, table_alias):
         connection=context.get_connection()
