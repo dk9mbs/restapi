@@ -39,11 +39,11 @@ class PostFile(Resource):
 
             file=File()
             result=file.read_file(context, path)
-            mode=result['mode']
 
             if result==None:
                 return make_response({"status": "Err","error": f"File not found: {path}" }, 404)
 
+            mode=result['mode']
             response = make_response(result[mode])
 
             response.headers.set('Content-Type', result['mime_type'])
