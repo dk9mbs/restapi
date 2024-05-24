@@ -207,6 +207,8 @@ INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (1,'sysadmin',-1);
 INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (100,'guest',0);
 
 INSERT IGNORE INTO api_user_group (user_id,group_id) VALUES (100,100);
+INSERT IGNORE INTO api_user_group (user_id,group_id) VALUES (1,1);
+INSERT IGNORE INTO api_user_group (user_id,group_id) VALUES (1,100);
 
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (100,1,-1);
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (100,8,-1);
@@ -1478,6 +1480,9 @@ WHERE id=7 AND provider_id='MANUFACTURER';
 /* api_file (system files) */
 INSERT IGNORE INTO api_file (name,path,text,mode,mime_type) VALUES 
     ('restapi_form.js','wwwroot/js/restapi_form.js','','text','text/js');
+
+INSERT IGNORE INTO api_group_rec_permission(type_id, group_id, table_id, record_id_int, mode_read) VALUES(
+   1, 100,20, (SELECT id FROM api_file WHERE path='wwwroot/js/restapi_form.js'), -1);
 
 UPDATE api_file SET text='
     // do not change this code!
