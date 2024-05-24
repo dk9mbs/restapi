@@ -21,12 +21,17 @@ class File:
 
     def read_file(self,context, remote_path):
         connection=context.get_connection()
+        where=""
+
+        meta=read_table_meta(context, alias="api_file")
+        if meta['enable_record_permission']!=0:
+            where=f"AND api_fn_rec_permission('"+context.get_username()+"','"+"api_file"+"',a.id, 'SELECT') "
 
         sql=f"""
         SELECT a.file, a.mime_type,a.name,a.text,a.mode FROM api_file a
-        WHERE a.path_hash=PASSWORD(%s);
+        WHERE a.path_hash=PASSWORD(%s) {where};
         """
-        logger.info(f"GET file {remote_path}")
+        logger.info(f"GET file {remote_path} {sql}")
         cursor=connection.cursor()
         cursor.execute(sql, [remote_path])
         result=cursor.fetchone()
