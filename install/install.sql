@@ -285,6 +285,9 @@ CREATE TABLE IF NOT EXISTS api_group (
     UNIQUE KEY(groupname)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE api_group ADD COLUMN IF NOT EXISTS user_id int NULL COMMENT 'private group if user_id not is null' AFTER is_admin;
+ALTER TABLE api_group ADD CONSTRAINT `foreign_reference_api_email` FOREIGN KEY IF NOT EXISTS (email_id) REFERENCES api_email(id) ON DELETE CASCADE;
+
 ALTER TABLE api_group AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_user_group (
