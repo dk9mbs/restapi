@@ -1,5 +1,6 @@
 INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
 INSERT IGNORE INTO api_solution(id,name) VALUES (2,'customizing');
+INSERT IGNORE INTO api_solution(id,name) VALUES (3,'system');
 
 INSERT IGNORE INTO api_provider (id, name) VALUES ('MANUFACTURER','Manufacturer');
 INSERT IGNORE INTO api_provider (id, name) VALUES ('SELF','Self');

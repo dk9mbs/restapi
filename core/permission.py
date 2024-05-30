@@ -49,3 +49,4 @@ class Permission:
         cursor=connection.cursor()
         cursor.execute(sql, [log_type, table_name, table_alias, username, mode])
         cursor.fetchall()
+        cursor.close()

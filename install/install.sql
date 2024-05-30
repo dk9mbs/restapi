@@ -283,6 +283,7 @@ CREATE TABLE IF NOT EXISTS api_group (
     solution_id int NOT NULL DEFAULT '1',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
     FOREIGN KEY (user_id) REFERENCES api_user(id),
+    CONSTRAINT `foreign_reference_api_group_user_id_api_user` FOREIGN KEY (user_id) REFERENCES api_user(id),
     PRIMARY KEY(id),
     UNIQUE KEY(groupname)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

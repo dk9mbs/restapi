@@ -12,25 +12,56 @@ from core.log import create_logger
 from core.exceptions import ConfigNotValid
 
 
-class UserGroup(object):
+class UserGroupTools(object):
 
     def __init__(self):
         pass
 
     @classmethod
-    def add_private_user_group(cls, context):
+    def delete_private_user_group(cls, context: Context, user_id: int) -> bool:
         sql=f"""
-        SELECT value FROM api_setting WHERE setting=%s
+        DELETE FROM api_group WHERE user_id=%s;
         """
-
-        connection=context.get_connection()
-        cursor=connection.cursor()
-        cursor.execute(sql,[setting])
-        setting=cursor.fetchone()
+        cursor=context.get_connection().cursor()
+        cursor.execute(sql,[user_id])
+        grp=cursor.fetchone()
         cursor.fetchall()
         cursor.close()
 
-        if setting==None:
-            return default_value
+    @classmethod
+    def add_or_get_private_user_group(cls, context: Context, user_id: int) -> int:
+        result=None
+        connection=context.get_connection()
+        sql=f"""
+        SELECT id FROM api_group WHERE user_id=%s
+        """
+        cursor=connection.cursor()
+        cursor.execute(sql,[user_id])
+        grp=cursor.fetchone()
+        cursor.fetchall()
+        cursor.close()
+
+        if grp==None:
+            sql=f"""
+            SELECT * FROM api_user WHERE id=%s;
+            """
+            cursor=connection.cursor()
+            cursor.execute(sql,[user_id])
+            user=cursor.fetchone()
+            cursor.close()
+
+            if user==None:
+                raise Exception(f"User with user_id {user_id} not found")
+
+            sql=f"""
+            INSERT INTO api_group (groupname, user_id,is_admin, solution_id) VALUES (%s, %s, 0, %s);
+            """
+            cursor=connection.cursor()
+            cursor.execute(sql,[f"~{user['username']}", user_id, 3])
+            cursor.fetchall()
+            cursor.close()
+            result=connection.insert_id()
         else:
-            return setting['value']
+            result=grp['id']
+
+        return result
