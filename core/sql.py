@@ -10,14 +10,18 @@ from core.exceptions import ConfigNotValid
 """
 fetch_mode: 0=all 1=one >1 many
 """
-def exec_raw_sql(context: Context, sql: str, params: list):
+def exec_raw_sql(context: Context, sql: str, params: list=[]):
     result=None
     connection=context.get_connection()
     cursor=connection.cursor()
     cursor.execute(sql,params)
-
     result=cursor.fetchall()
-
     cursor.close()
-    print(f"Inserted ID: {connection.insert_id()}")
+
+    if sql.upper().startswith('INSERT'):
+        result={"inserted_id": connection.inserted_id}
+
+    if result==[] or result==None or result==():
+        return None
+    
     return result

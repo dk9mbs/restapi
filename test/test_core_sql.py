@@ -14,6 +14,12 @@ class TestFetchxmlParser(unittest.TestCase):
         session_id=AppInfo.login("root","password")
         self.context=AppInfo.create_context(session_id)
 
+    def test_000_delete_all(self):
+        sql="""
+        DELETE FROM dummy;
+        """
+        exec_raw_sql(self.context, sql)
+
     def test_001_insert(self):
         print("================ START INSERT =================")
         sql="""
@@ -35,10 +41,10 @@ class TestFetchxmlParser(unittest.TestCase):
     def test_003_select(self):
         print("================ START SELECT =================")
         sql="""
-        SELECT * FROM dummy WHERE name=%s;
+        SELECT * FROM dummy;
         """
         params=['test123456']
-        print(exec_raw_sql(self.context, sql, params))
+        print(exec_raw_sql(self.context, sql))
         print("================ END SELECT =================")
 
     def tearDown(self):

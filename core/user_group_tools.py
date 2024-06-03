@@ -10,7 +10,7 @@ from core.context import Context
 from config import CONFIG
 from core.log import create_logger
 from core.exceptions import ConfigNotValid
-
+from core.sql import exec_raw_sql
 
 class UserGroupTools(object):
 
@@ -22,11 +22,7 @@ class UserGroupTools(object):
         sql=f"""
         DELETE FROM api_group WHERE user_id=%s;
         """
-        cursor=context.get_connection().cursor()
-        cursor.execute(sql,[user_id])
-        grp=cursor.fetchone()
-        cursor.fetchall()
-        cursor.close()
+        exec_raw_sql(context, sql,[user_id])
 
     @classmethod
     def add_or_get_private_user_group(cls, context: Context, user_id: int) -> int:
@@ -35,20 +31,13 @@ class UserGroupTools(object):
         sql=f"""
         SELECT id FROM api_group WHERE user_id=%s
         """
-        cursor=connection.cursor()
-        cursor.execute(sql,[user_id])
-        grp=cursor.fetchone()
-        cursor.fetchall()
-        cursor.close()
+        grp=exec_raw_sql(context, sql,[user_id])
 
         if grp==None:
             sql=f"""
             SELECT * FROM api_user WHERE id=%s;
             """
-            cursor=connection.cursor()
-            cursor.execute(sql,[user_id])
-            user=cursor.fetchone()
-            cursor.close()
+            user=exec_raw_sql(context,sql,[user_id])
 
             if user==None:
                 raise Exception(f"User with user_id {user_id} not found")
@@ -56,17 +45,16 @@ class UserGroupTools(object):
             sql=f"""
             INSERT INTO api_group (groupname, user_id,is_admin, solution_id) VALUES (%s, %s, 0, %s);
             """
-            cursor=connection.cursor()
-            cursor.execute(sql,[f"~{user['username']}", user_id, 3])
-            cursor.fetchall()
-            cursor.close()
+            exec_raw_sql(context, sql, [f"~{user[0]['username']}", user_id, 3])
+
             result=connection.insert_id()
 
             sql=f"""
             INSERT INTO api_user_group (user_id, group_id, solution_id)
             VALUES (%s,%s,%s)
             """
-            
+            exec_raw_sql(context, sql, [user_id, grp[0]['groupname'],3 ])
+
         else:
             result=grp['id']
 
