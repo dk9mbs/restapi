@@ -1,7 +1,7 @@
 import json
 import pymysql.cursors
-from flask import Flask, Blueprint
-from flask_restplus import Resource, Api, reqparse
+#from flask import Flask, Blueprint
+#from flask_restplus import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
 import uuid
@@ -61,6 +61,12 @@ class UserGroupTools(object):
             cursor.fetchall()
             cursor.close()
             result=connection.insert_id()
+
+            sql=f"""
+            INSERT INTO api_user_group (user_id, group_id, solution_id)
+            VALUES (%s,%s,%s)
+            """
+            
         else:
             result=grp['id']
 
