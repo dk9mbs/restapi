@@ -44,6 +44,7 @@ class TestFetchxmlParser(unittest.TestCase):
         SELECT * FROM dummy;
         """
         params=['test123456']
+        print(exec_raw_sql(self.context, sql, fetch_mode=1))
         print(exec_raw_sql(self.context, sql))
         print("================ END SELECT =================")
 
