@@ -6,6 +6,7 @@ from config import CONFIG
 from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
 from services.database import DatabaseServices
+from core.sql import exec_raw_sql
 
 class TestFetchxmlParser(unittest.TestCase):
     def setUp(self):
@@ -14,6 +15,16 @@ class TestFetchxmlParser(unittest.TestCase):
         self.context=AppInfo.create_context(session_id)
 
     def test_exec(self):
+        sql="""
+        DELETE FROM dummy WHERE id=%s;
+        """
+        exec_raw_sql(self.context, sql,[99])
+
+        sql="""
+        INSERT INTO dummy (id,name,port) VALUES (%s,%s,%s);
+        """
+        exec_raw_sql(self.context, sql,[99, 'test_database_concat', 1234])
+
         xml=f"""
         <restapi type="update">
             <table name="dummy"/>
@@ -44,6 +55,7 @@ class TestFetchxmlParser(unittest.TestCase):
         fetch=FetchXmlParser(xml, self.context)
         rs=DatabaseServices.exec(fetch,self.context, fetch_mode=1)
         #self.assertIsNone(dummy.get_result())
+        print(rs.get_result())
         self.assertEqual(rs.get_result()['name_with_pre_and_post'], "before-TEST-after")
 
     def tearDown(self):

@@ -4,8 +4,8 @@ from core.database import CommandBuilderFactory
 from core.database import FetchXmlParser
 from config import CONFIG
 from core.appinfo import AppInfo
-from core.meta import build_table_fields_meta
-
+#from core.meta import build_table_fields_meta
+from core.meta_builder import build_table_fields_meta
 class TestBuildMeta(unittest.TestCase):
     def setUp(self):
         AppInfo.init(__name__, CONFIG['default'])

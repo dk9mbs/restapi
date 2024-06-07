@@ -107,7 +107,7 @@ class TestPluginExecution(unittest.TestCase):
         except ValueError as err:
             pass
 
-    def test_orm(self):
+    def test_000_orm(self):
         from config import CONFIG
         from core.appinfo import AppInfo
         from services.orm import BaseManager, BaseModel, F
@@ -129,7 +129,7 @@ class TestPluginExecution(unittest.TestCase):
             .select() \
             .where(ApiGroup.groupname == "sysadmin") \
             .orderby(ApiGroup.groupname.desc()) \
-            .orderby(ApiGroup.id.asc()) \
+            .orderby(ApiGroup.id.asc() ) \
             .to_entity()
         self.assertEqual(item.id, 1)
         self.assertEqual(item.groupname, "sysadmin")
@@ -193,7 +193,7 @@ class TestPluginExecution(unittest.TestCase):
         self.assertEqual(o.expression, "dummy.id DESC,dummy.Port ASC")
 
 
-    def test_two_entities(self):
+    def test_001_two_entities(self):
         from shared.model import dummy
         item1=dummy.objects(self.context).select().where(dummy.id==999).to_entity()
         item2=dummy.objects(self.context).select().where(dummy.id==998).to_entity()

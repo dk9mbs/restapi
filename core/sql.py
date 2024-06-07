@@ -10,12 +10,14 @@ from core.exceptions import ConfigNotValid
 """
 fetch_mode: 0=all 1=one >1 many
 """
-def exec_raw_sql(context: Context, sql: str, params: list=[], fetch_mode: int=0):
+def exec_raw_sql(context: Context, sql: str, params: list=[], fetch_mode: int=0, commit: bool=False):
     result=None
     connection=context.get_connection()
     cursor=connection.cursor()
     cursor.execute(sql,params)
     result=cursor.fetchall()
+    if commit:
+        connection.commit()
     cursor.close()
 
     if sql.strip().upper().startswith('INSERT'):

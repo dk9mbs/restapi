@@ -7,6 +7,7 @@ from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
 from core.setting import Setting
 from core.sql import exec_raw_sql
+from core.user_group_tools import UserGroupTools
 
 class TestFetchxmlParser(unittest.TestCase):
     def setUp(self):
@@ -19,6 +20,11 @@ class TestFetchxmlParser(unittest.TestCase):
         DELETE FROM dummy;
         """
         exec_raw_sql(self.context, sql)
+
+        sql=f"""
+        DELETE FROM api_group_rec_permission WHERE record_id_int=%s;
+        """
+        exec_raw_sql(self.context, sql, [999])
 
     def test_001_insert(self):
         print("================ START INSERT =================")
@@ -47,6 +53,9 @@ class TestFetchxmlParser(unittest.TestCase):
         print(exec_raw_sql(self.context, sql, fetch_mode=1))
         print(exec_raw_sql(self.context, sql))
         print("================ END SELECT =================")
+
+    #def test_004_record_permission(self):
+    #    UserGroupTools.add_record_permission(self.context, table_id=20, user_id=1, record_id=999, read=True)
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
