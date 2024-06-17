@@ -21,11 +21,24 @@ class UserGroupTools(object):
 
         field_record_id="record_id_int"
 
+
         sql=f"""
-        INSERT INTO api_group_rec_permission (table_id, group_id, {field_record_id}, mode_read, mode_update, mode_delete)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        SELECT id from api_group_rec_permission WHERE group_id=%s AND table_id=%s AND {field_record_id}=%s;
         """
-        return exec_raw_sql(context, sql, [table_id, group_id,record_id, read*-1, update*-1, delete*-1])['inserted_id']
+        tmp=exec_raw_sql(context, sql, [group_id, table_id,record_id], fetch_mode=1)
+        if tmp==None:
+            sql=f"""
+            INSERT INTO api_group_rec_permission (table_id, group_id, {field_record_id}, mode_read, mode_update, mode_delete)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            return exec_raw_sql(context, sql, [table_id, group_id,record_id, read*-1, update*-1, delete*-1])['inserted_id']
+        else:
+            sql=f"""
+            UPDATE api_group_rec_permission SET mode_read=%s,mode_update=%s, mode_delete=%s WHERE id=%s;
+            """
+            exec_raw_sql(context, sql, [read*-1, update*-1, delete*-1, tmp['id']])
+
+            return tmp['id']
 
     @classmethod
     def delete_private_user_group(cls, context: Context, user_id: int) -> bool:

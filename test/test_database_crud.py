@@ -6,6 +6,7 @@ from config import CONFIG
 from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
 from services.database import DatabaseServices
+from core.user_group_tools import UserGroupTools
 
 class TestFetchxmlParser(unittest.TestCase):
     def setUp(self):

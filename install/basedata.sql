@@ -191,6 +191,21 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (40,'Datensatz Berechtigung','api_group_rec_permission','api_group_rec_permission','id','int','group_id',-1);
 
+
+
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (41,'Aktivitäts Status','api_activity_status','api_activity_status','id','int','name',-1);
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (42,'Aktivitäts Typ','api_activity_type','api_activity_type','id','int','name',-1);
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (43,'Aktivitäts Boards','api_activity_board','api_activity_board','id','int','name',-1);
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log,enable_record_permission,enable_dms)
+    VALUES (44,'Aktivität','api_activity','api_activity','id','int','subject',0,-1,-1);
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (45,'Aktivität Lane','api_activity_lane','api_activity_lane','id','int','name',-1);
+
+
+
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
 UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
@@ -501,6 +516,11 @@ call api_proc_create_table_field_instance(40,800, 'mode_update','Ändern','int',
 call api_proc_create_table_field_instance(40,900, 'mode_delete','Löschen','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(40,1000, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
+/* api_activity */
+call api_proc_create_table_field_instance(44,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(44,200, 'type_id','Type','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,200, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,400, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
@@ -641,6 +661,19 @@ INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias) VALUES (1, 're
 INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias, solution_id) VALUES (100020001, 'owntracks/+/+', '^owntracks/.*/.*$', '',  10002);
 INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias, solution_id) VALUES (100020002, 'owntracks/+/+/waypoints', '^owntracks/.*/.*/waypoints$', '', 10002);
 
+
+/* activities */
+INSERT IGNORE INTO api_activity_status (id, name) VALUES (1,'New');
+INSERT IGNORE INTO api_activity_status (id, name) VALUES (10,'Open');
+INSERT IGNORE INTO api_activity_status (id, name) VALUES (20,'In progress');
+INSERT IGNORE INTO api_activity_status (id, name) VALUES (100,'Done');
+
+INSERT IGNORE INTO api_activity_type (id, name) VALUES (1,'Note');
+INSERT IGNORE INTO api_activity_type (id, name) VALUES (2,'ToDo');
+INSERT IGNORE INTO api_activity_type (id, name) VALUES (3,'Record note');
+
+INSERT IGNORE INTO api_activity_board (id, name) VALUES (1,'Default');
+INSERT IGNORE INTO api_activity_lane (id, board_id, name) VALUES (1,1,'Backlog');
 
 /* Dataviews */
 DELETE FROM api_table_view  WHERE solution_id=1;
@@ -1232,7 +1265,18 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="group_id" alias="p" sort="ASC"/>
     </orderby>
 </restapi>',
-'{"id": {},"__type_id@name": {}, "__group_id@name": {}, "mode_read": {}, "mode_update": {}, "mode_delete": {}, "record_id_int": {}}');
+'{"id": {},"__type_id@name": {}, "__group_id@name": {},"__table_id@name": {}, "mode_read": {}, "mode_update": {}, "mode_delete": {}, "record_id_int": {}}');
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+116,'LISTVIEW','default',44,'id',1,'<restapi type="select">
+    <table name="api_activity" alias="a"/>
+    <orderby>
+        <field name="id" alias="a" sort="DESC"/>
+    </orderby>
+</restapi>',
+'{"id": {},"subject": {}, "__type_id@name": {},"__staus_id@name": {}, "lane_id": {} }');
+
 
 
 /* out_data_formatter */

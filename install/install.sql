@@ -783,3 +783,58 @@ CREATE TABLE IF NOT EXISTS api_email_header(
 ALTER TABLE api_file ADD column IF NOT EXISTS email_id int NULL COMMENT 'unique id from the email' AFTER file;
 ALTER TABLE api_file ADD CONSTRAINT `foreign_reference_api_email` FOREIGN KEY IF NOT EXISTS (email_id) REFERENCES api_email(id) ON DELETE CASCADE;
 /* end EMail */
+
+
+DROP TABLE IF EXISTS api_activity;
+DROP TABLE IF EXISTS api_activity_type;
+DROP TABLE IF EXISTS api_activity_status;
+DROP TABLE IF EXISTS api_activity_lane;
+DROP TABLE IF EXISTS api_activity_board;
+
+CREATE TABLE IF NOT EXISTS api_activity_type(
+    id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_activity_status(
+    id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_activity_board(
+    id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_activity_lane(
+    id int NOT NULL COMMENT '',
+    board_id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',    
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id),
+    CONSTRAINT `foreign_reference_api_activity_lane_board` FOREIGN KEY(board_id) REFERENCES api_activity_board(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_activity(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    type_id int NOT NULL DEFAULT '1' COMMENT '', 
+    board_id int NOT NULL DEFAULT '1' COMMENT '',
+    lane_id int NOT NULL DEFAULT '1' COMMENT '',
+    status_id int NOT NULL DEFAULT '1' COMMENT '',
+    subject varchar(500) NULL COMMENT '',
+    msg_text LONGTEXT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    due_date datetime NULL COMMENT '',
+    PRIMARY KEY(id),
+    CONSTRAINT `foreign_reference_api_activity_status_id` FOREIGN KEY(status_id) REFERENCES api_activity_status(id),
+    CONSTRAINT `foreign_reference_api_activity_type_id` FOREIGN KEY(type_id) REFERENCES api_activity_type(id),
+    CONSTRAINT `foreign_reference_api_activity_board_id` FOREIGN KEY(board_id) REFERENCES api_activity_board(id),
+    CONSTRAINT `foreign_reference_api_activity_lane_id` FOREIGN KEY(lane_id) REFERENCES api_activity_lane(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
