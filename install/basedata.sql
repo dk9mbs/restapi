@@ -518,9 +518,14 @@ call api_proc_create_table_field_instance(40,1000, 'created_on','Erstellt am','d
 
 /* api_activity */
 call api_proc_create_table_field_instance(44,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(44,200, 'type_id','Type','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,200, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,400, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(44,200, 'subject','Überschrift','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,300, 'due_date','Fällig am','datetime',9,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,400, 'msg_text','Text','string',100,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,500, 'type_id','Type','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,600, 'status_id','Status','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,700, 'board_id','Board','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,800, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,900, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
