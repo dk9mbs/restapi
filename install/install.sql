@@ -838,3 +838,13 @@ CREATE TABLE IF NOT EXISTS api_activity(
     CONSTRAINT `foreign_reference_api_activity_lane_id` FOREIGN KEY(lane_id) REFERENCES api_activity_lane(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS api_record_reference(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    src_table_id int NOT NULL COMMENT '',
+    src_record_id int NULL COMMENT '',
+    src_record_id_str varchar(50) NULL COMMENT '',
+    dst_table_id int NULL COMMENT '',
+    dst_record_id int NOT NULL COMMENT,
+    dst_record_id_str varchar(50) NULL COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

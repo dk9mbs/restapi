@@ -9,6 +9,8 @@ from core import log
 from core.meta import read_table_meta
 from core.exceptions import TableMetaDataNotFound
 from core.setting import Setting
+from core.meta import read_table_meta
+from core.user_group_tools import UserGroupTools
 
 logger=log.create_logger(__name__)
 
@@ -74,6 +76,12 @@ class File:
         cursor.execute(sql, [file.filename,file_bytes,size,mime_type,full_path,full_path])
         self._file_id=cursor.lastrowid
         cursor.fetchall()
+
+        # only in case of activate record permission add anew one
+        meta=read_table_meta(context,alias='api_file')
+        if meta['enable_record_permission']!=0:
+            UserGroupTools.add_record_permission(context, meta['id'], context.get_userinfo()['user_id'] , 
+                self._file_id)
 
         # create the reference
         if "reference_field_name" in args:

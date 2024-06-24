@@ -21,6 +21,9 @@ class BaseParser:
         self._table_aliases={}
 
     def _get_record_permission_clause(self, where_clause: str):
+        if where_clause.find('api_fn_rec_permission')>=0:
+            return where_clause
+
         result=""
         for key, value in self._table_aliases.items():
             if result != "":
