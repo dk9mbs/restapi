@@ -73,11 +73,7 @@ class File:
         INSERT INTO api_file (name,file,size,mime_type,path,path_hash) VALUES (%s,%s,%s,%s,%s,PASSWORD(%s));
         """
 
-        #cursor=connection.cursor()
-        #cursor.execute(sql, [file.filename,file_bytes,size,mime_type,full_path,full_path])
         self._file_id=exec_raw_sql(context, sql, [file.filename,file_bytes,size,mime_type,full_path,full_path])['inserted_id']
-        #self._file_id=cursor.lastrowid
-        #cursor.fetchall()
 
         # only in case of activate record permission add anew one
         meta=read_table_meta(context,alias='api_file')
@@ -93,14 +89,15 @@ class File:
             update api_file SET {reference_field_name}=%s WHERE id=%s;
             """
             exec_raw_sql(context, sql, [reference_id, self._file_id])
-            #cursor.execute(sql, [reference_id, self._file_id])
-            #cursor.fetchall()
 
-            #sql="""
-            #INSERT INTO api_record_reference(table_id, record_id, ref_table_id, ref_record_id) VALUES(%s,%s,%s,%s);
-            #"""
-            #exec_raw_sql(context, sql, [])
-        #cursor.close()
+        if "ref_table_id" in args:
+            ref_table_id=args['ref_table_id']
+            ref_record_id=args['ref_record_id']
+            sql="""
+            INSERT INTO api_record_reference(table_id, record_id, ref_table_id, ref_record_id) VALUES(%s,%s,%s,%s);
+            """
+            exec_raw_sql(context, sql, [20, self._file_id, ref_table_id,ref_record_id])
+
 
     def exists_file(self, context, remote_path):
         try:
