@@ -11,6 +11,7 @@ from core.exceptions import TableMetaDataNotFound
 from core.setting import Setting
 from core.meta import read_table_meta
 from core.user_group_tools import UserGroupTools
+from core.sql import exec_raw_sql
 
 logger=log.create_logger(__name__)
 
@@ -72,10 +73,11 @@ class File:
         INSERT INTO api_file (name,file,size,mime_type,path,path_hash) VALUES (%s,%s,%s,%s,%s,PASSWORD(%s));
         """
 
-        cursor=connection.cursor()
-        cursor.execute(sql, [file.filename,file_bytes,size,mime_type,full_path,full_path])
-        self._file_id=cursor.lastrowid
-        cursor.fetchall()
+        #cursor=connection.cursor()
+        #cursor.execute(sql, [file.filename,file_bytes,size,mime_type,full_path,full_path])
+        self._file_id=exec_raw_sql(context, sql, [file.filename,file_bytes,size,mime_type,full_path,full_path])['inserted_id']
+        #self._file_id=cursor.lastrowid
+        #cursor.fetchall()
 
         # only in case of activate record permission add anew one
         meta=read_table_meta(context,alias='api_file')
@@ -90,10 +92,15 @@ class File:
             sql=f"""
             update api_file SET {reference_field_name}=%s WHERE id=%s;
             """
-            cursor.execute(sql, [reference_id, self._file_id])
-            cursor.fetchall()
+            exec_raw_sql(context, sql, [reference_id, self._file_id])
+            #cursor.execute(sql, [reference_id, self._file_id])
+            #cursor.fetchall()
 
-        cursor.close()
+            #sql="""
+            #INSERT INTO api_record_reference(table_id, record_id, ref_table_id, ref_record_id) VALUES(%s,%s,%s,%s);
+            #"""
+            #exec_raw_sql(context, sql, [])
+        #cursor.close()
 
     def exists_file(self, context, remote_path):
         try:

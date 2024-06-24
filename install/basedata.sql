@@ -191,20 +191,23 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (40,'Datensatz Berechtigung','api_group_rec_permission','api_group_rec_permission','id','int','group_id',-1);
 
-
-
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (41,'Aktivitäts Status','api_activity_status','api_activity_status','id','int','name',-1);
+
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (42,'Aktivitäts Typ','api_activity_type','api_activity_type','id','int','name',-1);
+
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (43,'Aktivitäts Boards','api_activity_board','api_activity_board','id','int','name',-1);
+
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log,enable_record_permission,enable_dms)
     VALUES (44,'Aktivität','api_activity','api_activity','id','int','subject',0,-1,-1);
+
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (45,'Aktivität Lane','api_activity_lane','api_activity_lane','id','int','name',-1);
 
-
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (46,'Datensatz Verknüpfungen','api_record_reference','api_record_reference','id','int','name',-1);
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -527,6 +530,17 @@ call api_proc_create_table_field_instance(44,700, 'board_id','Board','int',2,'{"
 call api_proc_create_table_field_instance(44,800, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,900, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
+/* api_record_reference */
+call api_proc_create_table_field_instance(46,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(46,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(46,300, 'table_id','Tabelle','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(46,400, 'record_id','Datensatz','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(46,500, 'record_id_str','Datensatz (String)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(46,600, 'ref_table_id','Ref. Tabelle','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(46,700, 'ref_record_id','Ref. Datensatz','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(46,800, 'ref_record_id_str','Ref. Datensatz (String)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(46,900, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('RUNNING', 'running',-1,0);
@@ -635,6 +649,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1300,1,'Process Log (nur Fehler)','/ui/v1.0/data/view/api_process_log/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1400,1,'Process Log (alle)','/ui/v1.0/data/view/api_process_log/all',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1600,1,'MQTT Message Bus','/ui/v1.0/data/view/api_mqtt_message_bus/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1700,1,'Datensatzverbindungen','/ui/v1.0/data/view/api_record_reference/default',1,1);
 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2000,2,'E-Mail Postboxen','/ui/v1.0/data/view/api_email_mailbox/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2010,2,'E-Mails','/ui/v1.0/data/view/api_email/default',1,1);
@@ -1281,6 +1296,20 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </orderby>
 </restapi>',
 '{"id": {},"subject": {}, "__type_id@name": {},"__staus_id@name": {}, "lane_id": {} }');
+
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+117,'LISTVIEW','default',46,'id',1,'<restapi type="select">
+    <table name="api_record_reference" alias="r"/>
+    <filter type="or">
+        <condition field="name" alias="r" value="$$query$$" operator="$$operator$$"/>
+    </filter>
+    <orderby>
+        <field name="id" alias="r" sort="DESC"/>
+    </orderby>
+</restapi>',
+'{"id": {}, "__table_id@name": {},"record_id": {}, "__ref_table_id@name": {}, "ref_record_id": {} }');
+
 
 
 

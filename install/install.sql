@@ -790,6 +790,7 @@ DROP TABLE IF EXISTS api_activity_type;
 DROP TABLE IF EXISTS api_activity_status;
 DROP TABLE IF EXISTS api_activity_lane;
 DROP TABLE IF EXISTS api_activity_board;
+DROP TABLE IF EXISTS api_record_reference;
 
 CREATE TABLE IF NOT EXISTS api_activity_type(
     id int NOT NULL COMMENT '',
@@ -840,11 +841,17 @@ CREATE TABLE IF NOT EXISTS api_activity(
 
 CREATE TABLE IF NOT EXISTS api_record_reference(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
-    src_table_id int NOT NULL COMMENT '',
-    src_record_id int NULL COMMENT '',
-    src_record_id_str varchar(50) NULL COMMENT '',
-    dst_table_id int NULL COMMENT '',
-    dst_record_id int NOT NULL COMMENT,
-    dst_record_id_str varchar(50) NULL COMMENT '',
-    PRIMARY KEY(id)
+    name varchar(50) NOT NULL DEFAULT '<NEW REFERENCE>' COMMENT '',
+    table_id int NOT NULL COMMENT '',
+    record_id int NULL COMMENT '',
+    record_id_str varchar(50) NULL COMMENT '',
+    ref_table_id int NOT NULL COMMENT '',
+    ref_record_id int NULL COMMENT '',
+    ref_record_id_str varchar(50) NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id),
+    UNIQUE KEY(table_id, record_id, ref_table_id, ref_record_id),
+    UNIQUE KEY(table_id, record_id_str, ref_table_id, ref_record_id_str),
+    CONSTRAINT `foreign_reference_api_record_reference_table_id` FOREIGN KEY(table_id) REFERENCES api_table(id),
+    CONSTRAINT `foreign_reference_api_record_reference_ref_table_id` FOREIGN KEY(ref_table_id) REFERENCES api_table(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
