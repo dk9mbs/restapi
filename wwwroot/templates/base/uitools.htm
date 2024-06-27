@@ -85,7 +85,7 @@
         <form method="POST" name="{{ name }}" id="{{ name }}" action="/api/v1.0/file" enctype = "multipart/form-data">
             <input class="form-control form-control-sm" id="file" name="file" type="file" 
                 onchange="_('file_upload_control_bar').style.display='block';
-                    uploadFile('formfileupload','restapi/dms/tables/{{ table }}/{{ id }}');" multiple/>
+                    uploadFile('formfileupload','restapi/dms/tables/{{ table }}/{{ id }}', table, recordId);" multiple/>
         </form>
 
         <div id="file_upload_control_bar" style="display: none">

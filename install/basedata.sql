@@ -522,8 +522,8 @@ call api_proc_create_table_field_instance(40,1000, 'created_on','Erstellt am','d
 /* api_activity */
 call api_proc_create_table_field_instance(44,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(44,200, 'subject','Überschrift','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,300, 'due_date','Fällig am','datetime',9,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,400, 'msg_text','Text','string',100,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,300, 'msg_text','Text','string',100,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,400, 'due_date','Fällig am','datetime',9,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,500, 'type_id','Type','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,600, 'status_id','Status','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,700, 'board_id','Board','int',2,'{"disabled": false}', @out_value);
@@ -1669,14 +1669,14 @@ UPDATE api_file SET text='
         onChangeDataStatus(dirty, msg);   
     }
 
-    function uploadFile(formElement=\'\', path=\'\', reference_field_name=\'\', reference_id=\'\') {
+    function uploadFile(formElement=\'\', path=\'\', from_table_alias=\'\', from_record_id=\'\') {
         if(formElement==\'\')
             formElement=\'formfileupload\';
         
         var args=\'\';    
 
-        if (reference_field_name!=\'\') {
-            args=\'reference_field_name=\'+reference_field_name+\'&reference_id=\'+reference_id;
+        if (from_table_alias!=\'\') {
+            args=\'from_table_alias=\'+from_table_alias+\'&from_record_id=\'+from_record_id;
         }
         
         var formdata = new FormData(_(formElement));

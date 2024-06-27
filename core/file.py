@@ -90,13 +90,17 @@ class File:
             """
             exec_raw_sql(context, sql, [reference_id, self._file_id])
 
-        if "ref_table_id" in args:
-            ref_table_id=args['ref_table_id']
-            ref_record_id=args['ref_record_id']
+        print(args)
+        if "from_table_alias" in args and "from_record_id" in args:
+            from_table_alias=args['from_table_alias']
+            from_meta=read_table_meta(context, alias=from_table_alias)
+
+            from_table_id=from_meta['id']
+            from_record_id=args['from_record_id']
             sql="""
             INSERT INTO api_record_reference(table_id, record_id, ref_table_id, ref_record_id) VALUES(%s,%s,%s,%s);
             """
-            exec_raw_sql(context, sql, [20, self._file_id, ref_table_id,ref_record_id])
+            exec_raw_sql(context, sql, [from_table_id,from_record_id,20, self._file_id])
 
 
     def exists_file(self, context, remote_path):
