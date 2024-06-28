@@ -239,6 +239,10 @@ INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP','Only inboun
 INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('SMTP','Only outbound (SMTP)');
 INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP+SMTP','Inpund and outbound (IMAP+SMTP)');
 
+INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('day','Tage');
+INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('hour','Stunden');
+
+
 /* EMail Mailbox */
 call api_proc_create_table_field_instance(33,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(33,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
@@ -524,11 +528,14 @@ call api_proc_create_table_field_instance(44,100, 'id','ID','int',14,'{"disabled
 call api_proc_create_table_field_instance(44,200, 'subject','Überschrift','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,300, 'msg_text','Text','string',100,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,400, 'due_date','Fällig am','datetime',9,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,500, 'type_id','Type','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,600, 'status_id','Status','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,700, 'board_id','Board','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,800, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,900, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(44,500, 'planned_effort','Gep. Aufwand','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,600, 'actual_effort','Tat. Aufwand','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(44,700, 'effort_unit_id','Einheit','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,800, 'type_id','Type','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,900, 'status_id','Status','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,1000, 'board_id','Board','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,1100, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,1200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
 /* api_record_reference */
 call api_proc_create_table_field_instance(46,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
@@ -540,6 +547,7 @@ call api_proc_create_table_field_instance(46,600, 'ref_table_id','Ref. Tabelle',
 call api_proc_create_table_field_instance(46,700, 'ref_record_id','Ref. Datensatz','int',14,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(46,800, 'ref_record_id_str','Ref. Datensatz (String)','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(46,900, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
 
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);

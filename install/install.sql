@@ -791,6 +791,7 @@ DROP TABLE IF EXISTS api_activity_status;
 DROP TABLE IF EXISTS api_activity_lane;
 DROP TABLE IF EXISTS api_activity_board;
 DROP TABLE IF EXISTS api_record_reference;
+DROP TABLE IF EXISTS api_activity_effort_unit;
 
 CREATE TABLE IF NOT EXISTS api_activity_type(
     id int NOT NULL COMMENT '',
@@ -822,6 +823,12 @@ CREATE TABLE IF NOT EXISTS api_activity_lane(
     CONSTRAINT `foreign_reference_api_activity_lane_board` FOREIGN KEY(board_id) REFERENCES api_activity_board(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS api_activity_effort_unit(
+    id varchar(10) NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS api_activity(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
     type_id int NOT NULL DEFAULT '1' COMMENT '', 
@@ -830,13 +837,17 @@ CREATE TABLE IF NOT EXISTS api_activity(
     status_id int NOT NULL DEFAULT '1' COMMENT '',
     subject varchar(500) NULL COMMENT '',
     msg_text LONGTEXT NULL COMMENT '',
-    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    planned_effort int NOT NULL DEFAULT '0' COMMENT '',
+    actual_effort int NOT NULL DEFAULT '0' COMMENT '',
+    effort_unit_id varchar(10) NOT NULL DEFAULT 'day' COMMENT '',
     due_date datetime NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id),
     CONSTRAINT `foreign_reference_api_activity_status_id` FOREIGN KEY(status_id) REFERENCES api_activity_status(id),
     CONSTRAINT `foreign_reference_api_activity_type_id` FOREIGN KEY(type_id) REFERENCES api_activity_type(id),
     CONSTRAINT `foreign_reference_api_activity_board_id` FOREIGN KEY(board_id) REFERENCES api_activity_board(id),
-    CONSTRAINT `foreign_reference_api_activity_lane_id` FOREIGN KEY(lane_id) REFERENCES api_activity_lane(id)
+    CONSTRAINT `foreign_reference_api_activity_lane_id` FOREIGN KEY(lane_id) REFERENCES api_activity_lane(id),
+    CONSTRAINT `foreign_reference_api_activity_effort_unit_id` FOREIGN KEY(effort_unit_id) REFERENCES api_activity_effort_unit(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS api_record_reference(
