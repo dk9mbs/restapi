@@ -209,6 +209,11 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (46,'Datensatz Verknüpfungen','api_record_reference','api_record_reference','id','int','name',-1);
 
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (47,'Aufwand Einheit (Aktivität)','api_activity_effort_unit','api_activity_effort_unit','id','string','name',-1);
+
+
+
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
 UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
@@ -530,12 +535,18 @@ call api_proc_create_table_field_instance(44,300, 'msg_text','Text','string',100
 call api_proc_create_table_field_instance(44,400, 'due_date','Fällig am','datetime',9,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,500, 'planned_effort','Gep. Aufwand','int',14,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,600, 'actual_effort','Tat. Aufwand','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(44,700, 'effort_unit_id','Einheit','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,700, 'effort_unit_id','Einheit','string',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,800, 'type_id','Type','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,900, 'status_id','Status','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1000, 'board_id','Board','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1100, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
+call api_proc_create_table_field_instance(44,10000, '_documents','Dokumente','string',201,'{}', @out_value);
+UPDATE api_table_field
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_file',referenced_table_id=20,referenced_field_name='email_id'
+    WHERE id=@out_value;
+
 
 /* api_record_reference */
 call api_proc_create_table_field_instance(46,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
@@ -636,6 +647,10 @@ INSERT IGNORE INTO api_ui_app (id, name,description,home_url,solution_id)
 VALUES (
 3,'Sicherheit','Sicherheits App','/ui/v1.0/data/view/api_user/default?app_id=3',1);
 
+INSERT IGNORE INTO api_ui_app (id, name,description,home_url,solution_id)
+VALUES (
+4,'Aktivitäten','Aktivitäten App','/ui/v1.0/data/view/api_activity/default?app_id=4',1);
+
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (1,1, 'Sidebar');
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (2,1, 'Navbar');
 
@@ -670,6 +685,8 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3130,3,'API Keys','/ui/v1.0/data/view/api_user_apikey/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (3140,3,'Sitzungen','/ui/v1.0/data/view/api_session/default',1,1);
 
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4000,4,'Aktivitäten','/ui/v1.0/data/view/api_activity/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4010,4,'Zeiteinheiten','/ui/v1.0/data/view/api_activity_effort_unit/default',1,1);
 
 /*
 End APP
@@ -1303,7 +1320,7 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
         <field name="id" alias="a" sort="DESC"/>
     </orderby>
 </restapi>',
-'{"id": {},"subject": {}, "__type_id@name": {},"__staus_id@name": {}, "lane_id": {} }');
+'{"id": {},"subject": {}, "__type_id@name": {},"__staus_id@name": {},"__board_id@name": {}, "__lane_id@name": {} }');
 
 
 INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
@@ -1318,7 +1335,14 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 </restapi>',
 '{"id": {}, "__table_id@name": {},"record_id": {}, "__ref_table_id@name": {}, "ref_record_id": {} }');
 
-
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+118,'LISTVIEW','default',47,'id',1,'<restapi type="select">
+    <table name="api_activity_effort_unit" alias="a"/>
+    <orderby>
+        <field name="name" alias="a" sort="ASC"/>
+    </orderby>
+</restapi>',
+'{"id": {},"subject": {}, "name": {}}');
 
 
 /* out_data_formatter */

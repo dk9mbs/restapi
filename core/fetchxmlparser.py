@@ -114,7 +114,7 @@ class FetchXmlParser(BaseParser):
     def get_main_alias(self):
         return self._main_alias
 
-    def get_sql(self, ignore_limit=False):
+    def get_sql(self, ignore_limit: bool=False, referenced_to: bool=False, referenced_by: bool=False):
         self._sql_where=self._get_record_permission_clause(self._sql_where)
 
         if self._sql_type=="insert":
@@ -124,7 +124,7 @@ class FetchXmlParser(BaseParser):
         elif self._sql_type=="update":
             return self.get_update()
         elif self._sql_type=="select":
-            return self.get_select(ignore_limit)
+            return self.get_select(ignore_limit, referenced_by, referenced_to)
         elif self._sql_type=="read":
             return self.get_select()
         elif self._sql_type=="delete":
@@ -133,7 +133,7 @@ class FetchXmlParser(BaseParser):
             logger.warning(self.get_select())
             raise NameError(f"unknown type in fetchxml: {self._sql_type} {self._fetch_xml}")
 
-    def get_select(self, ignore_limit=False):
+    def get_select(self, ignore_limit: bool=False, referenced_to: bool=False, referenced_by: bool=False):
         params=[]
         sql=[]
         row_count_option=""
@@ -181,6 +181,16 @@ class FetchXmlParser(BaseParser):
                     self._columns_desc.append(column_desc)
                     column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@url", "formatter": None}
                     self._columns_desc.append(column_desc)
+
+            if referenced_by:
+                sql_join.append(f"""INNER JOIN api_record_reference restapi_reference_by 
+                ON restapi_reference_by.ref_record_id={self.get_alias_by_table(self._main_alias)}.id  
+                 """)
+
+            if referenced_to:
+                sql_join.append(f"""INNER JOIN api_record_reference restapi_reference_to 
+                ON restapi_reference_to.ref_record_id={self.get_alias_by_table(self._main_alias)}.id  
+                 """)
 
             self._sql_select=''.join(tmp)
             self._sql_table_join=''.join(sql_join)
