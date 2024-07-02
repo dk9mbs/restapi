@@ -714,7 +714,7 @@ INSERT IGNORE INTO api_activity_status (id, name) VALUES (20,'In progress');
 INSERT IGNORE INTO api_activity_status (id, name) VALUES (100,'Done');
 
 INSERT IGNORE INTO api_activity_type (id, name) VALUES (1,'Note');
-INSERT IGNORE INTO api_activity_type (id, name) VALUES (2,'ToDo');
+INSERT IGNORE INTO api_activity_type (id, name) VALUES (2,'Task');
 INSERT IGNORE INTO api_activity_type (id, name) VALUES (3,'Record note');
 
 INSERT IGNORE INTO api_activity_board (id, name) VALUES (1,'Default');
