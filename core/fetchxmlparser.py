@@ -114,7 +114,7 @@ class FetchXmlParser(BaseParser):
     def get_main_alias(self):
         return self._main_alias
 
-    def get_sql(self, ignore_limit: bool=False, referenced_to: bool=False, referenced_by: bool=False):
+    def get_sql(self, ignore_limit: bool=False):
         self._sql_where=self._get_record_permission_clause(self._sql_where)
 
         if self._sql_type=="insert":
@@ -124,7 +124,7 @@ class FetchXmlParser(BaseParser):
         elif self._sql_type=="update":
             return self.get_update()
         elif self._sql_type=="select":
-            return self.get_select(ignore_limit, referenced_by, referenced_to)
+            return self.get_select(ignore_limit)
         elif self._sql_type=="read":
             return self.get_select()
         elif self._sql_type=="delete":
@@ -133,11 +133,12 @@ class FetchXmlParser(BaseParser):
             logger.warning(self.get_select())
             raise NameError(f"unknown type in fetchxml: {self._sql_type} {self._fetch_xml}")
 
-    def get_select(self, ignore_limit: bool=False, referenced_to: bool=False, referenced_by: bool=False):
+    def get_select(self, ignore_limit: bool=False):
         params=[]
         sql=[]
         row_count_option=""
-
+        referenced_by=False
+        referenced_to=False
         # Disable the folling lines. Because it is very very slow!
         #if self._limit>0:
         #    row_count_option=" SQL_CALC_FOUND_ROWS"

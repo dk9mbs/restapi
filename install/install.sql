@@ -819,7 +819,8 @@ ALTER TABLE api_activity_board AUTO_INCREMENT=900000000;
 CREATE TABLE IF NOT EXISTS api_activity_lane(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
     board_id int NOT NULL COMMENT '',
-    name varchar(50) NOT NULL COMMENT '',    
+    name varchar(50) NOT NULL COMMENT '',
+    position int NOT NULL DEFAULT '1000' COMMENT '',    
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id),
     CONSTRAINT `foreign_reference_api_activity_lane_board` FOREIGN KEY(board_id) REFERENCES api_activity_board(id)

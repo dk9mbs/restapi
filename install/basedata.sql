@@ -568,6 +568,7 @@ call api_proc_create_table_field_instance(43,300, 'created_on','Erstellt am','da
 call api_proc_create_table_field_instance(45,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(45,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(45,300, 'board_id','Board','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(45,300, 'position','Position','int',14,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(45,400, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
 
