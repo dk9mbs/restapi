@@ -793,34 +793,38 @@ DROP TABLE IF EXISTS api_record_reference;
 DROP TABLE IF EXISTS api_activity_effort_unit;
 
 CREATE TABLE IF NOT EXISTS api_activity_type(
-    id int NOT NULL COMMENT '',
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
     name varchar(50) NOT NULL COMMENT '',
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_activity_type AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_activity_status(
-    id int NOT NULL COMMENT '',
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
     name varchar(50) NOT NULL COMMENT '',
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_activity_status AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_activity_board(
-    id int NOT NULL COMMENT '',
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
     name varchar(50) NOT NULL COMMENT '',
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_activity_board AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_activity_lane(
-    id int NOT NULL COMMENT '',
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
     board_id int NOT NULL COMMENT '',
     name varchar(50) NOT NULL COMMENT '',    
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id),
     CONSTRAINT `foreign_reference_api_activity_lane_board` FOREIGN KEY(board_id) REFERENCES api_activity_board(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_activity_lane AUTO_INCREMENT=900000000;
 
 CREATE TABLE IF NOT EXISTS api_activity_effort_unit(
     id varchar(10) NOT NULL COMMENT '',
