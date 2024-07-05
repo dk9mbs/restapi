@@ -19,14 +19,19 @@ def build_fetchxml_lookup(context,alias,auto_commit=0, filter_field_name=None, f
 def build_fetchxml_by_id(context,table_id,id=None,data=None,auto_commit=0, type="select", **kwargs):
     return _build_fetchxml_by(context,None,None,table_id,id,data,auto_commit, type)
 
+def build_fetchxml_referenced_records(context,alias,auto_commit=0, filter_field_name=None, filter_value=None,fields_select=[], **kwargs):
+    return _build_fetchxml_by(context,alias,None,None,None,None,auto_commit,"select",
+        filter_field_name,filter_value,fields_select=fields_select, **kwargs)
+
+
 """
 data: in case of insert or update the uploadet data as an json object
 """
 def _build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,auto_commit=0,
         type="select",filter_field_name=None, filter_value=None,fields_select=[], **kwargs):
+    
     meta=read_table_meta(context,alias=alias,table_name=table_name,table_id=table_id)
 
-    print(kwargs)
     if meta==None:
         raise NameError("%s not exists in api_table (%s)" %  (alias,id))
 
@@ -40,8 +45,6 @@ def _build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,
         for field in fields_select:
             tmp.append(f"<field name=\"{ field }\"/>")
         tmp.append("</select>")
-
-
 
     if filter_field_name!=None:
         tmp.append("<filter type=\"and\">\n")
