@@ -64,10 +64,6 @@ class FetchXmlParser(BaseParser):
         self._sql_parameters_groupby=[]
         self._table_aliases={}
         self._columns_desc=[]
-        self._reference_record_filter_mode=0
-        self._reference_record_filter_table_id=0
-        #self._limit=0
-        #self._limit_offset=0
 
     def get_page_size(self):
         return self._limit
@@ -186,16 +182,6 @@ class FetchXmlParser(BaseParser):
                     column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": f"__{field['name']}@url", "formatter": None}
                     self._columns_desc.append(column_desc)
 
-            #ToDo: ref_table_id und id Feld dynamisch setzen
-            #recferenced_to: Auf welche Datensätze verweist ein bestimmter Datensatz
-
-            if self._reference_record_filter_mode==1 and self._reference_record_filter_table_id>0 :
-                sql_join.append(f"""INNER JOIN api_record_reference restapi_reference 
-                ON restapi_reference.record_id={self.get_alias_by_table(self._main_alias)}.id 
-                AND restapi_reference.table_id={self._sql_table_id}
-                AND restapi_reference.ref_table_id={self._reference_record_filter_table_id}
-                 """)
-
             self._sql_select=''.join(tmp)
             self._sql_table_join=''.join(sql_join)
 
@@ -254,12 +240,6 @@ class FetchXmlParser(BaseParser):
 
         if 'offset' in tree.attrib:
             self._limit_offset=int(tree.attrib['offset'])
-
-        if 'reference_record_filter_mode' in tree.attrib:
-            self._reference_record_filter_mode=int(tree.attrib['reference_record_filter_mode'])
-
-        if 'reference_record_filter_table_id' in tree.attrib:
-            self._reference_record_filter_table_id=int(tree.attrib['reference_record_filter_table_id'])
 
         # create the table alias mapping
         for node in tree:
