@@ -19,7 +19,7 @@ def build_fetchxml_lookup(context,alias,auto_commit=0, filter_field_name=None, f
 def build_fetchxml_by_id(context,table_id,id=None,data=None,auto_commit=0, type="select", **kwargs):
     return _build_fetchxml_by(context,None,None,table_id,id,data,auto_commit, type)
 
-def build_fetchxml_referenced_records(context,alias,auto_commit=0,record_id=0, ref_table_alias="api_document",  **kwargs):
+def build_fetchxml_referenced_records(context,alias,auto_commit=0,record_id=0, ref_table_alias=None,  **kwargs):
     return _build_fetchxml_by(context,alias,None,None,None,None,auto_commit,"select",
         None,None,None, record_id=record_id, ref_table_alias=ref_table_alias)
 
@@ -48,29 +48,30 @@ def _build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,
     tmp=[]
     tmp.append(f"<restapi type=\"{type}\">\n")
     #tmp.append(f"<table name=\"{meta['table_name']}\"/>\n") # don't use the table name here!!!
-    tmp.append(f"<table name=\"{meta['alias']}\"/>\n") #use alwasy the alias!!!
+    tmp.append(f"""<table name="{meta['alias']}" alias="q"/>\n""") #use alwasy the alias!!!
 
     if fields_select!=None and fields_select!=[]:
         tmp.append("<select>")
         for field in fields_select:
-            tmp.append(f"<field name=\"{ field }\"/>")
+            tmp.append(f"""<field name="{ field }" table_alias="q"/>""")
         tmp.append("</select>")
 
     # show only referenced records
+    # zeige alle mit api_activity verbundenen 
     if record_id!=None and ref_table_alias!=None:
         tmp.append("""<joins>\n""")
-        tmp.append(f"""<join table="api_record_reference" alias="xyz" type="inner" condition="d.id=xyz.record_id"/>\n""")
+        tmp.append(f"""<join table="api_record_reference" alias="xyz" type="inner" condition="q.id=xyz.ref_record_id"/>\n""")
         tmp.append("""</joins>\n""")
     # end show only referenced records
 
     if filter_field_name!=None:
         tmp.append("<filter type=\"and\">\n")
-        tmp.append(f"<condition field=\"{filter_field_name}\" value=\"{filter_value}\" operator=\"=\"/>\n")
+        tmp.append(f"""<condition field="{filter_field_name}" value="{filter_value}" operator="=" alias="q"/>\n""")
         tmp.append("</filter>\n")
 
     if id!=None:
         tmp.append("<filter type=\"and\">\n")
-        tmp.append(f"<condition field=\"{meta['id_field_name']}\" value=\"{id}\" operator=\"=\"/>\n")
+        tmp.append(f"""<condition field="{meta['id_field_name']}" value="{id}" operator="=" alias="q"/>\n""")
         tmp.append("</filter>\n")
 
     if data!=None:

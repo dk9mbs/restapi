@@ -6,6 +6,8 @@ from config import CONFIG
 from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
 
+from services.database import DatabaseServices
+
 class TestFetchxmlParser(unittest.TestCase):
     def setUp(self):
         AppInfo.init(__name__, CONFIG['default'])
@@ -14,13 +16,11 @@ class TestFetchxmlParser(unittest.TestCase):
 
     def test_001_test_fetchxml_builder(self):
         from services.fetchxml import build_fetchxml_referenced_records
-        xml=build_fetchxml_referenced_records(self.context, "api_activity",0,999, 20)
+        xml=build_fetchxml_referenced_records(self.context, "api_file",0,"", 20)
         parser=FetchXmlParser(xml, self.context)
-        parser.parse()
-
-        print(parser.get_sql())
-        print("=====================")
-
+        rs=DatabaseServices.exec(parser, self.context,fetch_mode=0)
+        print(rs.get_result())
+        print("=================================")
     def test_execution(self):
         #print("BEGIN of test_fetchxml")
         xml=f"""

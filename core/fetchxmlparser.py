@@ -183,7 +183,7 @@ class FetchXmlParser(BaseParser):
                     self._columns_desc.append(column_desc)
 
             self._sql_select=''.join(tmp)
-            self._sql_table_join=''.join(sql_join)
+            self._sql_table_join=f"{''.join(sql_join)} {self._sql_table_join}"
 
         sql.append(f"SELECT{row_count_option} {self._sql_select} FROM {self._sql_table} {self._sql_table_alias} {self._sql_table_join} ")
 
