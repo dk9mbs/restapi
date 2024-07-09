@@ -19,9 +19,17 @@ def build_fetchxml_lookup(context,alias,auto_commit=0, filter_field_name=None, f
 def build_fetchxml_by_id(context,table_id,id=None,data=None,auto_commit=0, type="select", **kwargs):
     return _build_fetchxml_by(context,None,None,table_id,id,data,auto_commit, type)
 
-def build_fetchxml_referenced_records(context,alias,auto_commit=0,record_id=0, ref_table_alias=None,  **kwargs):
-    return _build_fetchxml_by(context,alias,None,None,None,None,auto_commit,"select",
-        None,None,None, record_id=record_id, ref_table_alias=ref_table_alias)
+"""
+alias=ref_table_id in api_record_reference
+related_table_alias=table_idin api_table
+related_record_id=record_id in api_record_reference
+"""
+def build_fetchxml_referenced_records(context,main_alias,auto_commit=0,related_record_id=0, related_table_alias=None,  **kwargs):
+    return _build_fetchxml_by(context,main_alias,None,None,None,None,auto_commit,"select",
+        None,None,None, related_record_id=related_record_id, related_table_alias=related_table_alias)
+
+    #return _build_fetchxml_by(context,alias,None,None,None,None,auto_commit,"select",
+    #    None,None,None, record_id=record_id, ref_table_alias=ref_table_alias)
 
 
 """
@@ -36,11 +44,11 @@ def _build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,
 
     meta=read_table_meta(context,alias=alias,table_name=table_name,table_id=table_id)
     #
-    record_id=None
-    ref_table_alias=None
-    if 'record_id' in kwargs:
-        record_id=kwargs['record_id']
-        ref_table_alias=kwargs['ref_table_alias']
+    related_record_id=None
+    related_table_alias=None
+    if 'related_record_id' in kwargs:
+        related_record_id=kwargs['related_record_id']
+        related_table_alias=kwargs['related_table_alias']
     #
     if meta==None:
         raise NameError("%s not exists in api_table (%s)" %  (alias,id))
@@ -58,10 +66,17 @@ def _build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,
 
     # show only referenced records
     # zeige alle mit api_activity verbundenen 
-    if record_id!=None and ref_table_alias!=None:
+    if related_record_id!=None and related_table_alias!=None:
+        related_meta=read_table_meta(context, alias=related_table_alias)
         tmp.append("""<joins>\n""")
         tmp.append(f"""<join table="api_record_reference" alias="xyz" type="inner" condition="q.id=xyz.ref_record_id"/>\n""")
         tmp.append("""</joins>\n""")
+
+        tmp.append("<filter type=\"and\">\n")
+        tmp.append(f"""<condition field="record_id" value="{related_record_id}" operator="=" alias="xyz"/>\n""")
+        tmp.append(f"""<condition field="table_id" value="{related_meta['id']}" operator="=" alias="xyz"/>\n""")
+        tmp.append(f"""<condition field="ref_table_id" value="{meta['id']}" operator="=" alias="xyz"/>\n""")
+        tmp.append("</filter>\n")
     # end show only referenced records
 
     if filter_field_name!=None:

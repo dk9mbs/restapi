@@ -16,13 +16,14 @@ class TestFetchxmlParser(unittest.TestCase):
 
     def test_001_test_fetchxml_builder(self):
         from services.fetchxml import build_fetchxml_referenced_records
-        xml=build_fetchxml_referenced_records(self.context, "api_file",0,"", 20)
+        xml=build_fetchxml_referenced_records(self.context, "api_file",0,4,"api_activity")
         parser=FetchXmlParser(xml, self.context)
         rs=DatabaseServices.exec(parser, self.context,fetch_mode=0)
         print(rs.get_result())
+        print (parser.get_select( ignore_limit=False) )
         print("=================================")
-    def test_execution(self):
-        #print("BEGIN of test_fetchxml")
+
+    def test_002_execution(self):
         xml=f"""
         <restapi type="select">
             <table name="dummy" alias="d"/>
