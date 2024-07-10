@@ -121,15 +121,16 @@ def before_request():
                 g.context.set_arg(arg, request.args[arg])
 
 
-AppInfo.get_api().add_resource(api.core.login.get_endpoint() ,"/v1.0/core/login")
-AppInfo.get_api().add_resource(api.core.logoff.get_endpoint() ,"/v1.0/core/logoff")
-AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/v1.0/data/<table>/<id>", methods=['GET','PUT','DELETE'])
-AppInfo.get_api().add_resource(api.data.entity.get_endpoint(),"/v1.0/data/<table>/<id>/<field>", methods=['GET'])
+AppInfo.get_api().add_resource(api.core.login.get_endpoint() , "/v1.0/core/login")
+AppInfo.get_api().add_resource(api.core.logoff.get_endpoint() , "/v1.0/core/logoff")
+AppInfo.get_api().add_resource(api.data.entity.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET','PUT','DELETE'])
+AppInfo.get_api().add_resource(api.data.entity.get_endpoint(), "/v1.0/data/<table>/<id>/<field>", methods=['GET'])
 AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/v1.0/data", methods=['POST'])
-AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(),"/v1.0/data/<table>", methods=['POST'])
-AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(),"/v1.0/data/<table>", methods=['GET'])
+AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(), "/v1.0/data/<table>", methods=['POST'])
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/<table>", methods=['GET'])
 AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/view/<table>/<table_view>", methods=['GET'])
 AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/view/<table>/<table_view>", methods=['GET'])
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/relation/<table>/<related_table>/<related_record_id>", methods=['GET'])
 
 # file handling
 AppInfo.get_api().add_resource(api.data.file.get_endpoint(), "/v1.0/file/<path:path>", methods=['POST','GET','PUT'])
