@@ -1626,6 +1626,7 @@ INSERT IGNORE INTO api_group_rec_permission(type_id, group_id, table_id, record_
    1, 100,20, (SELECT id FROM api_file WHERE path='wwwroot/js/restapi_form.js'), -1);
 
 UPDATE api_file SET text='
+
     // do not change this code!
     // see basedata.sql
     function _(el) {
@@ -1700,7 +1701,7 @@ UPDATE api_file SET text='
     }
 
     function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size, view="$html_table") {
-      var url=\'/api/v1.0/data/\'+referenced_table_alias+
+      var url=\'/api/v1.0/data/relation/\'+referenced_table_alias+\'/\'+table+\'/\'+value+
         \'?view=\'+view+
         \'&filter_field_name=\'+referenced_field_name+
         \'&filter_value=\'+value+

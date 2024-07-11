@@ -219,11 +219,11 @@ class FetchXmlParser(BaseParser):
 
     def get_update(self):
         fields, params=self._build_update_fields()
-        sql=f"UPDATE {self._sql_table} SET {fields} WHERE {self._sql_where}{self._sql_comment}"
+        sql=f"UPDATE {self._sql_table} {self._sql_table_alias} SET {fields} WHERE {self._sql_where}{self._sql_comment}"
         return (sql,params+self._sql_parameters_where)
 
     def get_delete(self):
-        sql=f"DELETE FROM {self._sql_table} WHERE {self._sql_where}{self._sql_comment}"
+        sql=f"DELETE {self._sql_table_alias} FROM {self._sql_table} AS {self._sql_table_alias} WHERE {self._sql_where}{self._sql_comment}"
         return (sql, self._sql_parameters_where)
 
     def parse(self):

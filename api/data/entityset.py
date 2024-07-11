@@ -15,7 +15,7 @@ from core import log
 from core.setting import Setting
 from core.meta import read_table_view_meta, read_table_meta
 
-from services.fetchxml import build_fetchxml_by_alias, build_fetchxml_lookup
+from services.fetchxml import build_fetchxml_by_alias, build_fetchxml_lookup, build_fetchxml_referenced_records
 from services.database import DatabaseServices
 from services.outdataformatter import OutDataFormatter
 from services.httpresponse import HTTPResponse
@@ -40,13 +40,14 @@ class EntitySet(Resource):
 
     api=AppInfo.get_api()
     @api.doc(parser=create_parser())
-    def get(self, table, table_view=None):
+    def get(self, table, table_view=None, related_table_alias=None, related_record_id=None):
         try:
             create_parser().parse_args()
             context=g.context
             view_meta=None
             query=""
             
+            #table_view=api_table_view
             if table_view==None:
                 args={}
                 args['filter_field_name']=context.get_arg("filter_field_name", None)
@@ -55,9 +56,11 @@ class EntitySet(Resource):
                 page=int(context.get_arg("page",0))
                 page_size=int(context.get_arg("page_size", 5000))
 
-                fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),
-                    context.get_arg("filter_value",None))
-
+                if related_table_alias==None:
+                    fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),
+                        context.get_arg("filter_value",None))
+                else:
+                    fetch=build_fetchxml_referenced_records(context, table,0,related_record_id, related_table_alias)
                 fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
             else:
                 query_key=f"dataformlist_query_{table}"

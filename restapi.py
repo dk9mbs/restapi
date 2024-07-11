@@ -130,7 +130,7 @@ AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(), "/v1.0/data/<t
 AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/<table>", methods=['GET'])
 AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/view/<table>/<table_view>", methods=['GET'])
 AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/view/<table>/<table_view>", methods=['GET'])
-AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/relation/<table>/<related_table>/<related_record_id>", methods=['GET'])
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/relation/<table>/<related_table_alias>/<related_record_id>", methods=['GET'])
 
 # file handling
 AppInfo.get_api().add_resource(api.data.file.get_endpoint(), "/v1.0/file/<path:path>", methods=['POST','GET','PUT'])

@@ -784,6 +784,7 @@ ALTER TABLE api_file ADD column IF NOT EXISTS email_id int NULL COMMENT 'unique 
 ALTER TABLE api_file ADD CONSTRAINT `foreign_reference_api_email` FOREIGN KEY IF NOT EXISTS (email_id) REFERENCES api_email(id) ON DELETE CASCADE;
 /* end EMail */
 
+/*
 DROP TABLE IF EXISTS api_activity;
 DROP TABLE IF EXISTS api_activity_type;
 DROP TABLE IF EXISTS api_activity_status;
@@ -791,6 +792,7 @@ DROP TABLE IF EXISTS api_activity_lane;
 DROP TABLE IF EXISTS api_activity_board;
 DROP TABLE IF EXISTS api_record_reference;
 DROP TABLE IF EXISTS api_activity_effort_unit;
+*/
 
 CREATE TABLE IF NOT EXISTS api_activity_type(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
