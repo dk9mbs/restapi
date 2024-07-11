@@ -6,14 +6,24 @@ from config import CONFIG
 from core.appinfo import AppInfo
 from core.fetchxmlparser import FetchXmlParser
 
+from services.database import DatabaseServices
+
 class TestFetchxmlParser(unittest.TestCase):
     def setUp(self):
         AppInfo.init(__name__, CONFIG['default'])
         session_id=AppInfo.login("root","password")
         self.context=AppInfo.create_context(session_id)
 
-    def test_execution(self):
-        #print("BEGIN of test_fetchxml")
+    def test_001_test_fetchxml_builder(self):
+        from services.fetchxml import build_fetchxml_referenced_records
+        xml=build_fetchxml_referenced_records(self.context, "api_file",0,4,"api_activity")
+        parser=FetchXmlParser(xml, self.context)
+        rs=DatabaseServices.exec(parser, self.context,fetch_mode=0)
+        print(rs.get_result())
+        print (parser.get_select( ignore_limit=False) )
+        print("=================================")
+
+    def test_002_execution(self):
         xml=f"""
         <restapi type="select">
             <table name="dummy" alias="d"/>
@@ -38,24 +48,24 @@ class TestFetchxmlParser(unittest.TestCase):
         parser=FetchXmlParser(xml, self.context)
         parser.parse()
 
-        print("=======================================")
-        print("Test table_by_alias method:")
-        print(f"Table by alias d: {parser.get_table_by_alias('d')}")
-        print(f"Table by alias u: {parser.get_table_by_alias('u')}")
-        print("=======================================")
-        print("Test the not exists exception:")
+        #print("=======================================")
+        #print("Test table_by_alias method:")
+        #print(f"Table by alias d: {parser.get_table_by_alias('d')}")
+        #print(f"Table by alias u: {parser.get_table_by_alias('u')}")
+        #print("=======================================")
+        #print("Test the not exists exception:")
         from core.exceptions import TableAliasNotFoundInFetchXml
         try:
             print(f"Table by not exists alias: {parser.get_table_by_alias('xxx')}")
         except TableAliasNotFoundInFetchXml as err:
             print(err)
-        print("=======================================")
+        #print("=======================================")
 
-        print(f"SQL: {parser.get_sql()}")
-        print("")
-        print(f"Columns: {parser.get_columns()}")
+        #print(f"SQL: {parser.get_sql()}")
+        #print("")
+        #print(f"Columns: {parser.get_columns()}")
 
-        print ("********************")
+        #print ("********************")
 
         xml=f"""
         <restapi type="select">
@@ -72,10 +82,10 @@ class TestFetchxmlParser(unittest.TestCase):
         parser=FetchXmlParser(xml, self.context)
         parser.parse()
 
-        print(parser.get_sql())
+        #print(parser.get_sql())
 
-        print("\n\n\nGet all Fields with *:")
-        print("------------------------------")
+        #print("\n\n\nGet all Fields with *:")
+        #print("------------------------------")
         xml=f"""
         <restapi type="select">
             <table name="dummy"/>
@@ -85,12 +95,12 @@ class TestFetchxmlParser(unittest.TestCase):
         </restapi>
         """
         parser=FetchXmlParser(xml, self.context)
-        print(f"Columns: {parser.get_columns()}")
+        #print(f"Columns: {parser.get_columns()}")
 
-        print("==========================")
+        #print("==========================")
 
 
-        print("\n\n\nUpdate Field:")
+        #print("\n\n\nUpdate Field:")
         xml=f"""
         <restapi type="update">
             <table name="dummy"/>
@@ -108,7 +118,7 @@ class TestFetchxmlParser(unittest.TestCase):
         parser=FetchXmlParser(xml, self.context)
         parser.parse()
 
-        print(parser.get_sql())
+        #print(parser.get_sql())
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

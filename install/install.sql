@@ -279,11 +279,17 @@ CREATE TABLE IF NOT EXISTS api_group (
     id int NOT NULL AUTO_INCREMENT,
     groupname varchar(100) NOT NULL,
     is_admin smallint NOT NULL DEFAULT '0',
+    user_id int NULL COMMENT 'private group if user_id not is null',
     solution_id int NOT NULL DEFAULT '1',
     FOREIGN KEY (solution_id) REFERENCES api_solution(id),
+    FOREIGN KEY (user_id) REFERENCES api_user(id),
+    CONSTRAINT `foreign_reference_api_group_user_id_api_user` FOREIGN KEY (user_id) REFERENCES api_user(id),
     PRIMARY KEY(id),
     UNIQUE KEY(groupname)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE api_group ADD COLUMN IF NOT EXISTS user_id int NULL COMMENT 'private group if user_id not is null' AFTER is_admin;
+ALTER TABLE api_group ADD CONSTRAINT `foreign_reference_api_group_user_id_api_user` FOREIGN KEY IF NOT EXISTS (user_id) REFERENCES api_user(id);
 
 ALTER TABLE api_group AUTO_INCREMENT=900000000;
 
@@ -777,3 +783,92 @@ CREATE TABLE IF NOT EXISTS api_email_header(
 ALTER TABLE api_file ADD column IF NOT EXISTS email_id int NULL COMMENT 'unique id from the email' AFTER file;
 ALTER TABLE api_file ADD CONSTRAINT `foreign_reference_api_email` FOREIGN KEY IF NOT EXISTS (email_id) REFERENCES api_email(id) ON DELETE CASCADE;
 /* end EMail */
+
+/*
+DROP TABLE IF EXISTS api_activity;
+DROP TABLE IF EXISTS api_activity_type;
+DROP TABLE IF EXISTS api_activity_status;
+DROP TABLE IF EXISTS api_activity_lane;
+DROP TABLE IF EXISTS api_activity_board;
+DROP TABLE IF EXISTS api_record_reference;
+DROP TABLE IF EXISTS api_activity_effort_unit;
+*/
+
+CREATE TABLE IF NOT EXISTS api_activity_type(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_activity_type AUTO_INCREMENT=900000000;
+
+CREATE TABLE IF NOT EXISTS api_activity_status(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_activity_status AUTO_INCREMENT=900000000;
+
+CREATE TABLE IF NOT EXISTS api_activity_board(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_activity_board AUTO_INCREMENT=900000000;
+
+CREATE TABLE IF NOT EXISTS api_activity_lane(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    board_id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    position int NOT NULL DEFAULT '1000' COMMENT '',    
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id),
+    CONSTRAINT `foreign_reference_api_activity_lane_board` FOREIGN KEY(board_id) REFERENCES api_activity_board(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_activity_lane AUTO_INCREMENT=900000000;
+
+CREATE TABLE IF NOT EXISTS api_activity_effort_unit(
+    id varchar(10) NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_activity(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    type_id int NOT NULL DEFAULT '1' COMMENT '', 
+    board_id int NOT NULL DEFAULT '1' COMMENT '',
+    lane_id int NOT NULL DEFAULT '1' COMMENT '',
+    status_id int NOT NULL DEFAULT '1' COMMENT '',
+    subject varchar(500) NULL COMMENT '',
+    msg_text LONGTEXT NULL COMMENT '',
+    planned_effort int NOT NULL DEFAULT '0' COMMENT '',
+    actual_effort int NOT NULL DEFAULT '0' COMMENT '',
+    effort_unit_id varchar(10) NOT NULL DEFAULT 'day' COMMENT '',
+    due_date datetime NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id),
+    CONSTRAINT `foreign_reference_api_activity_status_id` FOREIGN KEY(status_id) REFERENCES api_activity_status(id),
+    CONSTRAINT `foreign_reference_api_activity_type_id` FOREIGN KEY(type_id) REFERENCES api_activity_type(id),
+    CONSTRAINT `foreign_reference_api_activity_board_id` FOREIGN KEY(board_id) REFERENCES api_activity_board(id),
+    CONSTRAINT `foreign_reference_api_activity_lane_id` FOREIGN KEY(lane_id) REFERENCES api_activity_lane(id),
+    CONSTRAINT `foreign_reference_api_activity_effort_unit_id` FOREIGN KEY(effort_unit_id) REFERENCES api_activity_effort_unit(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_record_reference(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    name varchar(50) NOT NULL DEFAULT '<NEW REFERENCE>' COMMENT '',
+    table_id int NOT NULL COMMENT '',
+    record_id int NULL COMMENT '',
+    record_id_str varchar(50) NULL COMMENT '',
+    ref_table_id int NOT NULL COMMENT '',
+    ref_record_id int NULL COMMENT '',
+    ref_record_id_str varchar(50) NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id),
+    UNIQUE KEY(table_id, record_id, ref_table_id, ref_record_id),
+    UNIQUE KEY(table_id, record_id_str, ref_table_id, ref_record_id_str),
+    CONSTRAINT `foreign_reference_api_record_reference_table_id` FOREIGN KEY(table_id) REFERENCES api_table(id),
+    CONSTRAINT `foreign_reference_api_record_reference_ref_table_id` FOREIGN KEY(ref_table_id) REFERENCES api_table(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

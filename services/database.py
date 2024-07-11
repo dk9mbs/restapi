@@ -12,6 +12,8 @@ from core.meta import read_table_meta
 from core.audit import AuditLog
 from core.exceptions import RestApiNotAllowed
 from core.setting import Setting
+from core.sql import exec_raw_sql
+from core.user_group_tools import UserGroupTools
 
 logger=log.create_logger(__name__)
 
@@ -26,7 +28,6 @@ class DatabaseServices:
         if not run_as_system:
             for table in command_builder.get_tables():
                 if not Permission().validate(context, command_builder.get_sql_type(), context.get_username(), table):
-                    #raise NameError (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
                     raise RestApiNotAllowed (f"no permission ({command_builder.get_sql_type()}) for {context.get_username()} on {table}")
 
         #logger.info(f"Try to read table metadata: {command_builder.get_main_table()}")
@@ -35,7 +36,6 @@ class DatabaseServices:
         id_field_type=meta['id_field_type']
 
         if command_builder.get_sql_type().upper()=='UPDATE':
-            #meta=read_table_meta(context, table_name=command_builder.get_main_table())
             if meta['enable_audit_log']!=0:
                 sql, paras=command_builder.get_select()
                 cursor=context.get_connection().cursor()
@@ -43,7 +43,6 @@ class DatabaseServices:
                 rsold=Recordset(cursor)
                 rsold.read(0)
 
-                #logger.info(rsold.get_result())
                 if rsold.get_result()!=None:
                     for rec in rsold.get_result():
                         id=rec[id_field_name]
@@ -53,8 +52,6 @@ class DatabaseServices:
                                 old_value=v
                                 command_builder.get_sql_fields()[k]['old_value']=old_value
                                 AuditLog.log(context,command_builder.get_sql_type(),id,command_builder.get_main_table(),k,old_value,value)
-
-                        #logger.info(command_builder.get_sql_fields())
 
         params={"data": command_builder.get_sql_fields()}
         handler=Plugin(context, command_builder.get_main_alias(),command_builder.get_sql_type())
@@ -83,7 +80,6 @@ class DatabaseServices:
 
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
-        #inserted_id=context.get_connection().insert_id()
         inserted_id=context.get_last_inserted_id()
 
         if not id_field_name in params['data']:
@@ -117,6 +113,13 @@ class DatabaseServices:
                 rs.set_inserted_id(command_builder.get_sql_fields()[id_field_name]['value'])
             else:
                 rs.set_inserted_id(inserted_id)
+                
+            # only in case of activate record permission add anew one
+            if meta['enable_record_permission']!=0:
+                UserGroupTools.add_record_permission(context, meta['id'], context.get_userinfo()['user_id'] , 
+                    rs.get_inserted_id())
+
+
         return rs
 
     @staticmethod

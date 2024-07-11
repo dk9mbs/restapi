@@ -9,6 +9,9 @@ from core import log
 from core.meta import read_table_meta
 from core.exceptions import TableMetaDataNotFound
 from core.setting import Setting
+from core.meta import read_table_meta
+from core.user_group_tools import UserGroupTools
+from core.sql import exec_raw_sql
 
 logger=log.create_logger(__name__)
 
@@ -70,10 +73,13 @@ class File:
         INSERT INTO api_file (name,file,size,mime_type,path,path_hash) VALUES (%s,%s,%s,%s,%s,PASSWORD(%s));
         """
 
-        cursor=connection.cursor()
-        cursor.execute(sql, [file.filename,file_bytes,size,mime_type,full_path,full_path])
-        self._file_id=cursor.lastrowid
-        cursor.fetchall()
+        self._file_id=exec_raw_sql(context, sql, [file.filename,file_bytes,size,mime_type,full_path,full_path])['inserted_id']
+
+        # only in case of activate record permission add anew one
+        meta=read_table_meta(context,alias='api_file')
+        if meta['enable_record_permission']!=0:
+            UserGroupTools.add_record_permission(context, meta['id'], context.get_userinfo()['user_id'] , 
+                self._file_id)
 
         # create the reference
         if "reference_field_name" in args:
@@ -82,10 +88,20 @@ class File:
             sql=f"""
             update api_file SET {reference_field_name}=%s WHERE id=%s;
             """
-            cursor.execute(sql, [reference_id, self._file_id])
-            cursor.fetchall()
+            exec_raw_sql(context, sql, [reference_id, self._file_id])
 
-        cursor.close()
+        print(args)
+        if "from_table_alias" in args and "from_record_id" in args:
+            from_table_alias=args['from_table_alias']
+            from_meta=read_table_meta(context, alias=from_table_alias)
+
+            from_table_id=from_meta['id']
+            from_record_id=args['from_record_id']
+            sql="""
+            INSERT INTO api_record_reference(table_id, record_id, ref_table_id, ref_record_id) VALUES(%s,%s,%s,%s);
+            """
+            exec_raw_sql(context, sql, [from_table_id,from_record_id,20, self._file_id])
+
 
     def exists_file(self, context, remote_path):
         try:

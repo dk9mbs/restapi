@@ -40,9 +40,11 @@ class FetchXmlParser(BaseParser):
         self._columns_desc=[]
         self._limit=page_size
         self._limit_offset=page*page_size
+        self._reference_record_filter_mode=0 #1=to, 2=by
+        self._reference_record_filter_table_id=0
         self.parse()
 
-    def __init_properties(self):
+    def _init_properties(self):
         self._sql_type=""
         self._sql_where=""
         self._sql_table=""
@@ -62,8 +64,6 @@ class FetchXmlParser(BaseParser):
         self._sql_parameters_groupby=[]
         self._table_aliases={}
         self._columns_desc=[]
-        #self._limit=0
-        #self._limit_offset=0
 
     def get_page_size(self):
         return self._limit
@@ -114,7 +114,8 @@ class FetchXmlParser(BaseParser):
     def get_main_alias(self):
         return self._main_alias
 
-    def get_sql(self, ignore_limit=False):
+    def get_sql(self, ignore_limit: bool=False):
+        self._sql_where=self._get_record_permission_clause(self._sql_where)
 
         if self._sql_type=="insert":
             return self.get_insert()
@@ -132,7 +133,7 @@ class FetchXmlParser(BaseParser):
             logger.warning(self.get_select())
             raise NameError(f"unknown type in fetchxml: {self._sql_type} {self._fetch_xml}")
 
-    def get_select(self, ignore_limit=False):
+    def get_select(self, ignore_limit: bool=False):
         params=[]
         sql=[]
         row_count_option=""
@@ -182,7 +183,7 @@ class FetchXmlParser(BaseParser):
                     self._columns_desc.append(column_desc)
 
             self._sql_select=''.join(tmp)
-            self._sql_table_join=''.join(sql_join)
+            self._sql_table_join=f"{''.join(sql_join)} {self._sql_table_join}"
 
         sql.append(f"SELECT{row_count_option} {self._sql_select} FROM {self._sql_table} {self._sql_table_alias} {self._sql_table_join} ")
 
@@ -218,15 +219,15 @@ class FetchXmlParser(BaseParser):
 
     def get_update(self):
         fields, params=self._build_update_fields()
-        sql=f"UPDATE {self._sql_table} SET {fields} WHERE {self._sql_where}{self._sql_comment}"
+        sql=f"UPDATE {self._sql_table} {self._sql_table_alias} SET {fields} WHERE {self._sql_where}{self._sql_comment}"
         return (sql,params+self._sql_parameters_where)
 
     def get_delete(self):
-        sql=f"DELETE FROM {self._sql_table} WHERE {self._sql_where}{self._sql_comment}"
+        sql=f"DELETE {self._sql_table_alias} FROM {self._sql_table} AS {self._sql_table_alias} WHERE {self._sql_where}{self._sql_comment}"
         return (sql, self._sql_parameters_where)
 
     def parse(self):
-        self.__init_properties()
+        self._init_properties()
 
         tree=ET.fromstring(self._fetch_xml)
         if 'type' in tree.attrib:
@@ -671,7 +672,8 @@ class FetchXmlParser(BaseParser):
                 sql=sql+self._build_where(item, op)
 
         #ToDo: test this call:
-        sql=self._get_record_permission_clause(sql)
+        # moved to get_sql
+        #sql=self._get_record_permission_clause(sql)
         return "("+sql+")"
 
     def _append_alias(self, table, alias=None):

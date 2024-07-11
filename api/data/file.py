@@ -68,7 +68,7 @@ class PostFile(Resource):
 
             for f in request.files.getlist('file'):
                 file=File()
-                file.create_file(context, f, path)
+                file.create_file(context, f, path, **(context.get_args()))
                 result.append({"status": "OK","file_id": file.get_file_id(), "remote_path": path })
 
             return make_response(dict({"results": result,"status":"ok"}) ,200)
