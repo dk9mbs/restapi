@@ -1329,11 +1329,15 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
 116,'LISTVIEW','default',44,'id',1,'<restapi type="select">
     <table name="api_activity" alias="a"/>
+    <filter type="or">
+        <condition field="subject" alias="a" value="$$query$$" operator="$$operator$$"/>
+        <condition field="msg_text" alias="a" value="$$query$$" operator="$$operator$$"/>
+    </filter>
     <orderby>
         <field name="id" alias="a" sort="DESC"/>
     </orderby>
 </restapi>',
-'{"id": {},"subject": {}, "__type_id@name": {},"__staus_id@name": {},"__board_id@name": {}, "__lane_id@name": {} }');
+'{"id": {},"subject": {},"due_date": {}, "__type_id@name": {},"__staus_id@name": {},"__board_id@name": {}, "__lane_id@name": {} }');
 
 
 INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
