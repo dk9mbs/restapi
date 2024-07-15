@@ -228,6 +228,7 @@ INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (99,
 INSERT IGNORE INTO api_user (id,username,password) VALUES (100,'guest','password');
 
 INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (1,'sysadmin',-1);
+INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (80,'activity',0);
 INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (99,'base',0);
 INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (100,'guest',0);
 
@@ -243,6 +244,11 @@ INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (9
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (99,17,-1);
 
 
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,42,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,43,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read, mode_update) VALUES (80,44,-1,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,45,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read, mode_update) VALUES (80,46,-1,-1);
 
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
