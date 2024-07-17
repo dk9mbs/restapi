@@ -1,4 +1,5 @@
 DELETE FROM api_table_field WHERE name='_documents' AND is_virtual=-1;
+DELETE FROM api_group_permission WHERE group_id=80 AND table_id=44;
 
 INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
 INSERT IGNORE INTO api_solution(id,name) VALUES (2,'customizing');
@@ -246,11 +247,14 @@ INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (9
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (99,17,-1);
 
 
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,41,-1);
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,42,-1);
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,43,-1);
-INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read, mode_update) VALUES (80,44,-1,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read, mode_update, mode_create, mode_delete) VALUES (80,44,-1,-1,-1,-1);
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,45,-1);
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read, mode_update) VALUES (80,46,-1,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,47,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read, mode_create) VALUES (80,20,-1,-1);
 
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
@@ -262,6 +266,9 @@ INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP+SMTP','Inpund
 INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('day','Tage');
 INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('hour','Stunden');
 INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('minute','Minuten');
+
+INSERT IGNORE INTO api_group_rec_permission(type_id, group_id, table_id, record_id_int, mode_read) VALUES(
+   1, 80,20, 4, -1);
 
 
 /* EMail Mailbox */
