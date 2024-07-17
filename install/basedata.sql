@@ -1,3 +1,5 @@
+DELETE FROM api_table_field WHERE name='_documents' AND is_virtual=-1;
+
 INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
 INSERT IGNORE INTO api_solution(id,name) VALUES (2,'customizing');
 INSERT IGNORE INTO api_solution(id,name) VALUES (3,'system');
@@ -287,7 +289,7 @@ call api_proc_create_table_field_instance(35,400, 'message_from','Von','string',
 call api_proc_create_table_field_instance(35,600, 'body','Mail','string',100,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(35,700, 'created_on','Erstellt am','datetime',5,'{"disabled": true}', @out_value);
 
-call api_proc_create_table_field_instance(35,800, '_documents','Dokumente','string',201,'{"relation_type": "relation"}', @out_value);
+call api_proc_create_table_field_instance(35,800, '_documents','Dokumente','string',201,'{"relation_type": "complex"}', @out_value);
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_file',referenced_table_id=20,referenced_field_name='email_id'
     WHERE id=@out_value;
@@ -556,7 +558,7 @@ call api_proc_create_table_field_instance(44,1000, 'board_id','Board','int',2,'{
 call api_proc_create_table_field_instance(44,1100, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
-call api_proc_create_table_field_instance(44,10000, '_documents','Dokumente','string',201,'{"relation_type": "relation"}', @out_value);
+call api_proc_create_table_field_instance(44,10000, '_documents','Dokumente','string',201,'{"relation_type": "complex"}', @out_value);
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_file',referenced_table_id=20,referenced_field_name='email_id'
     WHERE id=@out_value;
@@ -1515,14 +1517,14 @@ template_footer='
 <div class="btn-group btn-group-sm" role="group" aria-label="...">
 <button type="button" class="btn btn-outline-primary" onclick=\'window.location="/api/v1.0/data/{{ table_alias }}?view=$default_ui";\'>Neu</button>
 
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}", "lookup")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}", "easy")
 ;\'>Aktualisieren</button>
 
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}", "lookup")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}", "easy")
 ;\'><</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}", "lookup")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}", "easy")
 ;\'><<</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}", "lookup")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}", "easy")
 ;\'>>></button>
 <button type="button" class="btn btn-outline-primary" onclick=\'alert("Last");\'>></button>
 </div>
@@ -1582,14 +1584,14 @@ template_footer='
 <div class="btn-group btn-group-sm" role="group" aria-label="...">
 <button type="button" class="btn btn-outline-primary" onclick=\'window.location="/ui/v1.0/data/{{ table_alias }}";\'>Neu</button>
 
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}", "$html_table_file", "relation")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}", "$html_table_file", "complex")
 ;\'>Aktualisieren</button>
 
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}", "$html_table_file", "relation")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}", "$html_table_file", "complex")
 ;\'><</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}", "$html_table_file", "relation")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}", "$html_table_file", "complex")
 ;\'><<</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}", "$html_table_file", "relation")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}", "$html_table_file", "complex")
 ;\'>>></button>
 <button type="button" class="btn btn-outline-primary" onclick=\'alert("Last");\'>></button>
 </div>
@@ -1717,10 +1719,11 @@ UPDATE api_file SET text='
 
     }
 
-    function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size, view="$html_table", mode="lookup") {
+    function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size, view="$html_table", mode="easy") {
+        //mode=easy or complex
         var endpoint="";
 
-        if (mode==\'lookup\') {
+        if (mode==\'easy\') {
             endpoint=\'/api/v1.0/data/\'+referenced_table_alias;
         } else {
             endpoint=\'/api/v1.0/data/relation/\'+referenced_table_alias+\'/\'+table+\'/\'+value;
