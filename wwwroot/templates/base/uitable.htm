@@ -1,6 +1,7 @@
 {% macro sub_table(name, label='', placeholder='', value='',field={}, config={}, view='$html_table') -%}
     {% set disabled=config | value_from_json("disabled", false) -%}
     {% set columns=config | value_from_json("columns", "") -%}
+    {% set relation_type=config | value_from_json("relation_type","easy") -%}
     {% set referenced_table_alias=field | value_from_json("referenced_table_name", "") -%}
     {% set referenced_field_name=field | value_from_json("referenced_field_name", "") -%}
 
@@ -15,7 +16,7 @@
         </table>
     </div>
     <script lang="javascript">
-    getSubList("{{ name }}", "{{ referenced_table_alias }}","{{ referenced_field_name }}","{{ value }}", "{{ columns }}","0", "5", "{{ view }}");
+    getSubList("{{ name }}", "{{ referenced_table_alias }}","{{ referenced_field_name }}","{{ value }}", "{{ columns }}","0", "5", "{{ view }}", "{{ relation_type }}");
     </script>
     {{ caller() }}
 {%- endmacro -%}

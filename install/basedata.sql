@@ -1,3 +1,6 @@
+DELETE FROM api_table_field WHERE name='_documents' AND is_virtual=-1;
+DELETE FROM api_group_permission WHERE group_id=80 AND table_id=44;
+
 INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
 INSERT IGNORE INTO api_solution(id,name) VALUES (2,'customizing');
 INSERT IGNORE INTO api_solution(id,name) VALUES (3,'system');
@@ -228,6 +231,8 @@ INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (99,
 INSERT IGNORE INTO api_user (id,username,password) VALUES (100,'guest','password');
 
 INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (1,'sysadmin',-1);
+INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (80,'activity',0);
+INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (99,'base',0);
 INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (100,'guest',0);
 
 INSERT IGNORE INTO api_user_group (user_id,group_id) VALUES (100,100);
@@ -236,6 +241,20 @@ INSERT IGNORE INTO api_user_group (user_id,group_id) VALUES (1,100);
 
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (100,1,-1);
 INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (100,8,-1);
+
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (99,15,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (99,16,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (99,17,-1);
+
+
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,41,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,42,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,43,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read, mode_update, mode_create, mode_delete) VALUES (80,44,-1,-1,-1,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,45,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read, mode_update) VALUES (80,46,-1,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read) VALUES (80,47,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id, mode_read, mode_create) VALUES (80,20,-1,-1);
 
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('before','On before');
 INSERT IGNORE INTO api_event_type (id, name) VALUES ('after','On after');
@@ -246,6 +265,10 @@ INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP+SMTP','Inpund
 
 INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('day','Tage');
 INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('hour','Stunden');
+INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('minute','Minuten');
+
+INSERT IGNORE INTO api_group_rec_permission(type_id, group_id, table_id, record_id_int, mode_read) VALUES(
+   1, 80,20, 4, -1);
 
 
 /* EMail Mailbox */
@@ -273,7 +296,7 @@ call api_proc_create_table_field_instance(35,400, 'message_from','Von','string',
 call api_proc_create_table_field_instance(35,600, 'body','Mail','string',100,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(35,700, 'created_on','Erstellt am','datetime',5,'{"disabled": true}', @out_value);
 
-call api_proc_create_table_field_instance(35,800, '_documents','Dokumente','string',201,'{}', @out_value);
+call api_proc_create_table_field_instance(35,800, '_documents','Dokumente','string',201,'{"relation_type": "complex"}', @out_value);
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_file',referenced_table_id=20,referenced_field_name='email_id'
     WHERE id=@out_value;
@@ -381,11 +404,11 @@ call api_proc_create_table_field_instance(9,1100, 'inline_code','Inline Code','s
 
 /* user */
 call api_proc_create_table_field_instance(2,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
-call api_proc_create_table_field_instance(2,200, 'username','Username','string',1,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(2,200, 'username','Username','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,300, 'password','Password','string',11,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,400, 'disabled','Disabled','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,500, 'is_admin','Admin?','int',19,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(2,600, 'solution_id','Solution','int',2,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(2,600, 'solution_id','Solution','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,600, '_sessions','Sitzungen','string',200,'{"columns": "id,__user_id@name,last_access_on"}', @out_value);
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_session',referenced_table_id=7,referenced_field_name='user_id'
@@ -542,7 +565,7 @@ call api_proc_create_table_field_instance(44,1000, 'board_id','Board','int',2,'{
 call api_proc_create_table_field_instance(44,1100, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
-call api_proc_create_table_field_instance(44,10000, '_documents','Dokumente','string',201,'{}', @out_value);
+call api_proc_create_table_field_instance(44,10000, '_documents','Dokumente','string',201,'{"relation_type": "complex"}', @out_value);
 UPDATE api_table_field
     SET is_virtual=-1, field_name='id',referenced_table_name='api_file',referenced_table_id=20,referenced_field_name='email_id'
     WHERE id=@out_value;
@@ -1329,11 +1352,15 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
 116,'LISTVIEW','default',44,'id',1,'<restapi type="select">
     <table name="api_activity" alias="a"/>
+    <filter type="or">
+        <condition field="subject" alias="a" value="$$query$$" operator="$$operator$$"/>
+        <condition field="msg_text" alias="a" value="$$query$$" operator="$$operator$$"/>
+    </filter>
     <orderby>
         <field name="id" alias="a" sort="DESC"/>
     </orderby>
 </restapi>',
-'{"id": {},"subject": {}, "__type_id@name": {},"__staus_id@name": {},"__board_id@name": {}, "__lane_id@name": {} }');
+'{"id": {},"subject": {},"due_date": {}, "__type_id@name": {},"__staus_id@name": {},"__board_id@name": {}, "__lane_id@name": {} }');
 
 
 INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
@@ -1497,14 +1524,14 @@ template_footer='
 <div class="btn-group btn-group-sm" role="group" aria-label="...">
 <button type="button" class="btn btn-outline-primary" onclick=\'window.location="/api/v1.0/data/{{ table_alias }}?view=$default_ui";\'>Neu</button>
 
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}", "easy")
 ;\'>Aktualisieren</button>
 
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}", "easy")
 ;\'><</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}", "easy")
 ;\'><<</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}", "easy")
 ;\'>>></button>
 <button type="button" class="btn btn-outline-primary" onclick=\'alert("Last");\'>></button>
 </div>
@@ -1564,14 +1591,14 @@ template_footer='
 <div class="btn-group btn-group-sm" role="group" aria-label="...">
 <button type="button" class="btn btn-outline-primary" onclick=\'window.location="/ui/v1.0/data/{{ table_alias }}";\'>Neu</button>
 
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}", "$html_table_file")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}", "$html_table_file", "complex")
 ;\'>Aktualisieren</button>
 
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}", "$html_table_file")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","0", "{{ page_size }}", "$html_table_file", "complex")
 ;\'><</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}", "$html_table_file")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ previous_page }}", "{{ page_size }}", "$html_table_file", "complex")
 ;\'><<</button>
-<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}", "$html_table_file")
+<button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ next_page }}", "{{ page_size }}", "$html_table_file", "complex")
 ;\'>>></button>
 <button type="button" class="btn btn-outline-primary" onclick=\'alert("Last");\'>></button>
 </div>
@@ -1626,7 +1653,6 @@ INSERT IGNORE INTO api_group_rec_permission(type_id, group_id, table_id, record_
    1, 100,20, (SELECT id FROM api_file WHERE path='wwwroot/js/restapi_form.js'), -1);
 
 UPDATE api_file SET text='
-
     // do not change this code!
     // see basedata.sql
     function _(el) {
@@ -1700,32 +1726,41 @@ UPDATE api_file SET text='
 
     }
 
-    function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size, view="$html_table") {
-      var url=\'/api/v1.0/data/relation/\'+referenced_table_alias+\'/\'+table+\'/\'+value+
-        \'?view=\'+view+
-        \'&filter_field_name=\'+referenced_field_name+
-        \'&filter_value=\'+value+
-        \'&view_columns=\'+columns+
-        \'&page=\'+page+
-        \'&page_size=\'+page_size+
-        \'&view_tag1=\'+div_name+
-        \'&api_cmd=save\'+
-        \'&app_id=\'+appId+
-        \'&api_token=\'+div_name+\'_\'+referenced_table_alias+\'_\'+referenced_field_name
+    function getSubList(div_name, referenced_table_alias,referenced_field_name,value,columns,page, page_size, view="$html_table", mode="easy") {
+        //mode=easy or complex
+        var endpoint="";
 
-      console.log(url);
-      axios.get(url)
-      .then(function (response) {
-        console.log(response.data);
-        document.getElementById("div_sub_table_"+div_name).innerHTML=response.data;
-      })
-      .catch(function (error) {
-        document.getElementById("div_sub_table_"+div_name).innerHTML=error;
-        console.log(error);
-      })
-      .then(function () {
-        // always executed
-      });
+        if (mode==\'easy\') {
+            endpoint=\'/api/v1.0/data/\'+referenced_table_alias;
+        } else {
+            endpoint=\'/api/v1.0/data/relation/\'+referenced_table_alias+\'/\'+table+\'/\'+value;
+        }
+
+        var url=endpoint+
+            \'?view=\'+view+
+            \'&filter_field_name=\'+referenced_field_name+
+            \'&filter_value=\'+value+
+            \'&view_columns=\'+columns+
+            \'&page=\'+page+
+            \'&page_size=\'+page_size+
+            \'&view_tag1=\'+div_name+
+            \'&api_cmd=save\'+
+            \'&app_id=\'+appId+
+            \'&api_token=\'+div_name+\'_\'+referenced_table_alias+\'_\'+referenced_field_name
+              
+        console.log(url);
+        axios.get(url)
+        .then(function (response) {
+            console.log(response.data);
+            document.getElementById("div_sub_table_"+div_name).innerHTML=response.data;
+        })
+        .catch(function (error) {
+            document.getElementById("div_sub_table_"+div_name).innerHTML=error;
+            console.log(error);
+        })
+        .then(function () {
+            // always executed
+        });
     }
 
     function setDataStatus(dirty, msg) {
