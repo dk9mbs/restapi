@@ -114,7 +114,6 @@ class OutDataFormatter(object):
 
         for key, value in self._template_data.items():
             temp_data[key]=value
-            
         result=template_header.render(temp_data)+self._line_separator
 
         if not template_line==None:

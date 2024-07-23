@@ -178,7 +178,11 @@ class EntitySet(Resource):
                 formatter.add_template_var("table", table)
                 #formatter.add_template_var("pagemode", "dataforminsert")
                 formatter.add_template_var("id", '')
+
                 formatter.add_template_var("data", rs.get_result())
+                #formatter.add_template_var("data", {"board_id": 1, "subject": "TEST", "msg_text":"Neues Ticket:"})
+
+
                 #formatter.add_template_var("fields", fields_meta)
                 #formatter.add_template_var("title",  f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}")
 
