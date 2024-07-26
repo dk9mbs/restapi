@@ -1,7 +1,4 @@
 from core.exceptions import DataViewNotFound, TableMetaDataNotFound
-#from core.database import Recordset
-
-
 
 def read_table_view_meta(context, table_id, view_name, type):
     connection=context.get_connection()
@@ -111,8 +108,34 @@ def read_table_meta(context, alias=None, table_name=None, table_id=None):
 
     return meta
 
+def create_table_relation(context, main_table_id: int, sub_table_id: int, main_record_id_int: int=0, main_record_id_str: str=None) -> dict:
+    result={}
+    # main = api_user (2)
+    # sub  = api_user_group (4)
+    sql="""
+    SELECT * FROM api_table_field WHERE table_id=%s AND referenced_table_id=%s 
+    AND is_lookup<>0 AND is_virtual=0
+    """
+    cursor=context.get_connection().cursor()
+    cursor.execute(sql,[sub_table_id, main_table_id])
+    meta_fields=cursor.fetchall()
+    if meta_fields==None:
+        return {}
 
+    meta_table=read_table_meta(context, table_id=main_table_id)
+    sql=f"""
+    SELECT * FROM {meta_table['table_name']} WHERE {meta_table['id_field_name']}=%s;
+    """
+    cursor=context.get_connection().cursor()
+    cursor.execute(sql,[main_record_id_int])
+    main_record=cursor.fetchone()
+    cursor.fetchall()
+    cursor.close()
 
+    for fld in meta_fields:
+        result[fld['field_name']] = main_record[fld['referenced_field_name']]
+
+    return result
 
 def __convert_boolean(value):
     if value=="YES": return -1
