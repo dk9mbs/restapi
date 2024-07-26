@@ -1522,7 +1522,7 @@ template_footer='
 {% endif -%}
 
 <div class="btn-group btn-group-sm" role="group" aria-label="...">
-<button type="button" class="btn btn-outline-primary" onclick=\'window.location="/api/v1.0/data/{{ table_alias }}?view=$default_ui";\'>Neu</button>
+<button type="button" class="btn btn-outline-primary" onclick=\'window.location="/api/v1.0/data/{{ table }}?view=$default_ui&main_table_id="+tableId+"&main_record_id="+recordId;\'>Neu</button>
 
 <button type="button" class="btn btn-outline-primary" onclick=\'getSubList("{{ div_name }}", "{{ table_alias }}","{{referenced_field_name}}","{{ filter_value }}","{{ cols }}","{{ page }}", "{{ page_size }}", "easy")
 ;\'>Aktualisieren</button>

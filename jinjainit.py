@@ -154,6 +154,10 @@ def _ui_view_name(context, list: bool=False):
     else:
         return {"view": "$default_ui"}
 
+def _table_alias_to_table_id(context, table_alias: str) -> int:
+    from core.meta import read_table_meta
+    return read_table_meta(context, alias=table_alias)['id']
+
 """
 Result all Fields from a tabe
 used for create the datamodel with jinja for the orm mapper
@@ -203,6 +207,7 @@ def init():
     JinjaEnvironment.register_template_function('is_item_in_dict', _is_item_in_dict)
     JinjaEnvironment.register_template_function('metadata_table_fields', _metadata_table_fields)
     JinjaEnvironment.register_template_function('ui_view_name', _ui_view_name)
+    JinjaEnvironment.register_template_function("table_alias_to_table_id", _table_alias_to_table_id)
 
     JinjaEnvironment.register_filter_function('from_json', _filter_from_json)
     JinjaEnvironment.register_filter_function('value_from_json', _filter_value_from_json)

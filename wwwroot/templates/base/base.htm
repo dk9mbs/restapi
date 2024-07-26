@@ -7,6 +7,7 @@
 <head>
     <script>
         var table="{{ table }}";
+        var tableId="{{ table_alias_to_table_id(context, table) }}";
         var recordId="{{ id }}";
         var queryString="{{ build_query_string(context, {'view': ui_list_params['view']})[1:] }}";
         var appId="{{ context.get_arg('app_id',1) }}";

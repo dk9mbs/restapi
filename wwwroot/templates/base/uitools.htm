@@ -18,7 +18,7 @@
 
 {% macro input(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
     {% set disabled=config | value_from_json("disabled", false) -%}
-
+    {% call debug("Value",value) -%}{% endcall -%}
     {% if disabled -%}
         {% set show="disabled" -%}
     {% else -%}
@@ -103,7 +103,7 @@
 
 {% macro input_multiline(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
     {% set disabled=config | value_from_json("disabled", false) -%}
-
+    {% call debug("Value",value) -%}{% endcall -%}
     {% if disabled -%}
         {% set show="disabled" -%}
     {% else -%}
@@ -126,6 +126,7 @@
 {%- endmacro -%}
 
 {% macro data_select(name,label, value, table_alias, view_name, query='', config={}) -%}
+    {% call debug("Value",value) -%}{% endcall -%}
     {% if table_alias==None -%}
         <div style="background-color: #FFCCCB;font-weight:bold;border-radius: 18px">
         Missing table_alias for field {{ name }} ({{ label }}). Set table_alias or use another ui control for this field!
@@ -164,6 +165,7 @@
 {%- endmacro -%}
 
 {% macro data_select_list(name,label, value, table_alias, view_name, query='', config={}) -%}
+    {% call debug("Value",value) -%}{% endcall -%}
     {% set disabled=config | value_from_json("disabled", false) -%}
     {% set listitems=config | value_from_json("listitems", "|") -%}
 
@@ -233,9 +235,8 @@
         </form>
 {% endmacro -%}
 
-
-
 {% macro input_nicedit(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
+    {% call debug("Value",value) -%}{% endcall -%}
     {% set disabled=config | value_from_json("disabled", false) -%}
 
     {% if disabled -%}
@@ -279,6 +280,7 @@
 
 
 {% macro input_aceedit(name, label='', placeholder='', value='', type='text', size=20, config={}) -%}
+    {% call debug("Value",value) -%}{% endcall -%}
     {% set disabled=config | value_from_json("disabled", false) -%}
     {% set mode=config | value_from_json("mode", "ace/mode/text") -%}
 
@@ -329,6 +331,7 @@
 
 
 {% macro boolean(name, label='', placeholder='', value='', config={}) -%}
+    {% call debug("Value",value) -%}{% endcall -%}
     {% set disabled=config | value_from_json("disabled", false) -%}
 
     {% if disabled -%}
