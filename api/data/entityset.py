@@ -76,6 +76,11 @@ class EntitySet(Resource):
 
                 query=context.get_arg('query', default=None)
                 operator=context.get_arg('operator', None)
+                if query=='':
+                    query=None
+
+                if operator=='':
+                    operator=None
 
                 if query==None:
                     query=context.get_session_value(query_key, None)
