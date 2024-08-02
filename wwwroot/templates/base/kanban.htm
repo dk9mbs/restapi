@@ -1,0 +1,237 @@
+{% extends "templates/base/base.htm" -%} 
+{% import "templates/base/uitools.htm" as forms -%} 
+{% import "templates/base/uitable.htm" as uitable -%}
+{% set ui_params={"view": "$default_ui"} -%}
+{% block title -%}{{ table }}{% endblock -%}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+    margin-top: 50px;
+}
+
+.kanban-board {
+    display: flex;
+    overflow-x: auto;
+    padding: 20px;
+}
+
+.column {
+    flex: 1;
+    min-width: 250px;
+    border-radius: 5px;
+    margin-right: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+.backlog {
+    background-color: #fff;
+    border: 2px solid #3498db;
+    .column-header {
+        color: #3498db;
+    }
+}
+
+.todo {
+    background-color: #fff;
+    border: 2px solid #2ecc71;
+    .column-header {
+        color: #2ecc71;
+    }
+}
+
+.inprogress {
+    background-color: #fff;
+    border: 2px solid #e74c3c;
+    .column-header {
+        color: #e74c3c;
+    }
+}
+
+.done {
+    background-color: #fff;
+    border: 2px solid #f39c12;
+    .column-header {
+        color: #f39c12;
+    }
+}
+
+.column-header {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.task {
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: grab;
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+
+    &.dragging {
+        transform: scale(1.1);
+    }
+
+    .task-image-column {
+        width: 100px; /* Ajustez la largeur selon vos besoins */
+        margin-right: 10px;
+        background-color: #ccc; /* Placeholder pour l'image */
+    }
+
+    .task-image {
+        width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+
+    .task-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .task-title {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .task-details-text {
+        font-size: 14px;
+    }
+}
+</style>
+
+<div class="kanban-board" id="main_board">
+    <div class="column backlog" ondrop="drop(event)" ondragover="allowDrop(event)" id="backlog-column">
+      <div class="column-header">Backlog</div>
+    </div>
+
+    <div class="column todo" ondrop="drop(event)" ondragover="allowDrop(event)" id="todo-column">
+      <div class="column-header">To do</div>
+    </div>
+
+    <div class="column inprogress" ondrop="drop(event)" ondragover="allowDrop(event)" id="inprogress-column">
+      <div class="column-header">In Progress</div>
+    </div>
+
+    <div class="column done" ondrop="drop(event)" ondragover="allowDrop(event)" id="done-column">
+      <div class="column-header">Done</div>
+    </div>
+</div>
+
+
+<script language="javascript">
+    let draggedTask;
+    
+    function drag(event) {
+        draggedTask = event.target;
+        draggedTask.classList.add("dragging");
+    }
+    
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+    
+    function drop(event) {
+        event.preventDefault();
+        const targetColumnId = event.target.closest(".column").id;
+        const targetColumn = document.getElementById(targetColumnId);
+        targetColumn.appendChild(draggedTask);
+        draggedTask.classList.remove("dragging");
+    }
+    
+    const backlogTasks = [];
+    const todoTasks = [];
+    const inProgressTasks = [];
+    const doneTasks = [];
+    
+    function generateLanes(lanes) {
+        return lanes
+            .map((lane) => {
+                return `
+                <div class="column done" ondrop="drop(event)" ondragover="allowDrop(event)" id="${lane.name}">
+                <div class="column-header">${lane.name}</div>
+                </div>
+            `;
+            })
+            .join("");
+    }
+
+
+
+    function generateTasksElements(tasks) {
+        return tasks
+            .map((task) => {
+                return `
+              <div class="task" draggable="true" ondragstart="drag(event)">
+                <div class="task-image-column"></div>
+                <div class="task-details">
+                  <div class="task-title">${task.subject}</div>
+                  <div class="task-details-text">Fälligkeitsdatum: ${task.due_date}</div>
+                  <div class="task-details-text">Status: ${task.status_id}</div>
+                </div>
+              </div>
+            `;
+            })
+            .join("");
+    }
+    
+    function xmlHttpRequest(method, url, tag, callBack) {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        xhr.send();
+        xhr.responseType = "json";
+        xhr.onload = () => {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                const data = xhr.response;
+                callBack(tag, data);
+                //console.log(data);
+            } else {
+                //console.log(`Error: ${xhr.status}`);
+            }
+        };
+    }
+
+    
+    xmlHttpRequest("GET", "/api/v1.0/data/api_activity_lane","main_board", function(tag, data) {
+        document.getElementById(tag).innerHTML = generateLanes(data);
+
+        console.log(data[0].id);
+        for (x=0;x<len(data);x++){
+            xmlHttpRequest("GET", "/api/v1.0/data/api_activity?filter_field_name=lane_id&filter_value="+data['id'],"Backlog", function(tag, data) {
+            document.getElementById(tag).innerHTML = document.getElementById(tag).innerHTML + generateTasksElements(data);
+            });
+        }
+
+ 
+    });
+
+    /*
+    xmlHttpRequest("GET", "/api/v1.0/data/api_activity","backlog-column", function(tag, data) {
+        document.getElementById(tag).innerHTML = document.getElementById(tag).innerHTML + generateTasksElements(data);
+    });
+    */
+
+    </script>
+    
+{% endblock -%}
+
+
+
+
