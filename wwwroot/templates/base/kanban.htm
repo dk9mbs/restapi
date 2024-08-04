@@ -83,7 +83,7 @@ body {
     transition: transform 0.3s ease-in-out;
     display: flex;
 
-    &.dragging {
+    .dragging {
         transform: scale(1.1);
     }
 
@@ -118,20 +118,8 @@ body {
 </style>
 
 <div class="kanban-board" id="main_board">
-    <div class="column backlog" ondrop="drop(event)" ondragover="allowDrop(event)" id="backlog-column">
-      <div class="column-header">Backlog</div>
-    </div>
-
-    <div class="column todo" ondrop="drop(event)" ondragover="allowDrop(event)" id="todo-column">
-      <div class="column-header">To do</div>
-    </div>
-
-    <div class="column inprogress" ondrop="drop(event)" ondragover="allowDrop(event)" id="inprogress-column">
-      <div class="column-header">In Progress</div>
-    </div>
-
-    <div class="column done" ondrop="drop(event)" ondragover="allowDrop(event)" id="done-column">
-      <div class="column-header">Done</div>
+    <div class="column backlog" ondrop="drop(event)" ondragover="allowDrop(event)" id="lane_1">
+      <div class="column-header">Plaese wait ...</div>
     </div>
 </div>
 
@@ -154,6 +142,7 @@ body {
         const targetColumn = document.getElementById(targetColumnId);
         targetColumn.appendChild(draggedTask);
         draggedTask.classList.remove("dragging");
+        console.log(draggedTask);
     }
     
     const backlogTasks = [];
@@ -165,7 +154,7 @@ body {
         return lanes
             .map((lane) => {
                 return `
-                <div class="column done" ondrop="drop(event)" ondragover="allowDrop(event)" id="${lane.name}">
+                <div class="column done" ondrop="drop(event)" ondragover="allowDrop(event)" id="lane_${lane.id}">
                 <div class="column-header">${lane.name}</div>
                 </div>
             `;
@@ -179,7 +168,7 @@ body {
         return tasks
             .map((task) => {
                 return `
-              <div class="task" draggable="true" ondragstart="drag(event)">
+              <div class="task" draggable="true" ondragstart="drag(event)" id="${task.id}">
                 <div class="task-image-column"></div>
                 <div class="task-details">
                   <div class="task-title">${task.subject}</div>
@@ -203,7 +192,7 @@ body {
                 callBack(tag, data);
                 //console.log(data);
             } else {
-                //console.log(`Error: ${xhr.status}`);
+                console.log(`Error: ${xhr.status}`);
             }
         };
     }
@@ -212,12 +201,13 @@ body {
     xmlHttpRequest("GET", "/api/v1.0/data/api_activity_lane","main_board", function(tag, data) {
         document.getElementById(tag).innerHTML = generateLanes(data);
 
-        console.log(data[0].id);
-        for (x=0;x<len(data);x++){
-            xmlHttpRequest("GET", "/api/v1.0/data/api_activity?filter_field_name=lane_id&filter_value="+data['id'],"Backlog", function(tag, data) {
+        data.forEach(element => {
+            console.log(element);
+            xmlHttpRequest("GET", "/api/v1.0/data/api_activity?filter_field_name=lane_id&filter_value="+element['id'],`lane_${element.id}`, function(tag, data) {
             document.getElementById(tag).innerHTML = document.getElementById(tag).innerHTML + generateTasksElements(data);
-            });
-        }
+        });
+            
+        });
 
  
     });
