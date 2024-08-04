@@ -76,14 +76,19 @@ class EntitySet(Resource):
 
                 query=context.get_arg('query', default=None)
                 operator=context.get_arg('operator', None)
+                if query=='':
+                    query=None
+
+                if operator=='':
+                    operator=None
 
                 if query==None:
                     query=context.get_session_value(query_key, None)
                 else:
                     context.set_session_value(query_key, query)
 
-                if query==None:
-                    query=""
+                if query==None or query=='':
+                    query="%"
 
                 query=query.replace("*","%")
 
@@ -100,7 +105,7 @@ class EntitySet(Resource):
 
                 fetch=fetch.replace("$$query$$", query)
                 fetch=fetch.replace("$$operator$$", operator)
-
+                print(fetch)
                 fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
 
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
