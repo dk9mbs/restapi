@@ -30,42 +30,19 @@ body {
     flex: 1;
     min-width: 250px;
     border-radius: 5px;
-    margin-right: 20px;
+    margin-right: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 15px;
     box-sizing: border-box;
 }
 
 .backlog {
-    background-color: #fff;
-    border: 2px solid #3498db;
+    background-color: rgb(250, 248, 248);
+    border: 2px solid #bdbbbb;
+    /*
     .column-header {
         color: #3498db;
-    }
-}
-
-.todo {
-    background-color: #fff;
-    border: 2px solid #2ecc71;
-    .column-header {
-        color: #2ecc71;
-    }
-}
-
-.inprogress {
-    background-color: #fff;
-    border: 2px solid #e74c3c;
-    .column-header {
-        color: #e74c3c;
-    }
-}
-
-.done {
-    background-color: #fff;
-    border: 2px solid #f39c12;
-    .column-header {
-        color: #f39c12;
-    }
+    }*/
 }
 
 .column-header {
@@ -78,13 +55,14 @@ body {
     background-color: #e0e0e0;
     border-radius: 5px;
     padding: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 3px;
     cursor: grab;
     transition: transform 0.3s ease-in-out;
     display: flex;
-
+    /*
     .dragging {
         transform: scale(1.1);
+        }*/
     }
 
     .task-image-column {
@@ -128,6 +106,8 @@ body {
     let draggedTask;
     
     function drag(event) {
+        onChangeDataStatus(true, '');
+        
         draggedTask = event.target;
         draggedTask.classList.add("dragging");
     }
@@ -142,7 +122,16 @@ body {
         const targetColumn = document.getElementById(targetColumnId);
         targetColumn.appendChild(draggedTask);
         draggedTask.classList.remove("dragging");
-        console.log(draggedTask);
+
+        // Update the database
+        var activityId=draggedTask.id.split('_')[1];
+        var activityType=draggedTask.id.split('_')[0];
+        var targetLaneId=targetColumnId.split('_')[1];
+        var data=JSON.stringify({
+            id: activityId,
+            lane_id: targetLaneId
+        });
+        xmlHttpRequest("PUT", `/api/v1.0/data/api_activity/${activityId}`,"tag", data, function(tag, data) {onChangeDataStatus(false, '');})
     }
     
     const backlogTasks = [];
@@ -154,7 +143,7 @@ body {
         return lanes
             .map((lane) => {
                 return `
-                <div class="column done" ondrop="drop(event)" ondragover="allowDrop(event)" id="lane_${lane.id}">
+                <div class="column backlog" ondrop="drop(event)" ondragover="allowDrop(event)" id="lane_${lane.id}">
                 <div class="column-header">${lane.name}</div>
                 </div>
             `;
@@ -168,12 +157,13 @@ body {
         return tasks
             .map((task) => {
                 return `
-              <div class="task" draggable="true" ondragstart="drag(event)" id="${task.id}">
+              <div class="task" draggable="true" ondragstart="drag(event)" id="item_${task.id}">
                 <div class="task-image-column"></div>
                 <div class="task-details">
                   <div class="task-title">${task.subject}</div>
-                  <div class="task-details-text">Fälligkeitsdatum: ${task.due_date}</div>
-                  <div class="task-details-text">Status: ${task.status_id}</div>
+                  <div class="task-details-text">Board: ${task['__board_id@name']}</div>
+                  <div class="task-details-text">Fällig: ${task.due_date}</div>
+                  <div class="task-details-text">Status: ${task['__status_id@name']}</div>
                 </div>
               </div>
             `;
@@ -181,42 +171,38 @@ body {
             .join("");
     }
     
-    function xmlHttpRequest(method, url, tag, callBack) {
+    function xmlHttpRequest(method, url, tag, data, callBack) {
         const xhr = new XMLHttpRequest();
         xhr.open(method, url);
-        xhr.send();
+        if (data!=undefined) {
+            xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        }
         xhr.responseType = "json";
         xhr.onload = () => {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 const data = xhr.response;
                 callBack(tag, data);
-                //console.log(data);
+                console.log(data);
             } else {
                 console.log(`Error: ${xhr.status}`);
+                alert(xhr.statusText);
             }
         };
+        xhr.send(data);
     }
 
     
-    xmlHttpRequest("GET", "/api/v1.0/data/api_activity_lane","main_board", function(tag, data) {
+    xmlHttpRequest("GET", "/api/v1.0/data/api_activity_lane","main_board",undefined, function(tag, data) {
         document.getElementById(tag).innerHTML = generateLanes(data);
 
         data.forEach(element => {
             console.log(element);
-            xmlHttpRequest("GET", "/api/v1.0/data/api_activity?filter_field_name=lane_id&filter_value="+element['id'],`lane_${element.id}`, function(tag, data) {
+            xmlHttpRequest("GET", "/api/v1.0/data/api_activity?filter_field_name=lane_id&filter_value="+element['id'],`lane_${element.id}`,undefined, function(tag, data) {
             document.getElementById(tag).innerHTML = document.getElementById(tag).innerHTML + generateTasksElements(data);
         });
             
         });
-
- 
     });
-
-    /*
-    xmlHttpRequest("GET", "/api/v1.0/data/api_activity","backlog-column", function(tag, data) {
-        document.getElementById(tag).innerHTML = document.getElementById(tag).innerHTML + generateTasksElements(data);
-    });
-    */
 
     </script>
     
