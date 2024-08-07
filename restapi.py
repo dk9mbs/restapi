@@ -127,11 +127,11 @@ AppInfo.get_api().add_resource(api.data.entity.get_endpoint(), "/v1.0/data/<tabl
 AppInfo.get_api().add_resource(api.data.entity.get_endpoint(), "/v1.0/data/<table>/<id>/<field>", methods=['GET'])
 AppInfo.get_api().add_resource(api.data.entitylistfilter.get_endpoint(),"/v1.0/data", methods=['POST'])
 AppInfo.get_api().add_resource(api.data.entityadd.get_endpoint(), "/v1.0/data/<table>", methods=['POST'])
-AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/<table>", methods=['GET'])
-AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/view/<table>/<table_view>", methods=['GET'])
-AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/view/<table>/<table_view>", methods=['GET'])
-# Get only records they are connect
-AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/v1.0/data/relation/<table>/<related_table_alias>/<related_record_id>", methods=['GET'])
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/<api_version>/data/<table>", methods=['GET'])
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/<api_version>/data/search/<table>", methods=['POST']) #fetchxml in the body
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/<api_version>/view/<table>/<table_view>", methods=['GET'])
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/<api_version>/data/view/<table>/<table_view>", methods=['GET'])
+AppInfo.get_api().add_resource(api.data.entityset.get_endpoint(), "/<api_version>/data/relation/<table>/<related_table_alias>/<related_record_id>", methods=['GET'])
 
 # file handling
 AppInfo.get_api().add_resource(api.data.file.get_endpoint(), "/v1.0/file/<path:path>", methods=['POST','GET','PUT'])
@@ -145,13 +145,6 @@ AppInfo.get_api().add_resource(api.imports.textimport.get_endpoint(), "/v1.0/imp
 AppInfo.get_api().add_resource(api.action.get_endpoint(), "/v1.0/action/<action>")
 
 # html form updates
-#AppInfo.get_api().add_resource(api.form.entityupdate.get_endpoint(), "/v1.0/form/<table>/<id>", methods=['POST'])
-#AppInfo.get_api().add_resource(api.form.entityinsert.get_endpoint(), "/v1.0/form/<table>", methods=['POST'])
-
-# get the dataform form edit records
-#AppInfo.get_api("ui").add_resource(ui.data.dataformupdate.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET'])
-#AppInfo.get_api("ui").add_resource(ui.data.dataforminsert.get_endpoint(), "/v1.0/data/<table>", methods=['GET'])
-#AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/data/view/<table>", methods=['GET'])
 AppInfo.get_api("ui").add_resource(ui.data.dataformlist.get_endpoint(), "/v1.0/data/view/<table>/<view>", methods=['GET'])
 #
 # login process

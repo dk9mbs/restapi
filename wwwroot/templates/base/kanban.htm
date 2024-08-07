@@ -196,9 +196,15 @@ body {
         document.getElementById(tag).innerHTML = generateLanes(data);
 
         data.forEach(element => {
-            console.log(element);
-            xmlHttpRequest("GET", "/api/v1.0/data/api_activity?filter_field_name=lane_id&filter_value="+element['id'],`lane_${element.id}`,undefined, function(tag, data) {
-            document.getElementById(tag).innerHTML = document.getElementById(tag).innerHTML + generateTasksElements(data);
+            var fetchXml=`<restapi type="select">
+                <filter type="AND">
+                    <condition field="type_id" value="1" operator="neq"/>
+                    <condition field="status_id" value="100" operator="neq"/>
+                    <condition field="lane_id" value="${element['id']}" operator="eq"/>
+                </filter>
+            </restapi>`;
+            xmlHttpRequest("POST", "/api/v1.0/data/search/api_activity",`lane_${element.id}`,fetchXml, function(tag, data) {
+                document.getElementById(tag).innerHTML = document.getElementById(tag).innerHTML + generateTasksElements(data);
         });
             
         });
