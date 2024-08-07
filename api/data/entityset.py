@@ -33,14 +33,19 @@ def create_parser():
     #parser.add_argument('page', type=int, help='Page',default=1, location='query')
     return parser
 
-
-
 class EntitySet(Resource):
     api=AppInfo.get_api()
 
     api=AppInfo.get_api()
     @api.doc(parser=create_parser())
-    def get(self, table, table_view=None, related_table_alias=None, related_record_id=None):
+    def get(self, table, table_view=None, related_table_alias=None, related_record_id=None, api_version="v1.0"):
+        return self._get_or_post(table=table, table_view=table_view, related_table_alias=related_table_alias, related_record_id=related_record_id, post_data=None, api_version=api_version)
+    
+    @api.doc(parser=create_parser())
+    def post(self, table, table_view=None, related_table_alias=None, related_record_id=None, api_version="v1.0"):
+        return self._get_or_post(table=table, table_view=table_view, related_table_alias=related_table_alias, related_record_id=related_record_id, post_data=request.data, api_version=api_version)
+
+    def _get_or_post(self, table, table_view=None, related_table_alias=None, related_record_id=None, post_data=None, api_version="v1.0"):
         try:
             create_parser().parse_args()
             context=g.context
@@ -48,8 +53,8 @@ class EntitySet(Resource):
             query=""
             table_meta=read_table_meta(context,alias=table)
 
-            #table_view=api_table_view
             if table_view==None:
+                # build a normal table query or a related query
                 args={}
                 args['filter_field_name']=context.get_arg("filter_field_name", None)
                 args['filter_value']=context.get_arg("filter_value", None)
@@ -57,13 +62,27 @@ class EntitySet(Resource):
                 page=int(context.get_arg("page",0))
                 page_size=int(context.get_arg("page_size", 5000))
 
-                if related_table_alias==None:
+                if related_table_alias==None and post_data==None:
+                    # normal 
                     fetch=build_fetchxml_lookup(context,table,0,context.get_arg("filter_field_name", None),
                         context.get_arg("filter_value",None))
+                elif post_data!=None:
+                    # search with fetchxml
+                    import xml.etree.ElementTree as ET
+                    tree=ET.fromstring(post_data)
+
+                    for node in tree.findall("./table"):
+                        tree.remove(node)
+
+                    node=ET.SubElement(tree,"table", {"name": table})
+                    tree.append(node)
+                    fetch=ET.tostring(tree)
                 else:
                     fetch=build_fetchxml_referenced_records(context, table,0,related_record_id, related_table_alias)
+
                 fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
             else:
+                #use a saved table_view query from api_table_view
                 query_key=f"dataformlist_query_{table}"
                 operator_key=f"dataformlist_op_{table}"
 
@@ -110,7 +129,9 @@ class EntitySet(Resource):
 
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             result=rs.get_result()
-                        
+            if api_version=="v1.1":
+                result={"data": result}
+
             view=context.get_arg("view", None)
 
             if view!=None:
