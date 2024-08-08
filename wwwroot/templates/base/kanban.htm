@@ -10,7 +10,7 @@
 
 {% block content %}
 <style>
-body {
+xxxbody {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -28,21 +28,22 @@ body {
 
 .column {
     flex: 1;
-    min-width: 250px;
-    border-radius: 5px;
+    min-width: 200px;
+    border-radius: 3px;
     margin-right: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    padding: 15px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    padding: 10px;
     box-sizing: border-box;
+    overflow-y: scroll;
+    height:auto ;
 }
 
 .backlog {
     background-color: rgb(250, 248, 248);
     border: 2px solid #bdbbbb;
-    /*
     .column-header {
         color: #3498db;
-    }*/
+    }
 }
 
 .column-header {
@@ -52,46 +53,46 @@ body {
 }
 
 .task {
-    background-color: #e0e0e0;
+    background-color: #ffffff;
+    border-color: #bdbbbb;
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 3px;
     cursor: grab;
     transition: transform 0.3s ease-in-out;
     display: flex;
-    /*
+    
     .dragging {
         transform: scale(1.1);
-        }*/
+        }
     }
 
-    .task-image-column {
-        width: 100px; /* Ajustez la largeur selon vos besoins */
-        margin-right: 10px;
-        background-color: #ccc; /* Placeholder pour l'image */
-    }
+.task-image-column {
+    width: 50px; 
+    margin-right: 10px;
+    background-color: #ccc; 
+}
 
-    .task-image {
-        width: 100%;
-        height: auto;
-        border-radius: 5px;
-    }
+.task-image {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
 
-    .task-details {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
+.task-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
 
-    .task-title {
-        font-size: 16px;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
+.task-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
 
-    .task-details-text {
-        font-size: 14px;
-    }
+.task-details-text {
+    font-size: 14px;
 }
 </style>
 
@@ -100,7 +101,6 @@ body {
       <div class="column-header">Plaese wait ...</div>
     </div>
 </div>
-
 
 <script language="javascript">
     let draggedTask;
@@ -161,9 +161,10 @@ body {
                 <div class="task-image-column"></div>
                 <div class="task-details">
                   <div class="task-title">${task.subject}</div>
-                  <div class="task-details-text">Board: ${task['__board_id@name']}</div>
-                  <div class="task-details-text">Fällig: ${task.due_date}</div>
-                  <div class="task-details-text">Status: ${task['__status_id@name']}</div>
+                  <div class="task-details-text">${task['__board_id@name']}</div>
+                  <div class="task-details-text">${task.due_date}</div>
+                  <div class="task-details-text">${task['__status_id@name']}</div>
+                  <div class="task-details-text"><a href="/api/v1.0/data/api_activity/${task['id']}?view=$default_ui" target="_blank">Bearbeiten</a></div>
                 </div>
               </div>
             `;
