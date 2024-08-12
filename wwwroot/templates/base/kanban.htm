@@ -56,8 +56,8 @@ xxxbody {
     background-color: #ffffff;
     border-color: #bdbbbb;
     border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 3px;
+    padding: 0px;
+    margin-bottom: 1px;
     cursor: grab;
     transition: transform 0.3s ease-in-out;
     display: flex;
@@ -68,9 +68,10 @@ xxxbody {
     }
 
 .task-image-column {
-    width: 50px; 
+    width: 5px; 
     margin-right: 10px;
-    background-color: #ccc; 
+    background-color: #51f759; 
+    border-radius: 5px;
 }
 
 .task-image {
@@ -164,6 +165,7 @@ xxxbody {
                   <div class="task-details-text">${task['__board_id@name']}</div>
                   <div class="task-details-text">${task.due_date}</div>
                   <div class="task-details-text">${task['__status_id@name']}</div>
+                  <!--<div style="background-color: silver;" class="task-details-text">${task.msg_text}</div>-->
                   <div class="task-details-text"><a href="/api/v1.0/data/api_activity/${task['id']}?view=$default_ui" target="_blank">Bearbeiten</a></div>
                 </div>
               </div>
@@ -203,6 +205,9 @@ xxxbody {
                     <condition field="status_id" value="100" operator="neq"/>
                     <condition field="lane_id" value="${element['id']}" operator="eq"/>
                 </filter>
+                <orderby>
+                    <field name="due_date" sort="ASC"/>
+                </orderby>
             </restapi>`;
             xmlHttpRequest("POST", "/api/v1.0/data/search/api_activity",`lane_${element.id}`,fetchXml, function(tag, data) {
                 document.getElementById(tag).innerHTML = document.getElementById(tag).innerHTML + generateTasksElements(data);

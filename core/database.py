@@ -67,7 +67,10 @@ class Recordset:
         for rec in self._result:
             for col in columns:
                 if col['formatter'] != None and col['formatter'] != "":
-                    field=col['database_field']
+                    #field=col['database_field']
+                    print(f"----------{rec}")
+                    field=f"__{col['database_field']}@formatted_value"
+                    print(f"*****{field}")
                     name=col['formatter']
                     formatter=formatters[name]
                     rec[field]=formatter.output(context, rec[field])

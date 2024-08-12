@@ -458,6 +458,7 @@ UPDATE api_table_field SET referenced_table_name='api_table', referenced_table_i
 call api_proc_create_table_field_instance(13,1300, 'referenced_field_name','Ref. Feldname','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1400, 'control_id','Control','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1500, 'control_config','Konfiguration','string',18,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1510, 'formatter','Formatierung','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1600, 'provider_id','Provider','string',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1600, 'is_virtual','Virtuelles Feld','int',19,'{"disabled": false}', @out_value);
 
