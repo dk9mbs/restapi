@@ -163,7 +163,7 @@ xxxbody {
                 <div class="task-details">
                   <div class="task-title">${task.subject}</div>
                   <div class="task-details-text">${task['__board_id@name']}</div>
-                  <div class="task-details-text">${task.due_date}</div>
+                  <div class="task-details-text">${task['__due_date@formatted_value']}</div>
                   <div class="task-details-text">${task['__status_id@name']}</div>
                   <!--<div style="background-color: silver;" class="task-details-text">${task.msg_text}</div>-->
                   <div class="task-details-text"><a href="/api/v1.0/data/api_activity/${task['id']}?view=$default_ui" target="_blank">Bearbeiten</a></div>
