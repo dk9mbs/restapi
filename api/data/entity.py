@@ -95,12 +95,10 @@ class Entity(Resource):
             if rs.get_result()==None:
                 abort(400, "Item not found => %s" % id)
 
-
             if field=="":
                 result=rs.get_result()
             else:
                 result=rs.get_result()[field]
-
 
             view=context.get_arg("view", None)
 

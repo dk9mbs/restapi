@@ -162,6 +162,7 @@ class FetchXmlParser(BaseParser):
                         tmp.append(",")
 
                     tmp.append(f"{ self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS { field['name'] }, { self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS \"__{field['name']}@formatted_value\" ")
+                    #tmp.append(f"{ self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS { field['name'] } ")
 
                 if field['is_lookup']==-1 and field['referenced_table_desc_field_name']!=None:
                     if tmp != []:
