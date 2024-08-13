@@ -218,6 +218,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     referenced_table_id int NULL COMMENT 'api_table id',
     referenced_field_name varchar(250) NULL COMMENT 'Field from the referenced table',
     control_id int NULL COMMENT 'control_id',
+    formatter varchar(250) NULL COMMENT 'Formatter',
     control_config text NOT NULL COMMENT 'Overwrite the type config',
     provider_id varchar(50) NOT NULL DEFAULT 'MANUFACTURER',
     UNIQUE KEY(table_id, name),
@@ -236,8 +237,12 @@ ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS pos int NOT NULL DEFAULT '1
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_id int NULL COMMENT 'control_id';
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NULL COMMENT 'Overwrite the type config';
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col' AFTER is_virtual;
-ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control(id);
-ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (provider_id) REFERENCES api_provider(id);
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS formatter varchar(250) NULL COMMENT 'Formatter' AFTER control_id;
+
+/* in allen datenbanken ausgerollt */
+/*ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control(id);
+ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (provider_id) REFERENCES api_provider(id);*/
+
 
 DROP TRIGGER IF EXISTS api_table_field_before_insert;
 delimiter //

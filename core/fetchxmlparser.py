@@ -155,13 +155,14 @@ class FetchXmlParser(BaseParser):
 
             for field in meta_fields:
                 if field['is_virtual']==0:
-                    column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": field['name'], "formatter": None}
+                    column_desc={"table": self._sql_table, "database_field": field['name'], "label": field['label'], "alias": field['name'], "formatter": field['formatter']}
                     self._columns_desc.append(column_desc)
 
                     if tmp != []:
                         tmp.append(",")
 
-                    tmp.append(f"{ self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS { field['name'] } ")
+                    tmp.append(f"{ self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS { field['name'] }, { self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS \"__{field['name']}@formatted_value\" ")
+                    #tmp.append(f"{ self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS { field['name'] } ")
 
                 if field['is_lookup']==-1 and field['referenced_table_desc_field_name']!=None:
                     if tmp != []:

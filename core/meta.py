@@ -52,7 +52,7 @@ def read_table_field_meta(context, table_alias=None, table_id=None):
                 control.control_config AS control_config,
                 f.control_config AS overwrite_control_config,field_name,f.is_virtual,rt.desc_field_name AS referenced_table_desc_field_name,
                 rt.alias AS referenced_table_alias, type.orm_classname,
-                CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END AS control_id
+                CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END AS control_id, f.formatter
             FROM {meta_field['table_name']} f
             INNER JOIN {meta_table['table_name']} t ON t.id=f.table_id
             INNER JOIN {meta_field_type['table_name']} type ON type.id=f.type_id

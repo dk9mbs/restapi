@@ -52,7 +52,6 @@ class Recordset:
 
     def execute_formatter(self,context, columns):
         formatters={}
-
         if self.get_eof():
             return
 
@@ -64,13 +63,24 @@ class Recordset:
                     formatter=factory.create()
                     formatters[name]=formatter
 
-        for rec in self._result:
-            for col in columns:
-                if col['formatter'] != None and col['formatter'] != "":
-                    field=col['database_field']
-                    name=col['formatter']
-                    formatter=formatters[name]
-                    rec[field]=formatter.output(context, rec[field])
+        if isinstance(self._result, list):
+            for rec in self._result:
+                self._execute_formatter(context, columns, rec, formatters)
+        elif isinstance(self._result, dict):
+            self._execute_formatter(context, columns, self._result, formatters)
+        else:
+            raise Exception('only list or dict allowed!')
+
+    def _execute_formatter(self, context, columns, rec, formatters):
+        for col in columns:
+            if col['formatter'] != None and col['formatter'] != "":
+                field=col['database_field']
+                formatted_field=f"__{col['database_field']}@formatted_value"
+                name=col['formatter']
+                formatter=formatters[name]
+                rec[formatted_field]=None #init the field first!
+                rec[formatted_field]=formatter.output(context, rec[field])
+
 
     def get_eof(self):
         if self._result==None or self._result==[] or self._result=={} or self._result==():
