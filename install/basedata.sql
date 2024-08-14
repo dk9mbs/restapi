@@ -567,7 +567,7 @@ call api_proc_create_table_field_instance(44,1100, 'lane_id','Lane','int',2,'{"d
 call api_proc_create_table_field_instance(44,1200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(44,1300, 'due_date_color','Fällig am (Ampel)','string',1,'{"disabled": true}', @out_value);
 UPDATE api_table_field
-    set field_name='due_date' WHERE id=@out_value;
+    set field_name='due_date', formatter='due_date_color' WHERE id=@out_value;
 
 call api_proc_create_table_field_instance(44,10000, '_documents','Dokumente','string',201,'{"relation_type": "complex"}', @out_value);
 UPDATE api_table_field

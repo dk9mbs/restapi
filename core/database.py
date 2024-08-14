@@ -74,13 +74,14 @@ class Recordset:
     def _execute_formatter(self, context, columns, rec, formatters):
         for col in columns:
             if col['formatter'] != None and col['formatter'] != "":
-                field=col['database_field']
-                formatted_field=f"__{col['database_field']}@formatted_value"
+                #field=col['database_field']
+                field=col['alias']
+                formatted_field=f"__{field}@formatted_value"
                 name=col['formatter']
                 formatter=formatters[name]
+
                 rec[formatted_field]=None #init the field first!
                 rec[formatted_field]=formatter.output(context, rec[field])
-
 
     def get_eof(self):
         if self._result==None or self._result==[] or self._result=={} or self._result==():

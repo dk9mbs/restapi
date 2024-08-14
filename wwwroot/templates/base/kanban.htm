@@ -159,7 +159,7 @@ xxxbody {
             .map((task) => {
                 return `
               <div class="task" draggable="true" ondragstart="drag(event)" id="item_${task.id}">
-                <div class="task-image-column" style="background-color: ${task.due_date=='' ? 'red' : 'lightgreen'};"></div>
+                <div class="task-image-column" style="background-color: ${task['__due_date_color@formatted_value']};"></div>
                 <div class="task-details">
                   <div class="task-title">${task.subject}</div>
                   <div class="task-details-text">${task['__board_id@name']}</div>
