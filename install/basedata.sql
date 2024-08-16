@@ -215,6 +215,11 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (47,'Aufwand Einheit (Aktivität)','api_activity_effort_unit','api_activity_effort_unit','id','string','name',-1);
 
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (48,'Status (Sprint)','api_activity_sprint_status','api_activity_sprint_status','id','string','name',-1);
+
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (49,'Sprint','api_activity_sprint','api_activity_sprint','id','string','name',-1);
 
 
 /* Bugfixing */
@@ -599,6 +604,16 @@ call api_proc_create_table_field_instance(45,300, 'board_id','Board','string',2,
 call api_proc_create_table_field_instance(45,300, 'position','Position','int',14,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(45,400, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
+/* sprint status */
+call api_proc_create_table_field_instance(48,100, 'id','#ID','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(48,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(48,300, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
+/* sprint */
+call api_proc_create_table_field_instance(49,100, 'id','#ID','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(49,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(49,300, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('RUNNING', 'running',-1,0);
@@ -760,6 +775,11 @@ INSERT IGNORE INTO api_activity_type (id, name) VALUES (3,'Record note');
 
 INSERT IGNORE INTO api_activity_board (id, name) VALUES (1,'Default');
 INSERT IGNORE INTO api_activity_lane (id, board_id, name) VALUES (1,1,'Backlog');
+
+/* activity_sprint */
+INSERT IGNORE INTO api_activity_sprint_status (id,name) VALUES (100,'Planned');
+INSERT IGNORE INTO api_activity_sprint_status (id,name) VALUES (200,'Running');
+INSERT IGNORE INTO api_activity_sprint_status (id,name) VALUES (300,'Closed');
 
 /* Dataviews */
 DELETE FROM api_table_view  WHERE solution_id=1;
