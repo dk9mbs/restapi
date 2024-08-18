@@ -845,18 +845,18 @@ CREATE TABLE IF NOT EXISTS api_activity_sprint_status(
     name varchar(50) NOT NULL COMMENT '',
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id)
-)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS api_activity_sprint(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
     name varchar(250) NOT NULL COMMENT '',
     from_date datetime NULL COMMENT '',
-    until_date datetime NULL COMMENT ''
-    status_id int NOT NULL DEFAULT(100) COMMENT '',
+    until_date datetime NULL COMMENT '',
+    status_id int NOT NULL DEFAULT '100' COMMENT '',
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     CONSTRAINT `foreign_reference_api_activity_sprint_id` FOREIGN KEY(status_id) REFERENCES api_activity_sprint_status(id),
     PRIMARY KEY(id)
-)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS api_activity(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
@@ -881,8 +881,8 @@ CREATE TABLE IF NOT EXISTS api_activity(
     CONSTRAINT `foreign_reference_api_activity_sprint_id` FOREIGN KEY(sprint_id) REFERENCES api_activity_sprint(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-ALTER TABLE api_file ADD CONSTRAINT `foreign_reference_api_activity_sprint_id` FOREIGN KEY IF NOT EXISTS (sprint_id) REFERENCES api_activity_sprint(id);
-
+ALTER TABLE api_activity ADD column IF NOT EXISTS sprint_id int NULL COMMENT '' AFTER due_date;
+ALTER TABLE api_activity ADD CONSTRAINT `foreign_reference_api_activity_sprint_id_to_api_sprint` FOREIGN KEY IF NOT EXISTS (sprint_id) REFERENCES api_activity_sprint(id);
 
 CREATE TABLE IF NOT EXISTS api_record_reference(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
