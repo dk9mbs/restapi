@@ -81,7 +81,7 @@ class Recordset:
                 formatter=formatters[name]
 
                 rec[formatted_field]=None #init the field first!
-                rec[formatted_field]=formatter.output(context, rec[field])
+                rec[formatted_field]=formatter.output(context, rec[field], rec)
 
     def get_eof(self):
         if self._result==None or self._result==[] or self._result=={} or self._result==():
