@@ -569,6 +569,8 @@ call api_proc_create_table_field_instance(44,800, 'type_id','Type','int',2,'{"di
 call api_proc_create_table_field_instance(44,900, 'status_id','Status','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1000, 'board_id','Board','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1100, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,1110, 'sprint_id','Sprint','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,1120, 'tag','Etikett','string',1,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(44,1200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(44,1300, 'due_date_color','Fällig am (Ampel)','string',1,'{"disabled": true}', @out_value);
 UPDATE api_table_field
@@ -772,6 +774,7 @@ INSERT IGNORE INTO api_activity_status (id, name) VALUES (100,'Done');
 INSERT IGNORE INTO api_activity_type (id, name) VALUES (1,'Note');
 INSERT IGNORE INTO api_activity_type (id, name) VALUES (2,'Task');
 INSERT IGNORE INTO api_activity_type (id, name) VALUES (3,'Record note');
+INSERT IGNORE INTO api_activity_type (id, name) VALUES (4,'Alert');
 
 INSERT IGNORE INTO api_activity_board (id, name) VALUES (1,'Default');
 INSERT IGNORE INTO api_activity_lane (id, board_id, name) VALUES (1,1,'Backlog');

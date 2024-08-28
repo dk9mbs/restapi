@@ -871,8 +871,10 @@ CREATE TABLE IF NOT EXISTS api_activity(
     effort_unit_id varchar(10) NOT NULL DEFAULT 'day' COMMENT '',
     due_date datetime NULL COMMENT '',
     sprint_id int NULL COMMENT '',
+    tag varchar(250) NULL COMMENT '',
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
-    PRIMARY KEY(id),
+    PRIMARY KEY(id, status_id),
+    INDEX `index_api_activity_tag` (tag, status_id),
     CONSTRAINT `foreign_reference_api_activity_status_id` FOREIGN KEY(status_id) REFERENCES api_activity_status(id),
     CONSTRAINT `foreign_reference_api_activity_type_id` FOREIGN KEY(type_id) REFERENCES api_activity_type(id),
     CONSTRAINT `foreign_reference_api_activity_board_id` FOREIGN KEY(board_id) REFERENCES api_activity_board(id),
@@ -882,7 +884,9 @@ CREATE TABLE IF NOT EXISTS api_activity(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE api_activity ADD column IF NOT EXISTS sprint_id int NULL COMMENT '' AFTER due_date;
+ALTER TABLE api_activity ADD column IF NOT EXISTS tag varchar(250) NULL COMMENT '' AFTER sprint_id;
 ALTER TABLE api_activity ADD CONSTRAINT `foreign_reference_api_activity_sprint_id_to_api_sprint` FOREIGN KEY IF NOT EXISTS (sprint_id) REFERENCES api_activity_sprint(id);
+ALTER TABLE api_activity ADD INDEX IF NOT EXISTS `index_api_activity_tag` (tag);
 
 CREATE TABLE IF NOT EXISTS api_record_reference(
     id int NOT NULL AUTO_INCREMENT COMMENT '',

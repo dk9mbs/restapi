@@ -53,7 +53,7 @@ class BaseModel(metaclass=MetaModel):
     def get_fields(cls, context: object):
         return cls._get_manager()._get_fields()
 
-    def insert(self, context: Context()):
+    def insert(self, context: Context):
         data=dict()
         for key, value in self.__dict__.items():
             if isinstance(value, Field) and value.dirty:
