@@ -14,10 +14,10 @@ class TestPluginExecution(unittest.TestCase):
         self.context=AppInfo.create_context(session_id)
 
     def test_001_create_activity_by_tag(self):
-        from services.activity import ActivityTools
+        from services.activity import Activity
 
-        tools=ActivityTools()
-        id=tools.create_alert_if_not_exists(self.context, "titel", "tag2", 1)
+        tools=Activity(self.context)
+        id=tools.create_alert_if_not_exists("IOT Sensor Fehler (Watchdog)", "Wohnzimmer01 liefert keine Daten (Watchdogtime)", "iot-sensoer-watchdog-error", 1)
 
         print(id)
 

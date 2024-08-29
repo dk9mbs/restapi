@@ -1,6 +1,6 @@
 from datetime import datetime
 
-def output(context, field_name, value, rec={}):
+def output(context, field_name, value):
     if value==None:
         return "blue"
 

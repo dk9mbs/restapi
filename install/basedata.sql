@@ -631,6 +631,7 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (9,'api_user_set_apikey','api_user_apikey','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async,config) VALUES (10,'api_mqtt_endpoint','dummy','update','after',-1,'{"filter": "[\'id\', \'name\']"}');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (11,'api_imap_mail','$timer_every_ten_minutes','execute','after',0);
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (12,'api_create_alert','api_create_alert','execute','before',0);
 
 UPDATE api_event_handler SET status_id='WAITING' WHERE status_id IS NULL;
 
@@ -758,6 +759,9 @@ INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('m
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.host','','MQTT Host',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.port','','MQTT Port',1);
 
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.topic','mytopic','NTFY Message Topic',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.username','username','NTFY Username',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.password','password','NTFY Password',1);
 
 /* MQTT Message Topics */
 INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias) VALUES (1, 'restapi/sys/ping', '^restapi/sys/ping$', '');

@@ -14,6 +14,7 @@ plugins/*
 !plugins/api_mqtt_endpoint.py
 !plugins/api_hook_endpoint.py
 !plugins/api_imap_mail.py
+!plugins/api_create_alert.py
 3thparty
 wwwroot/*
 !wwwroot/index.htm
