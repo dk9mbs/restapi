@@ -13,12 +13,13 @@ class TestPluginExecution(unittest.TestCase):
         session_id=AppInfo.login("root","password")
         self.context=AppInfo.create_context(session_id)
 
-    def test_by_table_alias(self):
+    def test_001_create_activity_by_tag(self):
         from services.activity import ActivityTools
 
         tools=ActivityTools()
-        tools.create_alert_if_not_exists(self.context, "titel", "tag", 1)
-        pass
+        id=tools.create_alert_if_not_exists(self.context, "titel", "tag2", 1)
+
+        print(id)
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

@@ -9,12 +9,14 @@ class ActivityTools:
 
     def create_alert_if_not_exists(self, context: Context,subject: str, tag: str, status_id: int):
         activity=api_activity.objects(context).select().where(api_activity.tag==tag).to_entity()
+        result=0
         if activity==None:
             activity=api_activity()
             activity.tag.value=tag
             activity.status_id.value=status_id
             activity.subject.value=subject
-            activity.insert(context)
-            print(activity.id.value)
-
+            result=activity.insert(context)
+        else:
+            result=activity.id.value
         
+        return result

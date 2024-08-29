@@ -117,7 +117,7 @@ class OrmParser(BaseParser):
                 fields=f"{fields},"
 
             if field['is_virtual']==0:
-                fields=f"{fields}{self._main_table_alias}.{field['field_name']}"
+                fields=f"{fields}{self._main_table_alias}.{field['field_name']} AS {field['name']}"
             else:
                 fields=f"{fields} null AS {field['name']}"
 
