@@ -759,6 +759,7 @@ INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('m
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.host','','MQTT Host',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.port','','MQTT Port',1);
 
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.url','https://ntfy.sh','NTFY Root URL',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.topic','mytopic','NTFY Message Topic',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.username','username','NTFY Username',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.password','password','NTFY Password',1);
