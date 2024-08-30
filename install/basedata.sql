@@ -632,6 +632,9 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type)
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async,config) VALUES (10,'api_mqtt_endpoint','dummy','update','after',-1,'{"filter": "[\'id\', \'name\']"}');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (11,'api_imap_mail','$timer_every_ten_minutes','execute','after',0);
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (12,'api_create_alert','api_create_alert','execute','before',0);
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (13,'api_send_ntfy','api_activity','insert','after',-1);
+
+
 
 UPDATE api_event_handler SET status_id='WAITING' WHERE status_id IS NULL;
 
