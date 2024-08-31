@@ -22,7 +22,18 @@ class OrmParser(BaseParser):
         self._sql_type=sql['sql_type']
         self._context=context
         
-        self.__add_fields(self._main_table)
+        self._add_fields(self._main_table)
+
+    def get_sql_fields(self):
+        result={}
+        idx=0
+        for key, value in self._data.items():
+            result[key]={}
+            result[key]['value']=self._query_vars[idx]
+            result[key]['old_value']=None
+            idx=idx+1
+
+        return result
 
     def get_select(self):
         return (self._get_sql("SELECT"), self._query_vars)
@@ -63,7 +74,7 @@ class OrmParser(BaseParser):
     """
     table.........: table alias from restapi
     """
-    def __add_fields(self, table: str):
+    def _add_fields(self, table: str):
         meta_fields=read_table_field_meta(self._context, table)
 
         fields=""

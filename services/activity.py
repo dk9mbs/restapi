@@ -10,7 +10,9 @@ class Activity:
 
 
     def create_alert_if_not_exists(self, subject: str, msg_text: str, tag: str, status_id: int):
-        activity=api_activity.objects(self._context).select().where(api_activity.tag==tag).to_entity()
+        activity=api_activity.objects(self._context).select().where(api_activity.tag==tag) \
+            .where(api_activity.status_id==status_id).to_entity()
+            
         result=0
         if activity==None:
             activity=api_activity()
