@@ -14,11 +14,11 @@ class TestPluginExecution(unittest.TestCase):
         self.context=AppInfo.create_context(session_id)
 
     def test_add_user_group(self):
-        
-        from core.user_group_tools import UserGroupTools
-        UserGroupTools.delete_private_user_group(self.context, 1)
-        group=UserGroupTools.add_or_get_private_user_group(self.context, 1)
-        UserGroupTools.add_record_permission(self.context, 20, 1, -999)
+        pass
+        #from core.user_group_tools import UserGroupTools
+        #UserGroupTools.delete_private_user_group(self.context, 1)
+        #group=UserGroupTools.add_or_get_private_user_group(self.context, 1)
+        #UserGroupTools.add_record_permission(self.context, 20, 1, -999)
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

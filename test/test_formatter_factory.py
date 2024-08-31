@@ -17,11 +17,11 @@ class TestPluginExecution(unittest.TestCase):
         factory=FormatterFactory(self.context, "boolean")
         formatter=factory.create()
 
-        self.assertEqual(formatter.output(self.context, 0),"No")
-        self.assertEqual(formatter.output(self.context, None),"No")
-        self.assertEqual(formatter.output(self.context, 1),"Yes")
-        self.assertEqual(formatter.output(self.context, -1),"Yes")
-        self.assertEqual(formatter.output(self.context, 999),"Yes")
+        self.assertEqual(formatter.output(self.context, "fieldname",0),"No")
+        self.assertEqual(formatter.output(self.context, "fieldname", None),"No")
+        self.assertEqual(formatter.output(self.context, "fieldname", 1),"Yes")
+        self.assertEqual(formatter.output(self.context, "fieldname", -1),"Yes")
+        self.assertEqual(formatter.output(self.context, "fieldname", 999),"Yes")
 
 
 

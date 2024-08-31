@@ -53,6 +53,11 @@ class UserGroupTools(object):
             """
             exec_raw_sql(context, sql,[group['id'], user_id])
 
+            sql=f"""
+            DELETE FROM api_user_group WHERE group_id=%s;
+            """
+            exec_raw_sql(context, sql,[group['id']])
+
             sql="""
             DELETE FROM api_group_rec_permission WHERE group_id=%s;
             """
