@@ -19,6 +19,7 @@ class Field:
         self._table_name=None
         self._table_alias=None
         self._is_ref_info=False
+        self._is_read_only=False
 
         if 'format' in kwargs:
             self._format=kwargs['format']
@@ -28,6 +29,9 @@ class Field:
 
         if 'is_ref_info' in kwargs:
             self._is_ref_info=kwargs['is_ref_info']
+
+        if 'is_read_only' in kwargs:
+            self._is_read_only=kwargs['is_read_only']
 
         self._value=self._validate(value)
 
@@ -58,6 +62,10 @@ class Field:
             return False
                                     
         return self._dirty
+
+    @property
+    def is_read_only(self):
+        return self._is_read_only
 
     @dirty.setter
     def dirty(self, value: bool) -> None:

@@ -455,6 +455,7 @@ call api_proc_create_table_field_instance(13,520, 'is_primary_key','Primärschl�
 call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,850, 'is_read_only','Nur lesen','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,900, 'allow_null','Null Werte?','int',19,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,1000, 'default_value','Default','string',1,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,1100, 'referenced_table_name','Ref. Tabelle (Name)','string',1,'{"disabled": false}', @out_value);
@@ -574,7 +575,7 @@ call api_proc_create_table_field_instance(44,1120, 'tag','Etikett','string',1,'{
 call api_proc_create_table_field_instance(44,1200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(44,1300, 'due_date_color','Fällig am (Ampel)','string',1,'{"disabled": true}', @out_value);
 UPDATE api_table_field
-    set field_name='due_date', formatter='due_date_color' WHERE id=@out_value;
+    set field_name='due_date', formatter='due_date_color', is_read_only=-1 WHERE id=@out_value;
 
 call api_proc_create_table_field_instance(44,10000, '_documents','Dokumente','string',201,'{"relation_type": "complex"}', @out_value);
 UPDATE api_table_field
@@ -1484,15 +1485,17 @@ Model for table {{ data[\'alias\'] }}
 """
 {% set fields=metadata_table_fields(context, data[\'alias\'] ) -%}
 class {{ data[\'alias\'] }}(BaseModel):
-    {% for f in fields %}{% set pk=False -%}
+    {% for f in fields %}{% set pk=False -%}{% set is_read_only=False -%}
     {% if f[\'is_primary_key\'] == -1 -%}
     {% set pk=True %}{% endif -%}
-    {{ f[\'name\'] }}={{ f[\'orm_classname\']}}(pk={{ pk }})
+    {% if f[\'is_read_only\'] == -1 -%}
+    {% set is_read_only=True %}{% endif -%}
+    {{ f[\'name\'] }}={{ f[\'orm_classname\']}}(pk={{ pk }}, is_read_only={{ is_read_only }})
     {% if not f[\'referenced_table_name\'] == None -%}
     {{ f[\'name\'] }}_name={{ f[\'orm_classname\']}}(is_ref_info=True)
     {{ f[\'name\'] }}_url={{ f[\'orm_classname\']}}(is_ref_info=True)
     {% endif -%}
-    {% endfor %}
+    {% endfor -%}
     class Meta:
         table_name="{{ data[\'alias\'] }}"
         table_alias="{{ data[\'alias\'] }}"',

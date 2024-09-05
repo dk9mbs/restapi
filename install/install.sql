@@ -213,6 +213,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     type_id varchar(50) NOT NULL COMMENT 'type of field',
     size int NOT NULL DEFAULT '0' COMMENT 'the size in case of string',
     allow_null smallint NOT NULL DEFAULT '0',
+    is_read_only smallint NOT NULL DEFAULT '0' COMMENT '',
     default_value varchar(250) NULL,
     referenced_table_name varchar(250) NULL COMMENT 'referenced table name',
     referenced_table_id int NULL COMMENT 'api_table id',
@@ -238,6 +239,7 @@ ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_id int NULL COMMENT
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NULL COMMENT 'Overwrite the type config';
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col' AFTER is_virtual;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS formatter varchar(250) NULL COMMENT 'Formatter' AFTER control_id;
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_read_only smallint NOT NULL DEFAULT '0' COMMENT '';
 
 /* in allen datenbanken ausgerollt */
 /*ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control(id);
