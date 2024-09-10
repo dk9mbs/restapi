@@ -548,9 +548,9 @@ class FetchXmlParser(BaseParser):
                     if val.tag=="value":
                         value=val.text
 
-            if value == "None" or value == "null" or value=="":
-                value=None
-
+            #if value == "None" or value == "null" or value=="":
+            #    value=None
+            value=self._nz(value)
 
             name=self._escape_string(field.attrib['name'],"fieldname")
 

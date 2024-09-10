@@ -53,15 +53,14 @@ class BaseModel(metaclass=MetaModel):
     def get_fields(cls, context: object):
         return cls._get_manager()._get_fields()
 
-    def insert(self, context: Context()):
+    def insert(self, context: Context):
         data=dict()
         for key, value in self.__dict__.items():
-            if isinstance(value, Field) and value.dirty:
+            if isinstance(value, Field) and value.dirty and not value.is_ref_info and not value.is_read_only:
                 data[key]=value.value
 
         rs=BaseModel.manager_class(context ,model_class=self.__class__).insert(data)
         return rs.get_inserted_id()
-        #return True
 
     def update(self, context: Context) -> bool:
         data=dict()
@@ -70,7 +69,7 @@ class BaseModel(metaclass=MetaModel):
 
         for key, value in self.__dict__.items():
             # is_ref_info= linked fields like _name and _url
-            if isinstance(value, Field) and value.dirty and not value.is_ref_info:
+            if isinstance(value, Field) and value.dirty and not value.is_ref_info and not value.is_read_only:
                 data[key]=value.value
 
             # for where clause use not the dirty flag

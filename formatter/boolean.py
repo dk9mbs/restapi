@@ -1,5 +1,5 @@
 
-def output(context, value):
+def output(context, field_name, value):
     if value==None or value==0:
         return "No"
     else:

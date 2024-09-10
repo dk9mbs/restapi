@@ -89,6 +89,10 @@ def before_request():
                 user=AppInfo.user_credentials_by_apikey( request.args['apikey'])
                 username=user['username']
                 password=user['password']
+            elif 'apikey' in request.headers:
+                user=AppInfo.user_credentials_by_apikey( request.headers['apikey'])
+                username=user['username']
+                password=user['password']
             else:
                 #do not set session['session_id'] because the
                 #guest session will be automaticly deactivated.

@@ -5,7 +5,9 @@ from core.database import FetchXmlParser
 from config import CONFIG
 from core.appinfo import AppInfo
 from core.plugin import Plugin
-from core.formatter_factory import FormatterFactory
+
+from services.orm import *
+from shared.model import *
 
 class TestPluginExecution(unittest.TestCase):
     def setUp(self):
@@ -14,16 +16,18 @@ class TestPluginExecution(unittest.TestCase):
         self.context=AppInfo.create_context(session_id)
 
     def test_execution(self):
-        factory=FormatterFactory(self.context, "boolean")
-        formatter=factory.create()
-
-        self.assertEqual(formatter.output(self.context, "fieldname",0),"No")
-        self.assertEqual(formatter.output(self.context, "fieldname", None),"No")
-        self.assertEqual(formatter.output(self.context, "fieldname", 1),"Yes")
-        self.assertEqual(formatter.output(self.context, "fieldname", -1),"Yes")
-        self.assertEqual(formatter.output(self.context, "fieldname", 999),"Yes")
+        activity=api_activity()
+        activity.msg_text.value=""
+        activity.subject.value="insert"
+        activity.type_id.value=4
+        id=activity.insert(self.context)
 
 
+        activity=api_activity.objects(self.context).select().where(api_activity.id==id).to_entity()
+        activity.msg_text.value="test"
+        activity.subject.value="test"
+        activity.type_id.value=1
+        activity.update(self.context)
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)

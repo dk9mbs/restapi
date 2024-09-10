@@ -213,6 +213,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     type_id varchar(50) NOT NULL COMMENT 'type of field',
     size int NOT NULL DEFAULT '0' COMMENT 'the size in case of string',
     allow_null smallint NOT NULL DEFAULT '0',
+    is_read_only smallint NOT NULL DEFAULT '0' COMMENT '',
     default_value varchar(250) NULL,
     referenced_table_name varchar(250) NULL COMMENT 'referenced table name',
     referenced_table_id int NULL COMMENT 'api_table id',
@@ -238,6 +239,7 @@ ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_id int NULL COMMENT
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NULL COMMENT 'Overwrite the type config';
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col' AFTER is_virtual;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS formatter varchar(250) NULL COMMENT 'Formatter' AFTER control_id;
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_read_only smallint NOT NULL DEFAULT '0' COMMENT '';
 
 /* in allen datenbanken ausgerollt */
 /*ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control(id);
@@ -840,6 +842,24 @@ CREATE TABLE IF NOT EXISTS api_activity_effort_unit(
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS api_activity_sprint_status(
+    id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_activity_sprint(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    name varchar(250) NOT NULL COMMENT '',
+    from_date datetime NULL COMMENT '',
+    until_date datetime NULL COMMENT '',
+    status_id int NOT NULL DEFAULT '100' COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    CONSTRAINT `foreign_reference_api_activity_sprint_id` FOREIGN KEY(status_id) REFERENCES api_activity_sprint_status(id),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS api_activity(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
     type_id int NOT NULL DEFAULT '1' COMMENT '', 
@@ -852,14 +872,23 @@ CREATE TABLE IF NOT EXISTS api_activity(
     actual_effort int NOT NULL DEFAULT '0' COMMENT '',
     effort_unit_id varchar(10) NOT NULL DEFAULT 'day' COMMENT '',
     due_date datetime NULL COMMENT '',
+    sprint_id int NULL COMMENT '',
+    tag varchar(250) NULL COMMENT '',
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
-    PRIMARY KEY(id),
+    PRIMARY KEY(id, status_id),
+    INDEX `index_api_activity_tag` (tag, status_id),
     CONSTRAINT `foreign_reference_api_activity_status_id` FOREIGN KEY(status_id) REFERENCES api_activity_status(id),
     CONSTRAINT `foreign_reference_api_activity_type_id` FOREIGN KEY(type_id) REFERENCES api_activity_type(id),
     CONSTRAINT `foreign_reference_api_activity_board_id` FOREIGN KEY(board_id) REFERENCES api_activity_board(id),
     CONSTRAINT `foreign_reference_api_activity_lane_id` FOREIGN KEY(lane_id) REFERENCES api_activity_lane(id),
-    CONSTRAINT `foreign_reference_api_activity_effort_unit_id` FOREIGN KEY(effort_unit_id) REFERENCES api_activity_effort_unit(id)
+    CONSTRAINT `foreign_reference_api_activity_effort_unit_id` FOREIGN KEY(effort_unit_id) REFERENCES api_activity_effort_unit(id),
+    CONSTRAINT `foreign_reference_api_activity_sprint_id` FOREIGN KEY(sprint_id) REFERENCES api_activity_sprint(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE api_activity ADD column IF NOT EXISTS sprint_id int NULL COMMENT '' AFTER due_date;
+ALTER TABLE api_activity ADD column IF NOT EXISTS tag varchar(250) NULL COMMENT '' AFTER sprint_id;
+ALTER TABLE api_activity ADD CONSTRAINT `foreign_reference_api_activity_sprint_id_to_api_sprint` FOREIGN KEY IF NOT EXISTS (sprint_id) REFERENCES api_activity_sprint(id);
+ALTER TABLE api_activity ADD INDEX IF NOT EXISTS `index_api_activity_tag` (tag);
 
 CREATE TABLE IF NOT EXISTS api_record_reference(
     id int NOT NULL AUTO_INCREMENT COMMENT '',

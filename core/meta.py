@@ -50,7 +50,7 @@ def read_table_field_meta(context, table_alias=None, table_id=None):
                 t.alias AS table_alias,
                 control.control AS control,
                 control.control_config AS control_config,
-                f.control_config AS overwrite_control_config,field_name,f.is_virtual,rt.desc_field_name AS referenced_table_desc_field_name,
+                f.control_config AS overwrite_control_config,field_name,f.is_virtual,f.is_read_only,rt.desc_field_name AS referenced_table_desc_field_name,
                 rt.alias AS referenced_table_alias, type.orm_classname,
                 CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END AS control_id, f.formatter
             FROM {meta_field['table_name']} f
@@ -70,6 +70,11 @@ def read_table_field_meta(context, table_alias=None, table_id=None):
         json2=json.loads(field['overwrite_control_config'])
         cfg=merge(json1, json2)
         field['control_config']=json.dumps(cfg)
+
+        # All virtual Fields are read only fields!
+        if field['is_virtual']!=0:
+            field['is_read_only']=-1
+
 
     return meta
 

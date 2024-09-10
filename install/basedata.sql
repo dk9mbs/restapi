@@ -215,6 +215,11 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (47,'Aufwand Einheit (Aktivität)','api_activity_effort_unit','api_activity_effort_unit','id','string','name',-1);
 
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (48,'Status (Sprint)','api_activity_sprint_status','api_activity_sprint_status','id','string','name',-1);
+
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (49,'Sprint','api_activity_sprint','api_activity_sprint','id','string','name',-1);
 
 
 /* Bugfixing */
@@ -450,6 +455,7 @@ call api_proc_create_table_field_instance(13,520, 'is_primary_key','Primärschl�
 call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(13,850, 'is_read_only','Nur lesen','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,900, 'allow_null','Null Werte?','int',19,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,1000, 'default_value','Default','string',1,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,1100, 'referenced_table_name','Ref. Tabelle (Name)','string',1,'{"disabled": false}', @out_value);
@@ -564,10 +570,12 @@ call api_proc_create_table_field_instance(44,800, 'type_id','Type','int',2,'{"di
 call api_proc_create_table_field_instance(44,900, 'status_id','Status','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1000, 'board_id','Board','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1100, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,1110, 'sprint_id','Sprint','string',2,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(44,1120, 'tag','Etikett','string',1,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(44,1200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(44,1300, 'due_date_color','Fällig am (Ampel)','string',1,'{"disabled": true}', @out_value);
 UPDATE api_table_field
-    set field_name='due_date', formatter='due_date_color' WHERE id=@out_value;
+    set field_name='due_date', formatter='due_date_color', is_read_only=-1 WHERE id=@out_value;
 
 call api_proc_create_table_field_instance(44,10000, '_documents','Dokumente','string',201,'{"relation_type": "complex"}', @out_value);
 UPDATE api_table_field
@@ -599,6 +607,16 @@ call api_proc_create_table_field_instance(45,300, 'board_id','Board','string',2,
 call api_proc_create_table_field_instance(45,300, 'position','Position','int',14,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(45,400, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
+/* sprint status */
+call api_proc_create_table_field_instance(48,100, 'id','#ID','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(48,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(48,300, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
+/* sprint */
+call api_proc_create_table_field_instance(49,100, 'id','#ID','int',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(49,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(49,300, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
+
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('RUNNING', 'running',-1,0);
@@ -614,6 +632,10 @@ INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type) VALUES (9,'api_user_set_apikey','api_user_apikey','insert','before');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async,config) VALUES (10,'api_mqtt_endpoint','dummy','update','after',-1,'{"filter": "[\'id\', \'name\']"}');
 INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (11,'api_imap_mail','$timer_every_ten_minutes','execute','after',0);
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (12,'api_create_alert','api_create_alert','execute','before',0);
+INSERT IGNORE INTO api_event_handler(id,plugin_module_name,publisher,event,type,run_async) VALUES (13,'api_send_ntfy','api_activity','insert','after',-1);
+
+
 
 UPDATE api_event_handler SET status_id='WAITING' WHERE status_id IS NULL;
 
@@ -741,6 +763,10 @@ INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('m
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.host','','MQTT Host',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('mqtt.port','','MQTT Port',1);
 
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.url','https://ntfy.sh','NTFY Root URL',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.topic','mytopic','NTFY Message Topic',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.username','username','NTFY Username',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.password','password','NTFY Password',1);
 
 /* MQTT Message Topics */
 INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias) VALUES (1, 'restapi/sys/ping', '^restapi/sys/ping$', '');
@@ -757,9 +783,15 @@ INSERT IGNORE INTO api_activity_status (id, name) VALUES (100,'Done');
 INSERT IGNORE INTO api_activity_type (id, name) VALUES (1,'Note');
 INSERT IGNORE INTO api_activity_type (id, name) VALUES (2,'Task');
 INSERT IGNORE INTO api_activity_type (id, name) VALUES (3,'Record note');
+INSERT IGNORE INTO api_activity_type (id, name) VALUES (4,'Alert');
 
 INSERT IGNORE INTO api_activity_board (id, name) VALUES (1,'Default');
 INSERT IGNORE INTO api_activity_lane (id, board_id, name) VALUES (1,1,'Backlog');
+
+/* activity_sprint */
+INSERT IGNORE INTO api_activity_sprint_status (id,name) VALUES (100,'Planned');
+INSERT IGNORE INTO api_activity_sprint_status (id,name) VALUES (200,'Running');
+INSERT IGNORE INTO api_activity_sprint_status (id,name) VALUES (300,'Closed');
 
 /* Dataviews */
 DELETE FROM api_table_view  WHERE solution_id=1;
@@ -1453,15 +1485,17 @@ Model for table {{ data[\'alias\'] }}
 """
 {% set fields=metadata_table_fields(context, data[\'alias\'] ) -%}
 class {{ data[\'alias\'] }}(BaseModel):
-    {% for f in fields %}{% set pk=False -%}
+    {% for f in fields %}{% set pk=False -%}{% set is_read_only=False -%}
     {% if f[\'is_primary_key\'] == -1 -%}
     {% set pk=True %}{% endif -%}
-    {{ f[\'name\'] }}={{ f[\'orm_classname\']}}(pk={{ pk }})
+    {% if f[\'is_read_only\'] == -1 -%}
+    {% set is_read_only=True %}{% endif -%}
+    {{ f[\'name\'] }}={{ f[\'orm_classname\']}}(pk={{ pk }}, is_read_only={{ is_read_only }})
     {% if not f[\'referenced_table_name\'] == None -%}
-    {{ f[\'name\'] }}_name={{ f[\'orm_classname\']}}(is_ref_info=True)
-    {{ f[\'name\'] }}_url={{ f[\'orm_classname\']}}(is_ref_info=True)
+    {{ f[\'name\'] }}_name={{ f[\'orm_classname\']}}(is_ref_info=True, is_read_only=True)
+    {{ f[\'name\'] }}_url={{ f[\'orm_classname\']}}(is_ref_info=True, is_read_only=True)
     {% endif -%}
-    {% endfor %}
+    {% endfor -%}
     class Meta:
         table_name="{{ data[\'alias\'] }}"
         table_alias="{{ data[\'alias\'] }}"',

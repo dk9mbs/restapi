@@ -15,8 +15,6 @@ class BaseManager:
     
     def __init__(self,context: Context, model_class):
         self.model_class = model_class
-        #self._context=context
-
         self._sql_type='SELECT'
         self._main_table=''
         self._main_table_alias=''
@@ -47,14 +45,14 @@ class BaseManager:
         self._data=data
 
         for key, value in self._data.items():
-            self._data[key]="%s"
+            #self._data[key]="%s"
+            #self._data[key]=str(value)
             self._query_vars.append(value)
 
         rs=self._execute(0)
         return rs
 
     def update(self,primary_key: Expression, data: list):
-        #print(f"**** PRIMARY KEY: {primary_key.expression}")
         self._sql_type="UPDATE"
         self._set_table(self.model_class.Meta.table_name)
         self._data=data

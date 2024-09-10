@@ -81,7 +81,7 @@ class Recordset:
                 formatter=formatters[name]
 
                 rec[formatted_field]=None #init the field first!
-                rec[formatted_field]=formatter.output(context, rec[field])
+                rec[formatted_field]=formatter.output(context, field, rec[field])
 
     def get_eof(self):
         if self._result==None or self._result==[] or self._result=={} or self._result==():
@@ -103,10 +103,10 @@ class Recordset:
                 return None
 
             if type(data) is dict:
-                self.__replace_none(data, None, "")
+                self._replace_none(data, None, "")
             else:
                 for item in data:
-                    self.__replace_none(item, None, "")
+                    self._replace_none(item, None, "")
 
             return data
 
@@ -148,12 +148,12 @@ class Recordset:
             self._cursor.fetchall()
 
 
-    def __replace_none(self, data_dict,v,rv):
+    def _replace_none(self, data_dict,v,rv):
         for key in data_dict.keys():
             if data_dict[key] == v:
                 data_dict[key] = rv
             elif type(data_dict[key]) is dict:
-                self.__replace_none(data_dict[key],v,rv)
+                self._replace_none(data_dict[key],v,rv)
 
 """
 Base Commandbuilder Class

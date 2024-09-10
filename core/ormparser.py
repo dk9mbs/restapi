@@ -18,17 +18,30 @@ class OrmParser(BaseParser):
         self._main_table_alias=sql['main_table_alias']
         self._orderby=sql['orderby']
         self._data=sql['data']
-        self._query_vars=sql['query_vars']
+        self._query_vars=[]
+        self._query_vars_local=[]
         self._sql_type=sql['sql_type']
         self._context=context
-        
-        self.__add_fields(self._main_table)
+
+        vars=sql['query_vars']
+        for var in vars:
+            self._query_vars.append(self._nz(var))
+
+        self._add_fields(self._main_table)
+
+    def get_sql_fields(self):
+        result={}
+        for key, value in self._data.items():
+            result[key]={}
+            result[key]['value']=value
+
+        return result
 
     def get_select(self):
         return (self._get_sql("SELECT"), self._query_vars)
 
     def get_sql(self, ignore_paging=False):
-        return (self._get_sql(ignore_paging=ignore_paging), self._query_vars)
+        return (self._get_sql(ignore_paging=ignore_paging), self._query_vars_local + self._query_vars)
 
     def _get_sql(self, sql_type: str=None, ignore_paging: bool=False) -> str:
         if sql_type==None:
@@ -45,15 +58,25 @@ class OrmParser(BaseParser):
             if self._orderby!='':
                 sql=f"{sql} ORDER BY {self._orderby}"
         elif sql_type.upper()=='INSERT':
-            sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES ({','.join(self._data.values())})"
+
+            sql_values=""
+            for key, value in self._data.items():
+                if sql_values=="":
+                    sql_values="%s"
+                else:
+                    sql_values=f"{sql_values},%s"
+
+            sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES ({sql_values})"
+
         elif sql_type.upper()=='UPDATE':
-            #sql=f"UPDATE {self._main_table} set {','.join(f'{key}={value}' for key, value in self._data.items())} WHERE {self._where}"
 
             sql=f"UPDATE {self._main_table} set "
-            sql=sql+",".join(f"{key}='{value}'" for key, value in self._data.items())
+            sql=sql+",".join(f"{key}=%s" for key, value in self._data.items())
+
+            for key, value in self._data.items():
+                self._query_vars_local.append(self._nz(value))
+
             sql=f"{sql} WHERE {self._where}"
-            
-            #print (f"Aus dem Parser: {sql}")
         elif sql_type.upper()=='DELETE':
             sql=f"DELETE FROM {self._main_table} WHERE {self._where}"
 
@@ -63,7 +86,7 @@ class OrmParser(BaseParser):
     """
     table.........: table alias from restapi
     """
-    def __add_fields(self, table: str):
+    def _add_fields(self, table: str):
         meta_fields=read_table_field_meta(self._context, table)
 
         fields=""
@@ -117,7 +140,7 @@ class OrmParser(BaseParser):
                 fields=f"{fields},"
 
             if field['is_virtual']==0:
-                fields=f"{fields}{self._main_table_alias}.{field['field_name']}"
+                fields=f"{fields}{self._main_table_alias}.{field['field_name']} AS {field['name']}"
             else:
                 fields=f"{fields} null AS {field['name']}"
 

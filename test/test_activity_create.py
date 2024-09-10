@@ -13,12 +13,13 @@ class TestPluginExecution(unittest.TestCase):
         session_id=AppInfo.login("root","password")
         self.context=AppInfo.create_context(session_id)
 
-    def test_add_user_group(self):
-        pass
-        #from core.user_group_tools import UserGroupTools
-        #UserGroupTools.delete_private_user_group(self.context, 1)
-        #group=UserGroupTools.add_or_get_private_user_group(self.context, 1)
-        #UserGroupTools.add_record_permission(self.context, 20, 1, -999)
+    def test_001_create_activity_by_tag(self):
+        from services.activity import Activity
+
+        tools=Activity(self.context)
+        id=tools.create_alert_if_not_exists("IOT Sensor Fehler (Watchdog)", "Wohnzimmer01 liefert keine Daten (Watchdogtime)", "iot-sensoer-watchdog-error", 1)
+
+        print(id)
 
     def tearDown(self):
         AppInfo.save_context(self.context, True)
