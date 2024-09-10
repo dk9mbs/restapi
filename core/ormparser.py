@@ -18,20 +18,22 @@ class OrmParser(BaseParser):
         self._main_table_alias=sql['main_table_alias']
         self._orderby=sql['orderby']
         self._data=sql['data']
-        self._query_vars=sql['query_vars']
+        self._query_vars=[]
+        self._query_vars_local=[]
         self._sql_type=sql['sql_type']
         self._context=context
-        
+
+        vars=sql['query_vars']
+        for var in vars:
+            self._query_vars.append(self._nz(var))
+
         self._add_fields(self._main_table)
 
     def get_sql_fields(self):
         result={}
-        idx=0
         for key, value in self._data.items():
             result[key]={}
-            result[key]['value']=self._query_vars[idx]
-            result[key]['old_value']=None
-            idx=idx+1
+            result[key]['value']=value
 
         return result
 
@@ -39,7 +41,7 @@ class OrmParser(BaseParser):
         return (self._get_sql("SELECT"), self._query_vars)
 
     def get_sql(self, ignore_paging=False):
-        return (self._get_sql(ignore_paging=ignore_paging), self._query_vars)
+        return (self._get_sql(ignore_paging=ignore_paging), self._query_vars_local + self._query_vars)
 
     def _get_sql(self, sql_type: str=None, ignore_paging: bool=False) -> str:
         if sql_type==None:
@@ -56,15 +58,25 @@ class OrmParser(BaseParser):
             if self._orderby!='':
                 sql=f"{sql} ORDER BY {self._orderby}"
         elif sql_type.upper()=='INSERT':
-            sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES ({','.join(self._data.values())})"
+
+            sql_values=""
+            for key, value in self._data.items():
+                if sql_values=="":
+                    sql_values="%s"
+                else:
+                    sql_values=f"{sql_values},%s"
+
+            sql=f"INSERT INTO {self._main_table} ({','.join(self._data)}) VALUES ({sql_values})"
+
         elif sql_type.upper()=='UPDATE':
-            #sql=f"UPDATE {self._main_table} set {','.join(f'{key}={value}' for key, value in self._data.items())} WHERE {self._where}"
 
             sql=f"UPDATE {self._main_table} set "
-            sql=sql+",".join(f"{key}='{value}'" for key, value in self._data.items())
+            sql=sql+",".join(f"{key}=%s" for key, value in self._data.items())
+
+            for key, value in self._data.items():
+                self._query_vars_local.append(self._nz(value))
+
             sql=f"{sql} WHERE {self._where}"
-            
-            #print (f"Aus dem Parser: {sql}")
         elif sql_type.upper()=='DELETE':
             sql=f"DELETE FROM {self._main_table} WHERE {self._where}"
 

@@ -56,12 +56,11 @@ class BaseModel(metaclass=MetaModel):
     def insert(self, context: Context):
         data=dict()
         for key, value in self.__dict__.items():
-            if isinstance(value, Field) and value.dirty:
+            if isinstance(value, Field) and value.dirty and not value.is_ref_info and not value.is_read_only:
                 data[key]=value.value
 
         rs=BaseModel.manager_class(context ,model_class=self.__class__).insert(data)
         return rs.get_inserted_id()
-        #return True
 
     def update(self, context: Context) -> bool:
         data=dict()

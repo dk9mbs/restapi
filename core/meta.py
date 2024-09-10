@@ -71,6 +71,11 @@ def read_table_field_meta(context, table_alias=None, table_id=None):
         cfg=merge(json1, json2)
         field['control_config']=json.dumps(cfg)
 
+        # All virtual Fields are read only fields!
+        if field['is_virtual']!=0:
+            field['is_read_only']=-1
+
+
     return meta
 
 

@@ -103,5 +103,9 @@ class BaseParser:
     def set_page_size(self, value: int):
         pass
 
+    def _nz(self, value, default_value: any = None):
+        if value == "None" or value == "null" or value=="":
+            return default_value
 
+        return value
 

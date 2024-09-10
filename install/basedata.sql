@@ -1492,8 +1492,8 @@ class {{ data[\'alias\'] }}(BaseModel):
     {% set is_read_only=True %}{% endif -%}
     {{ f[\'name\'] }}={{ f[\'orm_classname\']}}(pk={{ pk }}, is_read_only={{ is_read_only }})
     {% if not f[\'referenced_table_name\'] == None -%}
-    {{ f[\'name\'] }}_name={{ f[\'orm_classname\']}}(is_ref_info=True)
-    {{ f[\'name\'] }}_url={{ f[\'orm_classname\']}}(is_ref_info=True)
+    {{ f[\'name\'] }}_name={{ f[\'orm_classname\']}}(is_ref_info=True, is_read_only=True)
+    {{ f[\'name\'] }}_url={{ f[\'orm_classname\']}}(is_ref_info=True, is_read_only=True)
     {% endif -%}
     {% endfor -%}
     class Meta:
