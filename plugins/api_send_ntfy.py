@@ -23,25 +23,25 @@ def _validate(params):
     return True
 
 def config():
-      return {"raise_exception": True}
+      return {"raise_exception": False}
 
 def execute(context, plugin_context, params):
     if not _validate(params):
         logger.warning(f"Missings params {params}")
-        raise Exception(f"Missings params {params}")
+        return 
 
     subject=params['data']['subject']['value']
     msg_text=params['data']['msg_text']['value']
     type_id=int(params['data']['type_id']['value'])
 
+    #only in case of alerts!
+    if type_id!=4:
+        return
+
     url=Setting.get_value(context,"ntfy.url","https://ntfy.sh")
     topic=Setting.get_value(context,"ntfy.topic","mytopic")
     username=Setting.get_value(context,"ntfy.username","username")
     password=Setting.get_value(context,"ntfy.password","password")
-
-    #only in case of alerts!
-    if type_id!=4:
-        return
 
     #requests.post("https://ntfy.sh/restapi-test", data=f"{subject}".encode(encoding='utf-8'))
     requests.post(f"{url}/{topic}",
