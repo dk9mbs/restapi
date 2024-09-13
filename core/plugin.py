@@ -177,6 +177,7 @@ class ProcessTools(object):
         cursor.execute(sql,[status_info, plugin_context['process_id']])
 
         connection.commit()
+        cursor.close()
 
     @staticmethod
     def create_process(context, plugin_context, params):
@@ -190,6 +191,7 @@ class ProcessTools(object):
                     json.dumps(params, default=json_serial), plugin_context['event_handler_id'],
                     plugin_context['run_async'], str(plugin_context['config'])
                 ])
+        connection.commit()
 
         if plugin_context['is_single_instance']==0:
             sql=f"""UPDATE api_event_handler SET status_id=%s WHERE id=%s"""
@@ -199,7 +201,7 @@ class ProcessTools(object):
             cursor.execute(sql,["RUNNING", plugin_context['event_handler_id']])
 
         connection.commit()
-
+        cursor.close()
 
     @staticmethod
     def set_process_status(context,plugin_context, status_id):
@@ -216,12 +218,14 @@ class ProcessTools(object):
                             status_id,plugin_context['response']['error_text'],datetime.datetime.now(),
                             plugin_context['process_id']])
 
+        connection.commit()
+        
         if status_id>=10:
             sql=f"""UPDATE api_event_handler SET status_id=%s WHERE id=%s"""
             cursor.execute(sql,["WAITING", plugin_context['event_handler_id']])
 
         connection.commit()
-
+        cursor.close()
 
     @staticmethod
     def create_context(publisher, trigger, type, event_handler_id, run_async, plugin_config, process_id, inline_code,is_single_instance, **kwargs):
