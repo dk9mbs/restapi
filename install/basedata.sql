@@ -750,6 +750,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4010,4,'Zeiteinheiten','/ui/v1.0/data/view/api_activity_effort_unit/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4020,4,'Bords','/ui/v1.0/data/view/api_activity_board/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4030,4,'Lanes','/ui/v1.0/data/view/api_activity_lane/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4040,4,'Sprints','/ui/v1.0/data/view/api_activity_sprint/default',1,1);
 
 /*
 End APP
@@ -1438,6 +1439,21 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </orderby>
 </restapi>',
 '{"id": {}, "name": {}}');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+121,'LISTVIEW','default',49,'id',1,'<restapi type="select">
+    <table name="api_activity_sprint" alias="a"/>
+
+    <filter type="or">
+        <condition field="name" alias="a" value="$$query$$" operator="$$operator$$"/>
+    </filter>
+
+    <orderby>
+        <field name="name" alias="a" sort="ASC"/>
+    </orderby>
+</restapi>',
+'{"id": {}, "name": {}}');
+
 
 /* out_data_formatter */
 DELETE FROM api_data_formatter WHERE provider_id='MANUFACTURER';
