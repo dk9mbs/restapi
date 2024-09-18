@@ -76,6 +76,8 @@ INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('multiline
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('boolean','Boolean',6) ON DUPLICATE KEY UPDATE control_id=6;
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('lookup','Lookup',2) ON DUPLICATE KEY UPDATE control_id=2;
 
+INSERT IGNORE INTO api_currency (id,iso_code,name) VALUES('EUR','eur','Euro');
+
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (1,'Dummy','dummy','dummy','id','int','name',-1);
@@ -216,10 +218,7 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
     VALUES (47,'Aufwand Einheit (Aktivität)','api_activity_effort_unit','api_activity_effort_unit','id','string','name',-1);
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (48,'Status (Sprint)','api_activity_sprint_status','api_activity_sprint_status','id','string','name',-1);
-
-INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (49,'Sprint','api_activity_sprint','api_activity_sprint','id','string','name',-1);
+    VALUES (48,'Währungen','api_currence','api_currence','id','string','name',-1);
 
 
 /* Bugfixing */
@@ -570,7 +569,6 @@ call api_proc_create_table_field_instance(44,800, 'type_id','Type','int',2,'{"di
 call api_proc_create_table_field_instance(44,900, 'status_id','Status','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1000, 'board_id','Board','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1100, 'lane_id','Lane','int',2,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(44,1110, 'sprint_id','Sprint','string',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(44,1120, 'tag','Etikett','string',1,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(44,1200, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(44,1300, 'due_date_color','Fällig am (Ampel)','string',1,'{"disabled": true}', @out_value);
@@ -607,15 +605,6 @@ call api_proc_create_table_field_instance(45,300, 'board_id','Board','string',2,
 call api_proc_create_table_field_instance(45,300, 'position','Position','int',14,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(45,400, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
-/* sprint status */
-call api_proc_create_table_field_instance(48,100, 'id','#ID','int',14,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(48,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(48,300, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
-
-/* sprint */
-call api_proc_create_table_field_instance(49,100, 'id','#ID','int',14,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(49,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(49,300, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
@@ -750,7 +739,6 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4010,4,'Zeiteinheiten','/ui/v1.0/data/view/api_activity_effort_unit/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4020,4,'Bords','/ui/v1.0/data/view/api_activity_board/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4030,4,'Lanes','/ui/v1.0/data/view/api_activity_lane/default',1,1);
-INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (4040,4,'Sprints','/ui/v1.0/data/view/api_activity_sprint/default',1,1);
 
 /*
 End APP
@@ -789,10 +777,6 @@ INSERT IGNORE INTO api_activity_type (id, name) VALUES (4,'Alert');
 INSERT IGNORE INTO api_activity_board (id, name) VALUES (1,'Default');
 INSERT IGNORE INTO api_activity_lane (id, board_id, name) VALUES (1,1,'Backlog');
 
-/* activity_sprint */
-INSERT IGNORE INTO api_activity_sprint_status (id,name) VALUES (100,'Planned');
-INSERT IGNORE INTO api_activity_sprint_status (id,name) VALUES (200,'Running');
-INSERT IGNORE INTO api_activity_sprint_status (id,name) VALUES (300,'Closed');
 
 /* Dataviews */
 DELETE FROM api_table_view  WHERE solution_id=1;
@@ -1440,19 +1424,6 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 </restapi>',
 '{"id": {}, "name": {}}');
 
-INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
-121,'LISTVIEW','default',49,'id',1,'<restapi type="select">
-    <table name="api_activity_sprint" alias="a"/>
-
-    <filter type="or">
-        <condition field="name" alias="a" value="$$query$$" operator="$$operator$$"/>
-    </filter>
-
-    <orderby>
-        <field name="name" alias="a" sort="ASC"/>
-    </orderby>
-</restapi>',
-'{"id": {}, "name": {}}');
 
 
 /* out_data_formatter */
