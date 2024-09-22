@@ -76,7 +76,17 @@ INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('multiline
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('boolean','Boolean',6) ON DUPLICATE KEY UPDATE control_id=6;
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('lookup','Lookup',2) ON DUPLICATE KEY UPDATE control_id=2;
 
-INSERT IGNORE INTO api_currency (id,iso_code,name) VALUES('EUR','eur','Euro');
+/* currency */
+INSERT IGNORE INTO api_currency (id,iso_code,numeric_code, name, symbol, exchange_rate) 
+    VALUES (1,'EUR', 978, 'Euro', '€', 1);
+
+INSERT IGNORE INTO api_currency (id,iso_code,numeric_code, name, symbol, exchange_rate) 
+    VALUES (2,'USD', 840, 'US Dollar', '$', 0.87);
+
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) 
+    VALUES ('currency.base_currency_id','1','Base currency ID',1);
+
+
 
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
@@ -218,7 +228,7 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
     VALUES (47,'Aufwand Einheit (Aktivität)','api_activity_effort_unit','api_activity_effort_unit','id','string','name',-1);
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (48,'Währungen','api_currence','api_currence','id','string','name',-1);
+    VALUES (48,'Währungen','api_currency','api_currency','id','int','name',-1);
 
 
 /* Bugfixing */
@@ -274,6 +284,15 @@ INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('minute','Minuten'
 INSERT IGNORE INTO api_group_rec_permission(type_id, group_id, table_id, record_id_int, mode_read) VALUES(
    1, 80,20, 4, -1);
 
+
+/* Währung */
+call api_proc_create_table_field_instance(48,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(48,200, 'iso_code','Code (ISO)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(48,300, 'numeric_code','Code (Numerisch)','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(48,400, 'name','Name','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(48,500, 'symbol','Symbol','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(48,600, 'exchange_rate','Kurs','decimal',14,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(48,700, 'created_on','Erstellt am','datetime',5,'{"disabled": true}', @out_value);
 
 /* EMail Mailbox */
 call api_proc_create_table_field_instance(33,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
@@ -723,6 +742,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1400,1,'Process Log (alle)','/ui/v1.0/data/view/api_process_log/all',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1600,1,'MQTT Message Bus','/ui/v1.0/data/view/api_mqtt_message_bus/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1700,1,'Datensatzverbindungen','/ui/v1.0/data/view/api_record_reference/default',1,1);
+INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (1800,1,'Währungen','/ui/v1.0/data/view/api_currency/default',1,1);
 
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2000,2,'E-Mail Postboxen','/ui/v1.0/data/view/api_email_mailbox/default',1,1);
 INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) VALUES (2010,2,'E-Mails','/ui/v1.0/data/view/api_email/default',1,1);
@@ -1424,6 +1444,14 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
 </restapi>',
 '{"id": {}, "name": {}}');
 
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+121,'LISTVIEW','default',48,'id',1,'<restapi type="select">
+    <table name="api_currency" alias="a"/>
+    <orderby>
+        <field name="name" alias="a" sort="ASC"/>
+    </orderby>
+</restapi>',
+'{"id": {}, "name": {},"exchange_rate":{}, "iso_code":{},"symbol":{} }');
 
 
 /* out_data_formatter */

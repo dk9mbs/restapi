@@ -896,9 +896,14 @@ CREATE TABLE IF NOT EXISTS api_record_reference(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS api_currency(
-    id varchar(10) NOT NULL COMMENT '',
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
     iso_code varchar(10) NOT NULL COMMENT '',
+    numeric_code varchar(10) NOT NULL COMMENT '',
     name varchar(50) NOT NULL COMMENT '',
+    symbol varchar(10) NOT NULL COMMENT '',
+    exchange_rate decimal(15,6) NOT NULL DEFAULT '1' COMMENT 'Exchange rate to your base currency',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id),
     UNIQUE KEY(iso_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE api_currency AUTO_INCREMENT=900000000;
