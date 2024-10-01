@@ -624,6 +624,7 @@ ALTER TABLE api_ui_app_nav_item_type AUTO_INCREMENT=1000000;
 CREATE TABLE IF NOT EXISTS api_ui_app_nav_item(
     id int NOT NULL,
     name varchar(50) NOT NULL,
+    table_alias varchar(250) NULL COMMENT '',
     url varchar(1000) NOT NULL COMMENT 'Only the URL without querystring',
     query_string varchar(1000) NULL COMMENT 'Here only query_string args',
     app_id int NOT NULL,
@@ -636,6 +637,8 @@ CREATE TABLE IF NOT EXISTS api_ui_app_nav_item(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_ui_app_nav_item AUTO_INCREMENT=1000000;
+ALTER TABLE api_ui_app_nav_item ADD COLUMN IF NOT EXISTS table_alias varchar(250) NULL COMMENT '' AFTER name;
+
 
 CREATE TABLE IF NOT EXISTS api_permission_log(
     id int NOT NULL AUTO_INCREMENT,

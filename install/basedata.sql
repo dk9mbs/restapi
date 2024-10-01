@@ -722,6 +722,8 @@ VALUES (
 
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (1,1, 'Sidebar');
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (2,1, 'Navbar');
+INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (3,1, 'Data driven form');
+INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (4,1, 'URL');
 
 
 DELETE FROM api_ui_app_nav_item WHERE solution_id=1;
