@@ -210,6 +210,12 @@ ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS page_mode varchar(50) NU
 ALTER TABLE api_data_formatter ADD FOREIGN KEY IF NOT EXISTS (provider_id) REFERENCES api_provider(id);
 ALTER TABLE api_data_formatter ADD UNIQUE KEY IF NOT EXISTS (name, table_id, type_id);
 
+CREATE TABLE IF NOT EXISTS api_table_field_lookup_function(
+    id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS api_table_field(
     id int NOT NULL AUTO_INCREMENT,
     pos int NOT NULL DEFAULT '10' COMMENT 'Position for ui forms',
@@ -218,6 +224,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     name varchar(250) NOT NULL COMMENT 'Fieldname (source)',
     field_name varchar(250) NULL COMMENT 'Pyhs. fieldname',
     is_lookup smallint NOT NULL DEFAULT '0' COMMENT '0=No 1=YES',
+    lookup_function_id smallint NULL COMMENT '',
     is_virtual smallint NOT NULL DEFAULT '0' COMMENT 'Virtual field not exists on the database',
     is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col',
     type_id varchar(50) NOT NULL COMMENT 'type of field',
@@ -250,6 +257,8 @@ ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NUL
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col' AFTER is_virtual;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS formatter varchar(250) NULL COMMENT 'Formatter' AFTER control_id;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_read_only smallint NOT NULL DEFAULT '0' COMMENT '';
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS lookup_function_id smallint NULL COMMENT '' AFTER is_lookup ;
+ALTER TABLE api_table_field ADD CONSTRAINT `fr_api_table_field_lookup_function_id` FOREIGN KEY IF NOT EXISTS (lookup_function_id) REFERENCES api_table_field_lookup_function(id);
 
 /* in allen datenbanken ausgerollt */
 /*ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control(id);

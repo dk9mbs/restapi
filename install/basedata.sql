@@ -86,7 +86,10 @@ INSERT IGNORE INTO api_currency (id,iso_code,numeric_code, name, symbol, exchang
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) 
     VALUES ('currency.base_currency_id','1','Base currency ID',1);
 
-
+/* lookup function */
+INSERT IGNORE INTO api_table_field_lookup_function (id, name) VALUES (1, 'SUM');
+INSERT IGNORE INTO api_table_field_lookup_function (id, name) VALUES (2, 'COUNT');
+INSERT IGNORE INTO api_table_field_lookup_function (id, name) VALUES (3, 'AVG');
 
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
@@ -229,6 +232,9 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (48,'Währungen','api_currency','api_currency','id','int','name',-1);
+
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (49,'Lookup funktionen','api_table_field_lookup_function','api_table_field_lookup_function','id','int','name',-1);
 
 
 /* Bugfixing */
@@ -471,6 +477,7 @@ call api_proc_create_table_field_instance(13,500, 'name','Name','string',1,'{"di
 call api_proc_create_table_field_instance(13,510, 'field_name','Feldname','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,520, 'is_primary_key','Primärschlüssel','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,610, 'lookup_function_id','Lookup Funktion','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,850, 'is_read_only','Nur lesen','int',19,'{"disabled": false}', @out_value);
