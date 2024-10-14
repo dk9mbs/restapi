@@ -224,7 +224,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     name varchar(250) NOT NULL COMMENT 'Fieldname (source)',
     field_name varchar(250) NULL COMMENT 'Pyhs. fieldname',
     is_lookup smallint NOT NULL DEFAULT '0' COMMENT '0=No 1=YES',
-    lookup_function_id smallint NULL COMMENT '',
+    lookup_function_id int NULL COMMENT '',
     is_virtual smallint NOT NULL DEFAULT '0' COMMENT 'Virtual field not exists on the database',
     is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col',
     type_id varchar(50) NOT NULL COMMENT 'type of field',
@@ -235,6 +235,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     referenced_table_name varchar(250) NULL COMMENT 'referenced table name',
     referenced_table_id int NULL COMMENT 'api_table id',
     referenced_field_name varchar(250) NULL COMMENT 'Field from the referenced table',
+    referenced_value_field_name varchar(250) NULL COMMENT 'Field foir the lookup function (sum ...)',
     control_id int NULL COMMENT 'control_id',
     formatter varchar(250) NULL COMMENT 'Formatter',
     control_config text NOT NULL COMMENT 'Overwrite the type config',
@@ -244,6 +245,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     FOREIGN KEY(type_id) REFERENCES api_table_field_type(id),
     FOREIGN KEY(control_id) REFERENCES api_table_field_control(id),
     FOREIGN KEY(provider_id) REFERENCES api_provider(id),
+    FOREIGN KEY(lookup_function_id) REFERENCES api_table_field_lookup_function(id),
     PRIMARY KEY(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -257,7 +259,8 @@ ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NUL
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col' AFTER is_virtual;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS formatter varchar(250) NULL COMMENT 'Formatter' AFTER control_id;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_read_only smallint NOT NULL DEFAULT '0' COMMENT '';
-ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS lookup_function_id smallint NULL COMMENT '' AFTER is_lookup ;
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS lookup_function_id int NULL COMMENT '' AFTER is_lookup ;
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS referenced_value_field_name varchar(250) NULL COMMENT 'Field foir the lookup function (sum ...)' AFTER referenced_field_name;
 ALTER TABLE api_table_field ADD CONSTRAINT `fr_api_table_field_lookup_function_id` FOREIGN KEY IF NOT EXISTS (lookup_function_id) REFERENCES api_table_field_lookup_function(id);
 
 /* in allen datenbanken ausgerollt */

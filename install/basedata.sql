@@ -486,7 +486,8 @@ call api_proc_create_table_field_instance(13,1000, 'default_value','Default','st
 call api_proc_create_table_field_instance(13,1100, 'referenced_table_name','Ref. Tabelle (Name)','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1200, 'referenced_table_id','Ref. Tabelle (ID)','int',2,'{"disabled": false}', @out_value);
 UPDATE api_table_field SET referenced_table_name='api_table', referenced_table_id=10, referenced_field_name='table_name', is_lookup=-1 WHERE id=@out_value;
-call api_proc_create_table_field_instance(13,1300, 'referenced_field_name','Ref. Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1300, 'referenced_field_name','Ref. ID Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1310, 'referenced_value_field_name','Ref. Value Feldname (für lookup function)','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1400, 'control_id','Control','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1500, 'control_config','Konfiguration','string',18,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1510, 'formatter','Formatierung','string',1,'{"disabled": false}', @out_value);
