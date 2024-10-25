@@ -236,12 +236,18 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (49,'Lookup funktionen','api_table_field_lookup_function','api_table_field_lookup_function','id','int','name',-1);
 
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (50,'Plugin typen','api_event_handler_module_type','api_event_handler_module_type','id','int','name',-1);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
 UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
 UPDATE api_table set name=alias WHERE name IS NULL OR name='';
 /* */
+
+INSERT IGNORE INTO api_event_handler_module_type (id,name) VALUE(1,'python import');
+INSERT IGNORE INTO api_event_handler_module_type (id,name) VALUE(2,'shell (execute)');
 
 INSERT IGNORE INTO api_group_rec_permission_type(id,name) VALUES (1, 'Permanent');
 INSERT IGNORE INTO api_group_rec_permission_type(id,name) VALUES (2, 'Share');
@@ -283,9 +289,17 @@ INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP','Only inboun
 INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('SMTP','Only outbound (SMTP)');
 INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP+SMTP','Inpund and outbound (IMAP+SMTP)');
 
-INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('day','Tage');
-INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('hour','Stunden');
-INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('minute','Minuten');
+INSERT IGNORE INTO api_activity_effort_unit (id,name,minutes) VALUES ('day','Tage',3600);
+INSERT IGNORE INTO api_activity_effort_unit (id,name,minutes) VALUES ('hour','Stunden',60);
+INSERT IGNORE INTO api_activity_effort_unit (id,name,minutes) VALUES ('minute','Minuten',1);
+
+UPDATE api_activity_effort_unit SET minutes=3600 WHERE id='day' AND minutes=1;
+UPDATE api_activity_effort_unit SET minutes=60 WHERE id='hour' AND minutes=1;
+
+UPDATE api_activity SET planned_effort_minutes=planned_effort*3600 WHERE planned_effort_minutes=0 AND effort_unit_id='day';
+UPDATE api_activity SET planned_effort_minutes=planned_effort*60 WHERE planned_effort_minutes=0 AND effort_unit_id='hour';
+UPDATE api_activity SET planned_effort_minutes=planned_effort*1 WHERE planned_effort_minutes=0 AND effort_unit_id='minute';
+
 
 INSERT IGNORE INTO api_group_rec_permission(type_id, group_id, table_id, record_id_int, mode_read) VALUES(
    1, 80,20, 4, -1);
@@ -415,6 +429,7 @@ call api_proc_create_table_field_instance(30,900, 'provider_id','Besitzer','stri
 /* api_event_handler */
 call api_proc_create_table_field_instance(9,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(9,200, 'plugin_module_name','Module','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(9,210, 'plugin_module_type_id','Ausführung','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,300, 'publisher','Publisher','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,400, 'event','Ereignis','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,500, 'type','Typ','string',1,'{"disabled": false}', @out_value);

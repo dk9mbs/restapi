@@ -411,9 +411,16 @@ CREATE TABLE IF NOT EXISTS api_event_handler_status(
     UNIQUE KEY (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS api_event_handler_module_type(
+    id int NOT NULL,
+    name varchar(50) NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS api_event_handler (
     id int NOT NULL AUTO_INCREMENT,
     plugin_module_name varchar(500) NOT NULL COMMENT 'Namespace to the register function',
+    plugin_module_type_id int NOT NULL DEFAULT '1' COMMENT '',
     publisher varchar(250) NOT NULL COMMENT 'Tablename or publisher of the event',
     event varchar(250) NOT NULL COMMENT 'name of trigger like insert or update',
     type varchar(50) NOT NULL,
@@ -430,6 +437,7 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
     PRIMARY KEY(id),
     FOREIGN KEY(type) REFERENCES api_event_type(id),
     FOREIGN KEY(status_id) REFERENCES api_event_handler_status(id),
+    FOREIGN KEY(plugin_module_type_id) REFERENCES api_event_handler_module_type(id),
     INDEX (publisher, event),
     INDEX (publisher, event, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -444,6 +452,9 @@ ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS inline_code text NULL COM
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS status_id varchar(10) NULL COMMENT 'Waitung or Running only for single instance' AFTER is_enabled;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS is_single_instance smallint NOT NULL DEFAULT '0' COMMENT 'Can only execute one per time' AFTER status_id;
 ALTER TABLE api_event_handler ADD CONSTRAINT `event_handler_event_handler_status` FOREIGN KEY IF NOT EXISTS (status_id) REFERENCES api_event_handler_status(id);
+
+ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS plugin_module_type_id int NOT NULL DEFAULT '1' COMMENT '' AFTER plugin_module_name;
+ALTER TABLE api_event_handler ADD CONSTRAINT `event_handler_event_handler_mod_type` FOREIGN KEY IF NOT EXISTS (plugin_module_type_id) REFERENCES api_event_handler_module_type(id);
 
 
 DROP TABLE IF EXISTS api_table_action;
@@ -864,9 +875,11 @@ ALTER TABLE api_activity_lane AUTO_INCREMENT=900000000;
 CREATE TABLE IF NOT EXISTS api_activity_effort_unit(
     id varchar(10) NOT NULL COMMENT '',
     name varchar(50) NOT NULL COMMENT '',
+    minutes decimal(15,4) NOT NULL DEFAULT '1' COMMENT '',
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+ALTER TABLE api_activity_effort_unit ADD COLUMN IF NOT EXISTS minutes decimal(15,4) NOT NULL DEFAULT '1' COMMENT '';
 
 CREATE TABLE IF NOT EXISTS api_activity(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
@@ -877,7 +890,9 @@ CREATE TABLE IF NOT EXISTS api_activity(
     subject varchar(500) NULL COMMENT '',
     msg_text LONGTEXT NULL COMMENT '',
     planned_effort int NOT NULL DEFAULT '0' COMMENT '',
+    planned_effort_minutes int NOT NULL DEFAULT '0' COMMENT '',
     actual_effort int NOT NULL DEFAULT '0' COMMENT '',
+    actual_effort_minutes int NOT NULL DEFAULT '0' COMMENT '',
     effort_unit_id varchar(10) NOT NULL DEFAULT 'day' COMMENT '',
     due_date datetime NULL COMMENT '',
     tag varchar(250) NULL COMMENT '',
@@ -892,6 +907,8 @@ CREATE TABLE IF NOT EXISTS api_activity(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE api_activity ADD INDEX IF NOT EXISTS `index_api_activity_tag` (tag);
+ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS planned_effort_minutes int NOT NULL DEFAULT '0' COMMENT '' AFTER planned_effort;
+ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS actual_effort_minutes int NOT NULL DEFAULT '0' COMMENT '' AFTER actual_effort;
 
 CREATE TABLE IF NOT EXISTS api_record_reference(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
