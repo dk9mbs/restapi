@@ -1,5 +1,6 @@
 DELETE FROM api_table_field WHERE name='_documents' AND is_virtual=-1;
 DELETE FROM api_group_permission WHERE group_id=80 AND table_id=44;
+DELETE FROM api_table_field WHERE name='plugin_module_type_id' AND pos=210 AND table_id=9;
 
 INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
 INSERT IGNORE INTO api_solution(id,name) VALUES (2,'customizing');
@@ -246,9 +247,6 @@ UPDATE api_table SET id_field_type='int' WHERE id_field_type='Int';
 UPDATE api_table set name=alias WHERE name IS NULL OR name='';
 /* */
 
-INSERT IGNORE INTO api_event_handler_module_type (id,name) VALUE(1,'python import');
-INSERT IGNORE INTO api_event_handler_module_type (id,name) VALUE(2,'shell (execute)');
-
 INSERT IGNORE INTO api_group_rec_permission_type(id,name) VALUES (1, 'Permanent');
 INSERT IGNORE INTO api_group_rec_permission_type(id,name) VALUES (2, 'Share');
 
@@ -429,7 +427,6 @@ call api_proc_create_table_field_instance(30,900, 'provider_id','Besitzer','stri
 /* api_event_handler */
 call api_proc_create_table_field_instance(9,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(9,200, 'plugin_module_name','Module','string',1,'{"disabled": false}', @out_value);
-call api_proc_create_table_field_instance(9,210, 'plugin_module_type_id','Ausführung','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,300, 'publisher','Publisher','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,400, 'event','Ereignis','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(9,500, 'type','Typ','string',1,'{"disabled": false}', @out_value);

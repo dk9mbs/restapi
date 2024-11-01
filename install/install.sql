@@ -1,15 +1,3 @@
-
-ALTER TABLE api_activity DROP FOREIGN KEY IF EXISTS foreign_reference_api_activity_sprint_id_to_api_sprint;
-ALTER TABLE api_activity DROP COLUMN IF EXISTS sprint_id;
-DROP TABLE IF EXISTS api_activity_sprint;
-DROP TABLE IF EXISTS api_activity_sprint_status;
-
-DELETE FROM api_table_field WHERE table_id=44 AND name='sprint_id'; 
-DELETE FROM api_table_field WHERE table_id IN (48,49);
-DELETE FROM api_table WHERE id IN (48,49) AND name='Sprint';
-DELETE FROM api_table WHERE id IN (48) AND alias='api_activity_sprint_status';
-DELETE FROM api_ui_app_nav_item WHERE id=4040 AND name='Sprint';
-
 DROP PROCEDURE IF EXISTS api_proc_create_table_field_instance;
 DROP PROCEDURE IF EXISTS api_proc_logger;
 delimiter //
@@ -411,16 +399,9 @@ CREATE TABLE IF NOT EXISTS api_event_handler_status(
     UNIQUE KEY (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS api_event_handler_module_type(
-    id int NOT NULL,
-    name varchar(50) NOT NULL,
-    PRIMARY KEY(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 CREATE TABLE IF NOT EXISTS api_event_handler (
     id int NOT NULL AUTO_INCREMENT,
     plugin_module_name varchar(500) NOT NULL COMMENT 'Namespace to the register function',
-    plugin_module_type_id int NOT NULL DEFAULT '1' COMMENT '',
     publisher varchar(250) NOT NULL COMMENT 'Tablename or publisher of the event',
     event varchar(250) NOT NULL COMMENT 'name of trigger like insert or update',
     type varchar(50) NOT NULL,
@@ -452,9 +433,6 @@ ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS inline_code text NULL COM
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS status_id varchar(10) NULL COMMENT 'Waitung or Running only for single instance' AFTER is_enabled;
 ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS is_single_instance smallint NOT NULL DEFAULT '0' COMMENT 'Can only execute one per time' AFTER status_id;
 ALTER TABLE api_event_handler ADD CONSTRAINT `event_handler_event_handler_status` FOREIGN KEY IF NOT EXISTS (status_id) REFERENCES api_event_handler_status(id);
-
-ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS plugin_module_type_id int NOT NULL DEFAULT '1' COMMENT '' AFTER plugin_module_name;
-ALTER TABLE api_event_handler ADD CONSTRAINT `event_handler_event_handler_mod_type` FOREIGN KEY IF NOT EXISTS (plugin_module_type_id) REFERENCES api_event_handler_module_type(id);
 
 
 DROP TABLE IF EXISTS api_table_action;
