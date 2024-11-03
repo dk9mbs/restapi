@@ -418,7 +418,6 @@ CREATE TABLE IF NOT EXISTS api_event_handler (
     PRIMARY KEY(id),
     FOREIGN KEY(type) REFERENCES api_event_type(id),
     FOREIGN KEY(status_id) REFERENCES api_event_handler_status(id),
-    FOREIGN KEY(plugin_module_type_id) REFERENCES api_event_handler_module_type(id),
     INDEX (publisher, event),
     INDEX (publisher, event, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

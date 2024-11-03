@@ -237,9 +237,6 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (49,'Lookup funktionen','api_table_field_lookup_function','api_table_field_lookup_function','id','int','name',-1);
 
-INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
-    VALUES (50,'Plugin typen','api_event_handler_module_type','api_event_handler_module_type','id','int','name',-1);
-
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -677,7 +674,8 @@ INSERT IGNORE INTO api_process_log_status(id,name) VALUES (30,'Timeout');
 call api_proc_create_table_field_instance(28,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(28,100, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
 
-UPDATE api_table_field SET field_name=name WHERE field_name IS NULL;
+-- moved to post_install!!!
+--UPDATE api_table_field SET field_name=name WHERE field_name IS NULL;
 
 INSERT IGNORE INTO api_portal(id,name,solution_id) VALUES ('default', 'default',1);
 UPDATE api_portal SET template='<!DOCTYPE HTML5>
@@ -786,6 +784,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 End APP
 */
 
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('core.debug.level','3','Debug Level',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('portal.default_portal','default','Default portal_id',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('datalist.page_size','10','Page Size',1);
 

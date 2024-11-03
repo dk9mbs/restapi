@@ -107,7 +107,7 @@ class Plugin:
     def read(self):
         if self._process_id==None:
             sql=f"""
-            select p.plugin_module_name,p.type,p.plugin_module_type_id,
+            select p.plugin_module_name,p.type,
                 p.run_async,p.id,p.run_async,p.config,
                 null AS process_id, p.run_queue, p.inline_code,p.is_single_instance
                 from api_event_handler p
@@ -119,7 +119,7 @@ class Plugin:
             params=[self._publisher, self._trigger]
         else:
             sql=f"""
-            select p.plugin_module_name,p.type,p.plugin_module_type_id,
+            select p.plugin_module_name,p.type,
                 p.run_async,p.id,p.run_async,p.config,
                 l.id AS process_id, 0 AS run_queue, p.inline_code,p.is_single_instance
                 from api_event_handler p

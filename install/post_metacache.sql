@@ -14,3 +14,6 @@ ALTER TABLE api_event_handler DROP COLUMN IF EXISTS plugin_module_type_id;
 DROP TABLE IF EXISTS api_event_handler_module_type;
 DELETE FROM api_table_field WHERE table_id=50;
 DELETE FROM api_table WHERE id=50 AND name='Plugin typen' AND alias='api_event_handler_module_type';
+
+
+UPDATE api_table_field SET field_name=name WHERE field_name IS NULL;

@@ -26,14 +26,16 @@ mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install
 echo "$?"
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/basedata.sql
 echo "$?"
-mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/post_install.sql
-echo "$?"
 
 echo "------------------------------------------------------------"
 echo "building the metadata cache ..."
 python $BASEDIR/tools/metadata.py -u$RESTAPI_UID -p$RESTAPI_PWD
 echo "metadata cache builded!"
 echo "------------------------------------------------------------"
+
+# execute after meta cache building
+mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/post_metacache.sql
+echo "$?"
 
 mkdir -p $BASEDIR/plugins
 mkdir -p $BASEDIR/formatter
