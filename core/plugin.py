@@ -145,8 +145,7 @@ class Plugin:
                 plugin_context=ProcessTools.create_context(publisher=self._publisher, trigger=self._trigger,
                                 type=type, event_handler_id=p['id'], run_async=p['run_async'],
                                 plugin_config=p['config'], process_id=p['process_id'],
-                                inline_code=p['inline_code'],is_single_instance=p['is_single_instance'],
-                                plugin_module_type_id=p['plugin_module_type_id'])
+                                inline_code=p['inline_code'],is_single_instance=p['is_single_instance'])
 
                 mod=importlib.import_module(p['plugin_module_name'])
                 config=Config(mod)
@@ -229,7 +228,7 @@ class ProcessTools(object):
         cursor.close()
 
     @staticmethod
-    def create_context(publisher, trigger, type, event_handler_id, run_async, plugin_config, process_id, inline_code,is_single_instance,plugin_module_type_id, **kwargs):
+    def create_context(publisher, trigger, type, event_handler_id, run_async, plugin_config, process_id, inline_code,is_single_instance, **kwargs):
         if process_id==None:
             process_id=str(uuid.uuid4())
 
@@ -254,8 +253,7 @@ class ProcessTools(object):
                 "created_on": datetime.datetime.now(),
                 "response": response,
                 "inline_code": inline_code,
-                "is_single_instance": is_single_instance,
-                 "plugin_module_type_id": plugin_module_type_id }
+                "is_single_instance": is_single_instance }
 
 
 

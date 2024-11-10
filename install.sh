@@ -23,9 +23,9 @@ echo "mysql host       $MYSQL_HOST"
 
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST -e"CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;"
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/install.sql
-echo "$?"
+echo "Install Database Objects $?"
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/basedata.sql
-echo "$?"
+echo "Import Data $?"
 
 echo "------------------------------------------------------------"
 echo "building the metadata cache ..."
@@ -35,7 +35,7 @@ echo "------------------------------------------------------------"
 
 # execute after meta cache building
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/post_metacache.sql
-echo "$?"
+echo "CleanUp Database $?"
 
 mkdir -p $BASEDIR/plugins
 mkdir -p $BASEDIR/formatter
