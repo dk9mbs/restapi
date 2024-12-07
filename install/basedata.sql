@@ -1,5 +1,6 @@
 DELETE FROM api_table_field WHERE name='_documents' AND is_virtual=-1;
 DELETE FROM api_group_permission WHERE group_id=80 AND table_id=44;
+DELETE FROM api_table_field WHERE name='plugin_module_type_id' AND pos=210 AND table_id=9;
 
 INSERT IGNORE INTO api_solution(id,name) VALUES (1,'restapi');
 INSERT IGNORE INTO api_solution(id,name) VALUES (2,'customizing');
@@ -86,7 +87,10 @@ INSERT IGNORE INTO api_currency (id,iso_code,numeric_code, name, symbol, exchang
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) 
     VALUES ('currency.base_currency_id','1','Base currency ID',1);
 
-
+/* lookup function */
+INSERT IGNORE INTO api_table_field_lookup_function (id, name) VALUES (1, 'SUM');
+INSERT IGNORE INTO api_table_field_lookup_function (id, name) VALUES (2, 'COUNT');
+INSERT IGNORE INTO api_table_field_lookup_function (id, name) VALUES (3, 'AVG');
 
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
@@ -230,6 +234,9 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (48,'Währungen','api_currency','api_currency','id','int','name',-1);
 
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (49,'Lookup funktionen','api_table_field_lookup_function','api_table_field_lookup_function','id','int','name',-1);
+
 
 /* Bugfixing */
 UPDATE api_table SET id_field_type='string' WHERE id_field_type='String';
@@ -277,9 +284,17 @@ INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP','Only inboun
 INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('SMTP','Only outbound (SMTP)');
 INSERT IGNORE INTO api_email_mailbox_type (id, name) VALUES ('IMAP+SMTP','Inpund and outbound (IMAP+SMTP)');
 
-INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('day','Tage');
-INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('hour','Stunden');
-INSERT IGNORE INTO api_activity_effort_unit (id,name) VALUES ('minute','Minuten');
+INSERT IGNORE INTO api_activity_effort_unit (id,name,minutes) VALUES ('day','Tage',3600);
+INSERT IGNORE INTO api_activity_effort_unit (id,name,minutes) VALUES ('hour','Stunden',60);
+INSERT IGNORE INTO api_activity_effort_unit (id,name,minutes) VALUES ('minute','Minuten',1);
+
+UPDATE api_activity_effort_unit SET minutes=3600 WHERE id='day' AND minutes=1;
+UPDATE api_activity_effort_unit SET minutes=60 WHERE id='hour' AND minutes=1;
+
+UPDATE api_activity SET planned_effort_minutes=planned_effort*3600 WHERE planned_effort_minutes=0 AND effort_unit_id='day';
+UPDATE api_activity SET planned_effort_minutes=planned_effort*60 WHERE planned_effort_minutes=0 AND effort_unit_id='hour';
+UPDATE api_activity SET planned_effort_minutes=planned_effort*1 WHERE planned_effort_minutes=0 AND effort_unit_id='minute';
+
 
 INSERT IGNORE INTO api_group_rec_permission(type_id, group_id, table_id, record_id_int, mode_read) VALUES(
    1, 80,20, 4, -1);
@@ -471,6 +486,7 @@ call api_proc_create_table_field_instance(13,500, 'name','Name','string',1,'{"di
 call api_proc_create_table_field_instance(13,510, 'field_name','Feldname','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,520, 'is_primary_key','Primärschlüssel','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,600, 'is_lookup','Lookup?','int',19,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,610, 'lookup_function_id','Lookup Funktion','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,700, 'type_id','Type','int',2,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,800, 'size','Größe','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(13,850, 'is_read_only','Nur lesen','int',19,'{"disabled": false}', @out_value);
@@ -479,7 +495,8 @@ call api_proc_create_table_field_instance(13,1000, 'default_value','Default','st
 call api_proc_create_table_field_instance(13,1100, 'referenced_table_name','Ref. Tabelle (Name)','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1200, 'referenced_table_id','Ref. Tabelle (ID)','int',2,'{"disabled": false}', @out_value);
 UPDATE api_table_field SET referenced_table_name='api_table', referenced_table_id=10, referenced_field_name='table_name', is_lookup=-1 WHERE id=@out_value;
-call api_proc_create_table_field_instance(13,1300, 'referenced_field_name','Ref. Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1300, 'referenced_field_name','Ref. ID Feldname','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(13,1310, 'referenced_value_field_name','Ref. Value Feldname (für lookup function)','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1400, 'control_id','Control','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1500, 'control_config','Konfiguration','string',18,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1510, 'formatter','Formatierung','string',1,'{"disabled": false}', @out_value);
@@ -657,7 +674,8 @@ INSERT IGNORE INTO api_process_log_status(id,name) VALUES (30,'Timeout');
 call api_proc_create_table_field_instance(28,100, 'id','ID','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(28,100, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
 
-UPDATE api_table_field SET field_name=name WHERE field_name IS NULL;
+-- moved to post_install!!!
+--UPDATE api_table_field SET field_name=name WHERE field_name IS NULL;
 
 INSERT IGNORE INTO api_portal(id,name,solution_id) VALUES ('default', 'default',1);
 UPDATE api_portal SET template='<!DOCTYPE HTML5>
@@ -722,6 +740,8 @@ VALUES (
 
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (1,1, 'Sidebar');
 INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (2,1, 'Navbar');
+INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (3,1, 'Data driven form');
+INSERT IGNORE INTO api_ui_app_nav_item_type (id,solution_id, name) VALUES (4,1, 'URL');
 
 
 DELETE FROM api_ui_app_nav_item WHERE solution_id=1;
@@ -764,6 +784,7 @@ INSERT IGNORE INTO api_ui_app_nav_item(id, app_id,name,url,type_id,solution_id) 
 End APP
 */
 
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('core.debug.level','3','Debug Level',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('portal.default_portal','default','Default portal_id',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('datalist.page_size','10','Page Size',1);
 

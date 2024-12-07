@@ -51,6 +51,7 @@ def read_table_field_meta(context, table_alias=None, table_id=None):
                 control.control AS control,
                 control.control_config AS control_config,
                 f.control_config AS overwrite_control_config,field_name,f.is_virtual,f.is_read_only,rt.desc_field_name AS referenced_table_desc_field_name,
+                f.lookup_function_id, f.referenced_value_field_name, tlf.name AS database_function,
                 rt.alias AS referenced_table_alias, type.orm_classname,
                 CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END AS control_id, f.formatter
             FROM {meta_field['table_name']} f
@@ -58,6 +59,7 @@ def read_table_field_meta(context, table_alias=None, table_id=None):
             INNER JOIN {meta_field_type['table_name']} type ON type.id=f.type_id
             INNER JOIN {meta_field_control['table_name']} control ON control.id=CASE WHEN f.control_id IS NULL THEN type.control_id ELSE f.control_id END
             LEFT JOIN api_table rt ON rt.id=referenced_table_id
+            LEFT JOIN api_table_field_lookup_function tlf ON f.lookup_function_id=tlf.id
         WHERE { where }
         ORDER BY f.pos, f.id """
     cursor.execute(sql,params)

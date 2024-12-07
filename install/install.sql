@@ -1,15 +1,3 @@
-
-ALTER TABLE api_activity DROP FOREIGN KEY IF EXISTS foreign_reference_api_activity_sprint_id_to_api_sprint;
-ALTER TABLE api_activity DROP COLUMN IF EXISTS sprint_id;
-DROP TABLE IF EXISTS api_activity_sprint;
-DROP TABLE IF EXISTS api_activity_sprint_status;
-
-DELETE FROM api_table_field WHERE table_id=44 AND name='sprint_id'; 
-DELETE FROM api_table_field WHERE table_id IN (48,49);
-DELETE FROM api_table WHERE id IN (48,49) AND name='Sprint';
-DELETE FROM api_table WHERE id IN (48) AND alias='api_activity_sprint_status';
-DELETE FROM api_ui_app_nav_item WHERE id=4040 AND name='Sprint';
-
 DROP PROCEDURE IF EXISTS api_proc_create_table_field_instance;
 DROP PROCEDURE IF EXISTS api_proc_logger;
 delimiter //
@@ -210,6 +198,12 @@ ALTER TABLE api_data_formatter ADD COLUMN IF NOT EXISTS page_mode varchar(50) NU
 ALTER TABLE api_data_formatter ADD FOREIGN KEY IF NOT EXISTS (provider_id) REFERENCES api_provider(id);
 ALTER TABLE api_data_formatter ADD UNIQUE KEY IF NOT EXISTS (name, table_id, type_id);
 
+CREATE TABLE IF NOT EXISTS api_table_field_lookup_function(
+    id int NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS api_table_field(
     id int NOT NULL AUTO_INCREMENT,
     pos int NOT NULL DEFAULT '10' COMMENT 'Position for ui forms',
@@ -218,6 +212,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     name varchar(250) NOT NULL COMMENT 'Fieldname (source)',
     field_name varchar(250) NULL COMMENT 'Pyhs. fieldname',
     is_lookup smallint NOT NULL DEFAULT '0' COMMENT '0=No 1=YES',
+    lookup_function_id int NULL COMMENT '',
     is_virtual smallint NOT NULL DEFAULT '0' COMMENT 'Virtual field not exists on the database',
     is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col',
     type_id varchar(50) NOT NULL COMMENT 'type of field',
@@ -228,6 +223,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     referenced_table_name varchar(250) NULL COMMENT 'referenced table name',
     referenced_table_id int NULL COMMENT 'api_table id',
     referenced_field_name varchar(250) NULL COMMENT 'Field from the referenced table',
+    referenced_value_field_name varchar(250) NULL COMMENT 'Field foir the lookup function (sum ...)',
     control_id int NULL COMMENT 'control_id',
     formatter varchar(250) NULL COMMENT 'Formatter',
     control_config text NOT NULL COMMENT 'Overwrite the type config',
@@ -237,6 +233,7 @@ CREATE TABLE IF NOT EXISTS api_table_field(
     FOREIGN KEY(type_id) REFERENCES api_table_field_type(id),
     FOREIGN KEY(control_id) REFERENCES api_table_field_control(id),
     FOREIGN KEY(provider_id) REFERENCES api_provider(id),
+    FOREIGN KEY(lookup_function_id) REFERENCES api_table_field_lookup_function(id),
     PRIMARY KEY(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -250,6 +247,9 @@ ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS control_config text NOT NUL
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_primary_key smallint NOT NULL DEFAULT '0' COMMENT 'Primary KEY Col' AFTER is_virtual;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS formatter varchar(250) NULL COMMENT 'Formatter' AFTER control_id;
 ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS is_read_only smallint NOT NULL DEFAULT '0' COMMENT '';
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS lookup_function_id int NULL COMMENT '' AFTER is_lookup ;
+ALTER TABLE api_table_field ADD COLUMN IF NOT EXISTS referenced_value_field_name varchar(250) NULL COMMENT 'Field foir the lookup function (sum ...)' AFTER referenced_field_name;
+ALTER TABLE api_table_field ADD CONSTRAINT `fr_api_table_field_lookup_function_id` FOREIGN KEY IF NOT EXISTS (lookup_function_id) REFERENCES api_table_field_lookup_function(id);
 
 /* in allen datenbanken ausgerollt */
 /*ALTER TABLE api_table_field ADD FOREIGN KEY IF NOT EXISTS (control_id) REFERENCES api_table_field_control(id);
@@ -624,6 +624,7 @@ ALTER TABLE api_ui_app_nav_item_type AUTO_INCREMENT=1000000;
 CREATE TABLE IF NOT EXISTS api_ui_app_nav_item(
     id int NOT NULL,
     name varchar(50) NOT NULL,
+    table_alias varchar(250) NULL COMMENT '',
     url varchar(1000) NOT NULL COMMENT 'Only the URL without querystring',
     query_string varchar(1000) NULL COMMENT 'Here only query_string args',
     app_id int NOT NULL,
@@ -636,6 +637,8 @@ CREATE TABLE IF NOT EXISTS api_ui_app_nav_item(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_ui_app_nav_item AUTO_INCREMENT=1000000;
+ALTER TABLE api_ui_app_nav_item ADD COLUMN IF NOT EXISTS table_alias varchar(250) NULL COMMENT '' AFTER name;
+
 
 CREATE TABLE IF NOT EXISTS api_permission_log(
     id int NOT NULL AUTO_INCREMENT,
@@ -849,9 +852,11 @@ ALTER TABLE api_activity_lane AUTO_INCREMENT=900000000;
 CREATE TABLE IF NOT EXISTS api_activity_effort_unit(
     id varchar(10) NOT NULL COMMENT '',
     name varchar(50) NOT NULL COMMENT '',
+    minutes decimal(15,4) NOT NULL DEFAULT '1' COMMENT '',
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+ALTER TABLE api_activity_effort_unit ADD COLUMN IF NOT EXISTS minutes decimal(15,4) NOT NULL DEFAULT '1' COMMENT '';
 
 CREATE TABLE IF NOT EXISTS api_activity(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
@@ -862,7 +867,9 @@ CREATE TABLE IF NOT EXISTS api_activity(
     subject varchar(500) NULL COMMENT '',
     msg_text LONGTEXT NULL COMMENT '',
     planned_effort int NOT NULL DEFAULT '0' COMMENT '',
+    planned_effort_minutes int NOT NULL DEFAULT '0' COMMENT '',
     actual_effort int NOT NULL DEFAULT '0' COMMENT '',
+    actual_effort_minutes int NOT NULL DEFAULT '0' COMMENT '',
     effort_unit_id varchar(10) NOT NULL DEFAULT 'day' COMMENT '',
     due_date datetime NULL COMMENT '',
     tag varchar(250) NULL COMMENT '',
@@ -877,6 +884,8 @@ CREATE TABLE IF NOT EXISTS api_activity(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE api_activity ADD INDEX IF NOT EXISTS `index_api_activity_tag` (tag);
+ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS planned_effort_minutes int NOT NULL DEFAULT '0' COMMENT '' AFTER planned_effort;
+ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS actual_effort_minutes int NOT NULL DEFAULT '0' COMMENT '' AFTER actual_effort;
 
 CREATE TABLE IF NOT EXISTS api_record_reference(
     id int NOT NULL AUTO_INCREMENT COMMENT '',

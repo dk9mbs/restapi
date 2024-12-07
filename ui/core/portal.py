@@ -47,7 +47,7 @@ class Portal(Resource):
             create_parser().parse_args()
             context=g.context
 
-            portal_id=self.__get_portal(context, host)
+            portal_id=self._get_portal(context, host)
 
             if portal_id==None:
                 portal_id=Setting.get_value(context,'portal.default_portal','default')
@@ -131,7 +131,7 @@ class Portal(Resource):
             logger.exception(f"XXXXXXXXXXException: {err}")
             return make_response(JinjaTemplate.render_status_template(context, 500, err), 500)
 
-    def __get_portal(self, context, host):
+    def _get_portal(self, context, host):
         o = urlparse(request.base_url)
 
         fetch=f"""

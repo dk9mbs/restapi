@@ -164,7 +164,7 @@ class FetchXmlParser(BaseParser):
                     #tmp.append(f"{ self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS { field['name'] }, { self.get_alias_by_table(self._main_alias) }.{ field['name'] } AS \"__{field['name']}@formatted_value\" ")
                     tmp.append(f"{ self.get_alias_by_table(self._main_alias) }.{ field['field_name'] } AS { field['name'] }, { self.get_alias_by_table(self._main_alias) }.{ field['field_name'] } AS \"__{field['name']}@formatted_value\" ")
 
-                if field['is_lookup']==-1 and field['referenced_table_desc_field_name']!=None:
+                if field['is_lookup']==-1 and field['referenced_table_desc_field_name']!=None and field['lookup_function_id']==None:
                     if tmp != []:
                         tmp.append(",")
 
@@ -181,6 +181,16 @@ class FetchXmlParser(BaseParser):
                     column_desc={"table": self._sql_table, "database_field": field['field_name'], "label": field['label'], "alias": f"__{field['name']}@name", "formatter": None}
                     self._columns_desc.append(column_desc)
                     column_desc={"table": self._sql_table, "database_field": field['field_name'], "label": field['label'], "alias": f"__{field['name']}@url", "formatter": None}
+                    self._columns_desc.append(column_desc)
+                elif field['is_lookup']==-1 and field['referenced_value_field_name']!=None and field['lookup_function_id']!=None:
+                    # use the lookup function id
+                    if tmp != []:
+                        tmp.append(",")
+
+                    ref_alias=f"{ field['name'] }_{ field['referenced_table_name'] }_{ field['referenced_field_name'] }"
+
+                    tmp.append(f"(SELECT { field['database_function'] }({ field['referenced_value_field_name'] }) FROM { field['referenced_table_name']} { ref_alias } WHERE { ref_alias }.{field['referenced_field_name']}={ self.get_alias_by_table(self._main_alias) }.{ field['field_name']} ) AS _{field['name']}")
+                    column_desc={"table": self._sql_table, "database_field": field['field_name'], "label": field['label'], "alias": f"__{field['name']}", "formatter": None}
                     self._columns_desc.append(column_desc)
 
             self._sql_select=''.join(tmp)
@@ -211,6 +221,7 @@ class FetchXmlParser(BaseParser):
             sql.append(f" LIMIT {self._limit_offset}, {self._limit} ")
 
         sql.append(f"{self._sql_comment}")
+
         return (''.join(sql),params)
 
     def get_insert(self):

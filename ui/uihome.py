@@ -56,9 +56,17 @@ class AppHome(Resource):
             </restapi>
             """
             fetch_parser=FetchXmlParser(fetch,context)
-            rs=DatabaseServices.exec(fetch_parser, context, fetch_mode=0)
+            rs_app=DatabaseServices.exec(fetch_parser, context, fetch_mode=0)
 
-            response = make_response(template.render({"context": context, "apps":rs.get_result() }))
+            fetch=f"""
+            <restapi type="select">
+                <table name="api_ui_app_nav_item" alias="a"/>
+            </restapi>
+            """
+            fetch_parser=FetchXmlParser(fetch,context)
+            rs_item=DatabaseServices.exec(fetch_parser, context, fetch_mode=0)
+
+            response = make_response(template.render({"context": context, "apps":rs_app.get_result(), "items": rs_item.get_result() }))
             response.headers['content-type'] = 'text/html'
 
             return response
