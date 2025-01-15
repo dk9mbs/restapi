@@ -31,8 +31,130 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
 
+<!-- Start Treeview -->
+<style>
+/* Remove default bullets */
+ul, #myUL {
+  list-style-type: none;
+}
 
-<!--<div class="row row-cols-1 row-cols-md-5 g-4" style="width:100%">-->
+/* Remove margins and padding from the parent ul */
+#myUL {
+  margin: 0;
+  padding: 0;
+}
+
+/* Style the caret/arrow */
+.caret {
+  cursor: pointer;
+  user-select: none; /* Prevent text selection */
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+.caret::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+.caret-down::before {
+  transform: rotate(90deg);
+}
+
+/* Hide the nested list */
+.nested {
+  display: none;
+}
+
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+.active {
+  display: block;
+}
+</style>
+
+<ul id="myUL">
+    <li><span class="caret">restAPI</span>
+      <ul class="nested">
+
+
+
+            {% for app in apps -%}
+
+            <li><span class="caret">{{ app['name'] }}</span>
+      
+            <ul class="nested">
+            {% for item in items -%}
+                {% if app['id']==item['app_id'] -%}
+                    <li><a href="{{ item['url'] }}">{{ item['name'] }}</a></li>
+                {% endif -%}
+            {% endfor -%}
+            </ul>
+        </li>
+        {% endfor -%}
+
+
+
+
+
+
+
+    </ul>
+
+    </li>
+
+        <!-- Start -->
+        <ul>
+            <li><span class="caret">Tools</span>
+                <ul class="nested">
+                    <li>
+                        <div class="col">
+                            <div class="card" style="width: 18rem;height: 12rem;">
+                                <div class="card-body">
+                                    <h5 class="card-title">Datei Upload</h5>
+                                    <p class="card-text">
+                                    <form method="POST" name="formfileupload" id="formfileupload" action="/api/v1.0/file?redirect=/ui/home" enctype = "multipart/form-data">
+                                    <input class="form-control form-control-sm" id="file" name="file" type="file" multiple/>
+                                    <progress id="progressBar" value="0" max="100" style="width:16rem;"></progress>
+                                    <p id="status"></p>
+                                    <p id="loaded_n_total"></p>
+                        
+                                    </form>
+                                    <button class="btn btn-sm btn-primary" onclick="uploadFile();return false;">Upload</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                    
+            
+            </li>
+       </ul> 
+       <!-- End Upload -->
+
+</ul>
+
+<script lang="javascript">
+var toggler = document.getElementsByClassName("caret");
+var i;
+
+for (i = 0; i < toggler.length; i++) {
+    toggler[i].addEventListener("click", function() {
+    this.parentElement.querySelector(".nested").classList.toggle("active");
+    this.classList.toggle("caret-down");
+    });
+
+    //alert(toggler[i].innerHTML);
+    if(toggler[i].innerHTML=="restAPI")
+        toggler[i].parentElement.querySelector(".nested").classList.toggle("active");
+}
+</script>
+    
+<!-- End -->
+
+<!--
 <div class="class=container-fluid">
 {% for app in apps -%}
     <div class="row"><h4>{{ app['name'] }}</h4></div>
@@ -45,20 +167,9 @@
         {% endif -%}
     {% endfor -%}
     </div>
-
-    <!--
-    <div class="card" style="width: 18rem;height: 12rem;">
-        <div class="card-body">
-            <h5 class="card-title">{{ app['name'] }}</h5>
-            <p class="card-text">{{ app['description'] }}</p>
-            <a href="{{ app['home_url'] }}" class="btn btn-sm btn-primary"> Start </a>
-        </div>
-    </div>
-    -->
- <!--</div>-->
     
 {% endfor -%}
-
+-->
 <!--
 <div class="col">
     <div class="card" style="width: 18rem;height: 12rem;">
