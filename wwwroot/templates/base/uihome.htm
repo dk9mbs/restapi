@@ -106,7 +106,7 @@ ul, #myUL {
 
         <!-- Start -->
         <ul>
-            <li><span class="caret">Tools</span>
+            <li><span class="caret">Dateiupload</span>
                 <ul class="nested">
                     <li>
                         <div class="col">
@@ -133,6 +133,54 @@ ul, #myUL {
             </li>
        </ul> 
        <!-- End Upload -->
+
+
+
+        <!-- Start -->
+        <ul>
+            <li><span class="caret">Datenimport</span>
+                <ul class="nested">
+                    <li>
+                        <div class="col">
+
+    <div class="card" style="width: 18rem;height: 12rem;">
+        <div class="card-body">
+            <h5 class="card-title">Daten Import</h5>
+            <p class="card-text">
+            <form method="POST" name="formfileimport" id="formfileimport" action="/api/v1.0/import?redirect=/ui/home" enctype = "multipart/form-data">
+            <select  id="type_id" name="type_id" class="form-select form-select-sm" aria-label=".form-select-sm example">
+                    <option selected value=""></option>
+                    <option value="cty">CTY.DAT (HAM)</option>
+                    <option value="adif">ADIF Datei (HAM)</option>
+                    <option value="csvmt940">CSVMT940 Bank Datei</option>
+                    <option value="desadv">Export IDOC DESADV (DELVRY)</option>
+            </select>
+            <p></p>
+            <input class="form-control form-control-sm" id="file" name="file" type="file" />
+            <p></p>
+            <input class="btn btn-sm btn-primary" type="submit" value="Import">
+            </form>
+
+            </p>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+                        </div>
+                    </li>
+                </ul>
+
+
+            </li>
+       </ul>
+       <!-- End Import -->
+
 
 </ul>
 
