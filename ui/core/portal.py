@@ -109,6 +109,7 @@ class Portal(Resource):
 
                 response = make_response(page_str)
                 response.headers['content-type'] = 'text/html'
+                response.headers['Access-Control-Allow-Origin'] = '*'
 
                 return response
             else:

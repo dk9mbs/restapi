@@ -189,7 +189,7 @@ class FetchXmlParser(BaseParser):
 
                     ref_alias=f"{ field['name'] }_{ field['referenced_table_name'] }_{ field['referenced_field_name'] }"
 
-                    tmp.append(f"(SELECT { field['database_function'] }({ field['referenced_value_field_name'] }) FROM { field['referenced_table_name']} { ref_alias } WHERE { ref_alias }.{field['referenced_field_name']}={ self.get_alias_by_table(self._main_alias) }.{ field['field_name']} ) AS _{field['name']}")
+                    tmp.append(f"(SELECT { field['database_function'] }({ field['referenced_value_field_name'] }) FROM { field['referenced_table_name']} { ref_alias } WHERE { ref_alias }.{field['referenced_field_name']}={ self.get_alias_by_table(self._main_alias) }.{ field['field_name']} ) AS {field['name']}")
                     column_desc={"table": self._sql_table, "database_field": field['field_name'], "label": field['label'], "alias": f"__{field['name']}", "formatter": None}
                     self._columns_desc.append(column_desc)
 
