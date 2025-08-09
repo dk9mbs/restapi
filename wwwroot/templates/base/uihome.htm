@@ -75,37 +75,21 @@ ul, #myUL {
 </style>
 
 <ul id="myUL">
-    <li><span class="caret">restAPI</span>
-      <ul class="nested">
-
-
-
+    <li><span class="caret">Navigator</span>
+        <ul class="nested">
             {% for app in apps -%}
-
             <li><span class="caret">{{ app['name'] }}</span>
-      
-            <ul class="nested">
-            {% for item in items -%}
-                {% if app['id']==item['app_id'] -%}
-                    <li><a href="{{ item['url'] }}">{{ item['name'] }}</a></li>
-                {% endif -%}
+                <ul class="nested">
+                    {% for item in items -%}
+                        {% if app['id']==item['app_id'] -%}
+                            <li><a href="{{ item['url'] }}">{{ item['name'] }}</a></li>
+                        {% endif -%}
+                    {% endfor -%}
+                </ul>
+            </li>
             {% endfor -%}
-            </ul>
-        </li>
-        {% endfor -%}
 
-
-
-
-
-
-
-    </ul>
-
-    </li>
-
-        <!-- Start -->
-        <ul>
+            <!-- Start -->
             <li><span class="caret">Tools</span>
                 <ul class="nested">
                     <li>
@@ -119,7 +103,6 @@ ul, #myUL {
                                     <progress id="progressBar" value="0" max="100" style="width:16rem;"></progress>
                                     <p id="status"></p>
                                     <p id="loaded_n_total"></p>
-                        
                                     </form>
                                     <button class="btn btn-sm btn-primary" onclick="uploadFile();return false;">Upload</button>
                                     </p>
@@ -128,13 +111,13 @@ ul, #myUL {
                         </div>
                     </li>
                 </ul>
-                    
-            
             </li>
-       </ul> 
-       <!-- End Upload -->
+        <!-- End Upload -->
 
-</ul>
+
+
+        </ul>
+    </li>
 
 <script lang="javascript">
 var toggler = document.getElementsByClassName("caret");
@@ -147,7 +130,7 @@ for (i = 0; i < toggler.length; i++) {
     });
 
     //alert(toggler[i].innerHTML);
-    if(toggler[i].innerHTML=="restAPI")
+    if(toggler[i].innerHTML=="Navigator")
         toggler[i].parentElement.querySelector(".nested").classList.toggle("active");
 }
 </script>
