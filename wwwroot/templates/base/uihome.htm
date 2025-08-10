@@ -75,22 +75,38 @@ ul, #myUL {
 </style>
 
 <ul id="myUL">
-    <li><span class="caret">Navigator</span>
-        <ul class="nested">
-            {% for app in apps -%}
-            <li><span class="caret">{{ app['name'] }}</span>
-                <ul class="nested">
-                    {% for item in items -%}
-                        {% if app['id']==item['app_id'] -%}
-                            <li><a href="{{ item['url'] }}">{{ item['name'] }}</a></li>
-                        {% endif -%}
-                    {% endfor -%}
-                </ul>
-            </li>
-            {% endfor -%}
+    <li><span class="caret">restAPI</span>
+      <ul class="nested">
 
-            <!-- Start -->
-            <li><span class="caret">Tools</span>
+
+
+            {% for app in apps -%}
+
+            <li><span class="caret">{{ app['name'] }}</span>
+      
+            <ul class="nested">
+            {% for item in items -%}
+                {% if app['id']==item['app_id'] -%}
+                    <li><a href="{{ item['url'] }}">{{ item['name'] }}</a></li>
+                {% endif -%}
+            {% endfor -%}
+            </ul>
+        </li>
+        {% endfor -%}
+
+
+
+
+
+
+
+    </ul>
+
+    </li>
+
+        <!-- Start -->
+        <ul>
+            <li><span class="caret">Dateiupload</span>
                 <ul class="nested">
                     <li>
                         <div class="col">
@@ -103,6 +119,7 @@ ul, #myUL {
                                     <progress id="progressBar" value="0" max="100" style="width:16rem;"></progress>
                                     <p id="status"></p>
                                     <p id="loaded_n_total"></p>
+                        
                                     </form>
                                     <button class="btn btn-sm btn-primary" onclick="uploadFile();return false;">Upload</button>
                                     </p>
@@ -111,13 +128,61 @@ ul, #myUL {
                         </div>
                     </li>
                 </ul>
+                    
+            
             </li>
-        <!-- End Upload -->
+       </ul> 
+       <!-- End Upload -->
 
 
 
-        </ul>
-    </li>
+        <!-- Start -->
+        <ul>
+            <li><span class="caret">Datenimport</span>
+                <ul class="nested">
+                    <li>
+                        <div class="col">
+
+    <div class="card" style="width: 18rem;height: 12rem;">
+        <div class="card-body">
+            <h5 class="card-title">Daten Import</h5>
+            <p class="card-text">
+            <form method="POST" name="formfileimport" id="formfileimport" action="/api/v1.0/import?redirect=/ui/home" enctype = "multipart/form-data">
+            <select  id="type_id" name="type_id" class="form-select form-select-sm" aria-label=".form-select-sm example">
+                    <option selected value=""></option>
+                    <option value="cty">CTY.DAT (HAM)</option>
+                    <option value="adif">ADIF Datei (HAM)</option>
+                    <option value="csvmt940">CSVMT940 Bank Datei</option>
+                    <option value="desadv">Export IDOC DESADV (DELVRY)</option>
+            </select>
+            <p></p>
+            <input class="form-control form-control-sm" id="file" name="file" type="file" />
+            <p></p>
+            <input class="btn btn-sm btn-primary" type="submit" value="Import">
+            </form>
+
+            </p>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+                        </div>
+                    </li>
+                </ul>
+
+
+            </li>
+       </ul>
+       <!-- End Import -->
+
+
+</ul>
 
 <script lang="javascript">
 var toggler = document.getElementsByClassName("caret");
@@ -130,7 +195,7 @@ for (i = 0; i < toggler.length; i++) {
     });
 
     //alert(toggler[i].innerHTML);
-    if(toggler[i].innerHTML=="Navigator")
+    if(toggler[i].innerHTML=="restAPI")
         toggler[i].parentElement.querySelector(".nested").classList.toggle("active");
 }
 </script>
