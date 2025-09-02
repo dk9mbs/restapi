@@ -113,8 +113,14 @@ class Portal(Resource):
 
                 return response
             else:
+                import os
                 www_root=FileSystemTools.format_path(AppInfo.get_current_config('ui','wwwroot', exception=True))
-                return send_file(f"{www_root}{path}")
+
+                if os.path.exists(f"{www_root}{path}"):
+                    return send_file(f"{www_root}{path}")
+                else:
+                    logger.error(f"file not found {www_root}{path}")
+                    return None
 
         except ConfigNotValid as err:
             logger.exception(f"Config not valid {err}")

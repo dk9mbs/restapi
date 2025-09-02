@@ -6,6 +6,18 @@ BASEDIR=$(dirname $BASEDIR)
 PLUGINPATH=$BASEDIR/plugins
 FORMATTERPATH=$BASEDIR/formatter
 VENV=$BASEDIR/venv/restapi
+OSVERSION=$(uname -a)
+PYREQFILE=$BASEDIR/install/python/debian/default/requirements.txt
+
+if [[ "$OSVERSION" == *"Debian 5.1"* ]]; then
+    echo "Bullseye installed!!!"
+    PYREQFILE=$BASEDIR/install/python/debian/default/requirements.txt
+fi
+
+if [[ "$OSVERSION" == *"Debian 6.1"* ]]; then
+    echo "Bookworm installed!!!"
+    PYREQFILE=$BASEDIR/install/python/debian/bookworm/requirements.txt
+fi
 
 mkdir -p "$VENV"
 
@@ -27,7 +39,7 @@ then
 
     echo "intalling $BASEDIR/requirements.txt with pip ..."
     pip  install --upgrade pip wheel setuptools
-    pip install -r $BASEDIR/requirements.txt
+    pip install -r $PYREQFILE
     echo "all components installed!"
 else
     echo "activating existing venv environment ($VENV) ..."

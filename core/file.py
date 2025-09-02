@@ -62,6 +62,17 @@ class File:
                 mime_type="application/pkcs7-signature"
             elif extension==".sig" or extension==".asc" or file_name=="OpenPGP_signature":
                 mime_type="application/pgp-signature"
+            elif extension==".xlsx":
+                mime_type="application/vnd.ms-excel"
+            elif extension==".docx" or extension==".dotx":
+                mime_type="application/msword"
+            elif extension==".odt":
+                mime_type="application/vnd.oasis.opendocument.text"
+            elif extension==".ods":
+                mime_type="application/vnd.oasis.opendocument.spreadsheet"
+            elif extension==".odp":
+                mime_type="application/vnd.oasis.opendocument.presentation"
+
             else:
                 raise UnknownMimeType(f"Extension: {extension}")
         else:

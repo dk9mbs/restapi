@@ -916,3 +916,29 @@ CREATE TABLE IF NOT EXISTS api_currency(
     UNIQUE KEY(iso_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ALTER TABLE api_currency AUTO_INCREMENT=900000000;
+
+/*
+HTTP Header for API and other Services
+*/
+CREATE TABLE IF NOT EXISTS api_http_header_scope(
+    id int NOT NULL,
+    name varchar(50) NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS api_http_header(
+    id int NOT NULL COMMENT '',
+    name varchar(250) NOT NULL COMMENT '',
+    value varchar(250) NULL DEFAULT '' COMMENT '',
+    scope_id int NOT NULL DEFAULT '1' COMMENT '',
+    priority smallint NOT NULL DEFAULT '1' COMMENT 'Use only the highest priority header',
+    enabled smallint NOT NULL DEFAULT '1' COMMENT '',
+    solution_id int NOT NULL DEFAULT'1',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id),
+    FOREIGN KEY(scope_id) REFERENCES api_http_header_scope(id),
+    PRIMARY KEY(id),
+    UNIQUE KEY(name, scope_id, priority)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+

@@ -87,6 +87,17 @@ INSERT IGNORE INTO api_currency (id,iso_code,numeric_code, name, symbol, exchang
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) 
     VALUES ('currency.base_currency_id','1','Base currency ID',1);
 
+/* HTTP Headers */
+INSERT IGNORE INTO api_http_header_scope(id, name) VALUES (1,'API');
+INSERT IGNORE INTO api_http_header_scope(id, name) VALUES (2,'Portal');
+INSERT IGNORE INTO api_http_header_scope(id, name) VALUES (3,'UI');
+
+INSERT IGNORE INTO api_http_header(id,name,value,enabled,scope_id) VALUES (1, 'Access-Control-Allow-Origin','*',0,1);
+INSERT IGNORE INTO api_http_header(id,name,value,enabled,scope_id) VALUES (2, 'Access-Control-Allow-Methods','GET,POST,PUT',0,1);
+INSERT IGNORE INTO api_http_header(id,name,value,enabled,scope_id) VALUES (3, 'Access-Control-Allow-Credentials','true',0,1);
+INSERT IGNORE INTO api_http_header(id,name,value,enabled,scope_id) VALUES (4, 'Access-Control-Allow-Headers','',0,1);
+INSERT IGNORE INTO api_http_header(id,name,value,enabled,scope_id) VALUES (5, 'Access-Control-Expose-Headers','*',0,1);
+
 /* lookup function */
 INSERT IGNORE INTO api_table_field_lookup_function (id, name) VALUES (1, 'SUM');
 INSERT IGNORE INTO api_table_field_lookup_function (id, name) VALUES (2, 'COUNT');
@@ -236,6 +247,13 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (49,'Lookup funktionen','api_table_field_lookup_function','api_table_field_lookup_function','id','int','name',-1);
+
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (50,'HTTP Header (Bereiche)','api_http_header_scope','api_http_header_scope','id','int','name',0);
+
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (51,'HTTP Header','api_http_header','api_http_header','id','int','name',0);
+
 
 
 /* Bugfixing */
@@ -1473,6 +1491,15 @@ INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,soluti
     </orderby>
 </restapi>',
 '{"id": {}, "name": {},"exchange_rate":{}, "iso_code":{},"symbol":{} }');
+
+INSERT IGNORE INTO api_table_view (id,type_id,name,table_id,id_field_name,solution_id,fetch_xml, columns) VALUES (
+122,'LISTVIEW','default',51,'id',1,'<restapi type="select">
+    <table name="api_http_header" alias="a"/>
+    <orderby>
+        <field name="name" alias="a" sort="ASC"/>
+    </orderby>
+</restapi>',
+'{"id": {}, "name": {},"value":{}, "enabled":{},"scope":{} }');
 
 
 /* out_data_formatter */
