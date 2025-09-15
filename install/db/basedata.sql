@@ -659,6 +659,9 @@ call api_proc_create_table_field_instance(45,300, 'board_id','Board','string',2,
 call api_proc_create_table_field_instance(45,300, 'position','Position','int',14,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(45,400, 'created_on','Erstellt am','datetime',9,'{"disabled": true}', @out_value);
 
+/* api_table_field_lookup_functions */
+call api_proc_create_table_field_instance(49,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(49,100, 'name','Name','int',1,'{"disabled": false}', @out_value);
 
 
 INSERT IGNORE INTO api_event_handler_status (id, name, is_running, is_waiting) VALUES ('WAITING', 'warte',0,-1);
