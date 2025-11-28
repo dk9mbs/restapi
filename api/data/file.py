@@ -36,7 +36,6 @@ class PostFile(Resource):
         try:
             context=g.context
             connection=context.get_connection()
-
             file=File()
             result=file.read_file(context, path)
 

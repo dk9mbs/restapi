@@ -100,6 +100,9 @@ class Entity(Resource):
             else:
                 result=rs.get_result()[field]
 
+            httpresponse=result=HTTPResponse(context, result)
+            result=httpresponse.create_response()
+
             view=context.get_arg("view", None)
 
             if not view==None:
@@ -118,7 +121,7 @@ class Entity(Resource):
                 formatter.add_template_var("fields", fields_meta)
                 formatter.add_template_var("title",  f"{table_meta['name']} - {rs.get_result()[table_meta['desc_field_name']]}")
 
-                httpresponse=HTTPResponse(formatter.render())
+                httpresponse=HTTPResponse(context, formatter.render())
                 httpresponse.disable_client_cache()
                 httpresponse.add_header('content-type', formatter.get_mime_type())
 

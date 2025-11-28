@@ -159,7 +159,7 @@ class EntitySet(Resource):
                 formatter.add_template_var("page_size", page_size)
                 formatter.add_template_var("page_count", rs.get_page_count() )
 
-                httpresponse=HTTPResponse(formatter.render())
+                httpresponse=HTTPResponse(context, formatter.render())
                 httpresponse.disable_client_cache()
                 httpresponse.add_header('content-type', formatter.get_mime_type())
 

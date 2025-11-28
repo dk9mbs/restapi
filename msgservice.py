@@ -83,8 +83,8 @@ class MqttWorker():
             create_logger(__name__).info(f"MQTT Connect with result code:{str(rc)}")
 
             for t in self._topics:
-                client.subscribe(t['topic'])
                 create_logger(__name__).info(f"Subscribing topic: {t['topic']} regex:{t['regex']}")
+                client.subscribe(t['topic'])
 
             create_logger(__name__).info("connected!")
 

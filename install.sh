@@ -22,9 +22,9 @@ echo "mysql databse    $MYSQL_DATABASE"
 echo "mysql host       $MYSQL_HOST"
 
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST -e"CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;"
-mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/install.sql
+mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/db/install.sql
 echo "Install Database Objects $?"
-mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/basedata.sql
+mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/db/basedata.sql
 echo "Import Data $?"
 
 echo "------------------------------------------------------------"
@@ -34,7 +34,8 @@ echo "metadata cache builded!"
 echo "------------------------------------------------------------"
 
 # execute after meta cache building
-mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/post_metacache.sql
+echo "Cleaning up the database ..."
+mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/db/post_metacache.sql
 echo "CleanUp Database $?"
 
 mkdir -p $BASEDIR/plugins
@@ -47,7 +48,7 @@ mkdir -p $BASEDIR/wwwroot/templates/solutions
 # the spool is only needed in case of using uwsgi
 #
 sudo mkdir -p /var/restapi/$INSTANCE_ID/spool
-sudo chown www-data.www-data /var/restapi/$INSTANCE_ID/spool
+sudo chown www-data:www-data /var/restapi/$INSTANCE_ID/spool
 
 #
 # Create uwsgi.ini
