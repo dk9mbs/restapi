@@ -521,6 +521,11 @@ call api_proc_create_table_field_instance(13,1510, 'formatter','Formatierung','s
 call api_proc_create_table_field_instance(13,1600, 'provider_id','Provider','string',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1600, 'is_virtual','Virtuelles Feld','int',19,'{"disabled": false}', @out_value);
 
+/* api_table_field_lookup_function */
+call api_proc_create_table_field_instance(49,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(49,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
+
+
 /* session */
 call api_proc_create_table_field_instance(7,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(7,200, 'user_id','Benutzer','int',2,'{"disabled": true}', @out_value);
