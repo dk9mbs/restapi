@@ -1,6 +1,7 @@
 DROP PROCEDURE IF EXISTS api_proc_create_table_field_instance;
 DROP PROCEDURE IF EXISTS api_proc_logger;
 DROP PROCEDURE IF EXISTS api_proc_prepare_api_tables;
+DROP PROCEDURE IF EXISTS api_proc_execute;
 
 delimiter //
 
@@ -35,6 +36,17 @@ BEGIN
             (pipos, pitable_id, piname,piname, pilabel, pitype_id, picontrol_id, picontrol_config);
         SELECT LAST_INSERT_ID() INTO poid;
     END IF;
+END//
+delimiter ;
+
+
+delimiter //
+CREATE PROCEDURE api_proc_execute(IN sql_query text)
+BEGIN
+    call api_proc_logger('Fill Fields', sql_query);
+    PREPARE stmt FROM sql_query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
 END//
 delimiter ;
 
