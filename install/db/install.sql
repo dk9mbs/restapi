@@ -1,5 +1,8 @@
 DROP PROCEDURE IF EXISTS api_proc_create_table_field_instance;
 DROP PROCEDURE IF EXISTS api_proc_logger;
+DROP PROCEDURE IF EXISTS api_proc_prepare_api_tables;
+DROP PROCEDURE IF EXISTS api_proc_execute;
+
 delimiter //
 
 CREATE PROCEDURE api_proc_logger(IN title varchar(100), IN msg text)
@@ -27,7 +30,7 @@ BEGIN
             WHERE id=poid AND provider_id='MANUFACTURER';
 
     ELSE
-        /* call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) );*/
+        /* call api_proc_logger("Field instance not exists", CONCAT( 'name:', CONVERT(piname, char), " table_id:", CONVERT(pitable_id, char)) ); */
         INSERT INTO api_table_field (pos, table_id,name,field_name,label,type_id,control_id,control_config)
             VALUES
             (pipos, pitable_id, piname,piname, pilabel, pitype_id, picontrol_id, picontrol_config);
@@ -35,6 +38,78 @@ BEGIN
     END IF;
 END//
 delimiter ;
+
+
+delimiter //
+CREATE PROCEDURE api_proc_execute(IN sql_query text)
+BEGIN
+    call api_proc_logger('Fill Fields', sql_query);
+    PREPARE stmt FROM sql_query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+END//
+delimiter ;
+
+
+delimiter //
+CREATE PROCEDURE api_proc_prepare_api_tables()
+BEGIN
+    /* 
+    Fuegt die notwendigen Systemfelder an alle api Tabellen hinzu
+    */
+    declare done boolean default false;
+    declare loc_id int;
+    declare loc_table_name varchar(250);
+    declare sql_update text;
+    declare id_field_name varchar(50);
+
+    declare table_cursor cursor for
+       select id,table_name from api_table order by id;
+
+    declare continue handler for not found set done = true;
+
+    open table_cursor;
+    loop1: loop
+        fetch table_cursor into loc_id, loc_table_name;
+        if done=true then
+            leave loop1;
+        end if;
+
+        SET id_field_name = 'sys_row_id';
+
+        /* Do never drop the system fields */
+        /*
+        SET sql_update = CONCAT('alter table ', loc_table_name ,' drop key if exists unique_key_dummy_', id_field_name);
+        call api_proc_logger('Create Unique Index: data_hub_id', sql_update);
+        call api_proc_execute(sql_update);
+
+        SET sql_update = CONCAT('ALTER TABLE ', loc_table_name, ' DROP column IF EXISTS ', id_field_name);
+        call api_proc_logger('Drop system field: data_hub_id', sql_update);
+        call api_proc_execute(sql_update);
+        */
+        /* Do never drop the system fields */
+
+
+        SET sql_update = CONCAT('ALTER TABLE ', loc_table_name, ' ADD COLUMN IF NOT EXISTS ', id_field_name , ' varchar(50) NOT NULL DEFAULT UUID()');
+        /* call api_proc_logger('Add system field: data_hub_id', sql_update); */
+        call api_proc_execute(sql_update);
+
+        SET sql_update = CONCAT('UPDATE ',loc_table_name, ' SET ', id_field_name ,'=UUID() WHERE ', id_field_name, ' IS NULL OR ', id_field_name ,'=\'\'');
+        /* call api_proc_logger('Fill Fields', sql_update); */
+        call api_proc_execute(sql_update);
+
+        SET sql_update = CONCAT('ALTER TABLE ', loc_table_name, ' ADD UNIQUE KEY IF NOT EXISTS unique_key_' , loc_table_name , '_', id_field_name, ' (', id_field_name, ')');
+        /* call api_proc_logger('Create Unique Index: data_hub_id', sql_update); */
+        call api_proc_execute(sql_update);
+
+    end loop loop1;
+
+    close table_cursor;
+END//
+delimiter ;
+
+
+
 
 /*
 Record based security core function
@@ -270,6 +345,26 @@ delimiter ;
 
 /* */
 
+/* api_table_link */
+
+/*CREATE TABLE IF NOT EXISTS api_table_link(
+    id int NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
+    name varchar(100) NOT NULL COMMENT 'Name from the link',
+    table_id int NOT NULL COMMENT 'Left Table',
+    table_field_id int NOT NULL COMMENT 'Left field',
+    right_table_id int NOT NULL COMMENT '',
+    right_table_field_id int NOT NULL COMMENT '',
+    right_alias varchar(100) NOT NULL DEFAULT 'ALIAS' COMMENT 'Alias name for the right table',
+    link_type varchar(10) NOT NULL DEFAULT 'INNER' COMMENT 'INNER,LEFT,RIGHT,CROSS',
+    is_enabled smallint NOT NULL DEFAULT '0=NO 1=YES',
+    FOREIGN KEY(table_id) REFERENCES api_table(id),
+    FOREIGN KEY(right_table_id) REFERENCES api_table(id),
+    FOREIGN KEY(table_field_id) REFERENCES api_table_field(id),
+    FOREIGN KEY(right_table_field_id) REFERENCES api_table_field(id),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;*/
+/*  End api_table_link */
+
 CREATE TABLE IF NOT EXISTS api_user (
     id int NOT NULL AUTO_INCREMENT,
     username varchar(100) NOT NULL,
@@ -281,6 +376,41 @@ CREATE TABLE IF NOT EXISTS api_user (
     PRIMARY KEY(id),
     UNIQUE KEY(username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/* Datensatzmety Typen */
+CREATE TABLE IF NOT EXISTS api_record_meta_type(
+    id int NOT NULL AUTO_INCREMENT COMMENT '',
+    name varchar(100) NOT NULL COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT IGNORE INTO api_record_meta_type(id, name) VALUES ('1','Erstellt am');
+INSERT IGNORE INTO api_record_meta_type(id, name) VALUES ('2','Erstellt um');
+INSERT IGNORE INTO api_record_meta_type(id, name) VALUES ('3','Erstellt durch');
+
+INSERT IGNORE INTO api_record_meta_type(id, name) VALUES ('1000','Gelesen');
+INSERT IGNORE INTO api_record_meta_type(id, name) VALUES ('1001','Lesen Bestätigt');
+
+/*
+Tabelle zum Speichern von Meta Daten zu einem Datensatz.
+Die Daten können Global oder Benutzerbezogen hinterlegt werden.
+Beispielsweise wird hier gespeichert, ab ein Benutzer den Datensatz gelesen hat.
+*/
+CREATE TABLE IF NOT EXISTS api_record_meta(
+    id int NOT NULL AUTO_INCREMENT COMMENT 'Unique KEY',
+    sys_row_id varchar(50) NOT NULL COMMENT 'Global record id',
+    user_id int NULL COMMENT 'user_id IS NULL: All Users; otherwise user_id',
+    meta_type_id int NOT NULL COMMENT 'Dimension',
+    value_int int NULL DEFAULT '0' COMMENT 'Dimension integer value',
+    value_str varchar(100) NULL COMMENT 'Dimension String value',
+    value_text text NULL COMMENT 'Dimension Big Text value',
+    created_on datetime NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY(id),
+    UNIQUE KEY(sys_row_id, user_id, meta_type_id),
+    FOREIGN KEY(meta_type_id) REFERENCES api_record_meta_type(id),
+    FOREIGN KEY(user_id) REFERENCES api_user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/* Ende Datensatzstatus */
 
 CREATE TABLE IF NOT EXISTS api_user_apikey (
     id varchar(100) NOT NULL,
@@ -942,3 +1072,4 @@ CREATE TABLE IF NOT EXISTS api_http_header(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
+call api_proc_prepare_api_tables();

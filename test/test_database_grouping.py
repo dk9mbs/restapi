@@ -26,7 +26,7 @@ class TestFetchxmlParser(unittest.TestCase):
             </filter>
         </restapi>
         """
-        print(xml)
+        #print(xml)
         fetch=FetchXmlParser(xml, self.context)
         dummy=DatabaseServices.exec(fetch,self.context, fetch_mode=1)
         #self.assertIsNone(dummy.get_result())

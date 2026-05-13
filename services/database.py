@@ -69,17 +69,24 @@ class DatabaseServices:
         row_count=0
         if command_builder.get_sql_type().upper()== "SELECT":
             sql_count, paras_count =command_builder.get_sql(True)
-            cursor=context.get_connection().cursor()
-            cursor.execute(sql_count, paras_count)
-            rows=cursor.fetchall()
+            #12.03.2026 in core Function ausgelagert
+            #cursor=context.get_connection().cursor()
+            #cursor.execute(sql_count, paras_count)
+            #rows=cursor.fetchall()
+            rows=exec_raw_sql(context, sql_count, paras_count, 0, False)
+            #End 12.03.2026
             row_count=0
             if len(rows)==1:
                 row_count=rows[0]['cnt']
 
         # end
 
+        #12.03.2026 in core Funktion ausgelagert
         cursor=context.get_connection().cursor()
         cursor.execute(sql, paras)
+        #rs=exec_raw_sql(context, sql, paras, 0, False, True, command_builder.get_page_size(), row_count)
+        #End 12.03.2026
+
         inserted_id=context.get_last_inserted_id()
 
         if not id_field_name in params['data']:
@@ -95,11 +102,13 @@ class DatabaseServices:
         elif  context.get_auto_commit()==1 or context.get_auto_commit()==True:
             context.commit()
 
+        #12.03.2026 entfernt
         rs=Recordset(cursor, command_builder.get_page_size(), row_count)
+        #12.03.2026 entfernt
 
         if fetch_mode != -1:
             rs.read(fetch_mode)
-        
+
         if command_builder.get_sql_type().upper()== "SELECT":
             rs.execute_formatter(context, command_builder.get_columns())
             # execute plugin logic

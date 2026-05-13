@@ -354,17 +354,20 @@ call api_proc_create_table_field_instance(35,700, 'created_on','Erstellt am','da
 
 call api_proc_create_table_field_instance(35,800, '_documents','Dokumente','string',201,'{"relation_type": "complex"}', @out_value);
 UPDATE api_table_field
-    SET is_virtual=-1, field_name='id',referenced_table_name='api_file',referenced_table_id=20,referenced_field_name='email_id'
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_file',
+        referenced_table_id=20,referenced_field_name='email_id', is_lookup=0
     WHERE id=@out_value;
 
 call api_proc_create_table_field_instance(35,900, '_header','Header','string',200,'{"columns": "id,header_key,header_value"}', @out_value);
 UPDATE api_table_field
-    SET is_virtual=-1, field_name='id',referenced_table_name='api_email_header',referenced_table_id=37,referenced_field_name='email_id'
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_email_header',
+        referenced_table_id=37,referenced_field_name='email_id', is_lookup=0
     WHERE id=@out_value;
 
 call api_proc_create_table_field_instance(35,1000, '_parts','Parts','string',200,'{"columns": "id,content_type"}', @out_value);
 UPDATE api_table_field
-    SET is_virtual=-1, field_name='id',referenced_table_name='api_email_part',referenced_table_id=37,referenced_field_name='email_id'
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_email_part',
+        referenced_table_id=37,referenced_field_name='email_id', is_lookup=0
     WHERE id=@out_value;
 
 
@@ -467,12 +470,14 @@ call api_proc_create_table_field_instance(2,500, 'is_admin','Admin?','int',19,'{
 call api_proc_create_table_field_instance(2,600, 'solution_id','Solution','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(2,600, '_sessions','Sitzungen','string',200,'{"columns": "id,__user_id@name,last_access_on"}', @out_value);
 UPDATE api_table_field
-    SET is_virtual=-1, field_name='id',referenced_table_name='api_session',referenced_table_id=7,referenced_field_name='user_id'
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_session',
+        referenced_table_id=7,referenced_field_name='user_id', is_lookup=0
     WHERE id=@out_value;
 
 call api_proc_create_table_field_instance(2,600, '_groups','Sicherheitsgruppen','string',200,'{"columns":"id,__group_id@name"}', @out_value);
 UPDATE api_table_field
-    SET is_virtual=-1, field_name='id',referenced_table_name='api_user_group',referenced_table_id=4,referenced_field_name='user_id'
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_user_group',
+        referenced_table_id=4,referenced_field_name='user_id', is_lookup=0
     WHERE id=@out_value;
 
 /* dummy */
@@ -520,6 +525,11 @@ call api_proc_create_table_field_instance(13,1500, 'control_config','Konfigurati
 call api_proc_create_table_field_instance(13,1510, 'formatter','Formatierung','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1600, 'provider_id','Provider','string',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(13,1600, 'is_virtual','Virtuelles Feld','int',19,'{"disabled": false}', @out_value);
+
+/* api_table_field_lookup_function */
+call api_proc_create_table_field_instance(49,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
+call api_proc_create_table_field_instance(49,200, 'name','Name','string',1,'{"disabled": false}', @out_value);
+
 
 /* session */
 call api_proc_create_table_field_instance(7,100, 'id','ID','string',1,'{"disabled": true}', @out_value);
@@ -582,7 +592,8 @@ call api_proc_create_table_field_instance(3,300, 'is_admin','Admin?','int',19,'{
 call api_proc_create_table_field_instance(3,400, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(3,500, '_permissions','Berechtigungen','int',200,'{"columns":"id,mode_read,mode_create,mode_update,mode_delete,__table_id@name"}', @out_value);
 UPDATE api_table_field
-    SET is_virtual=-1, field_name='id',referenced_table_name='api_group_permission',referenced_table_id=5,referenced_field_name='group_id'
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_group_permission',
+        referenced_table_id=5,referenced_field_name='group_id', is_lookup=0
     WHERE id=@out_value;
 
 /* api_file */
@@ -631,7 +642,8 @@ UPDATE api_table_field
 
 call api_proc_create_table_field_instance(44,10000, '_documents','Dokumente','string',201,'{"relation_type": "complex"}', @out_value);
 UPDATE api_table_field
-    SET is_virtual=-1, field_name='id',referenced_table_name='api_file',referenced_table_id=20,referenced_field_name='email_id'
+    SET is_virtual=-1, field_name='id',referenced_table_name='api_file',
+        referenced_table_id=20,referenced_field_name='email_id', is_lookup=0
     WHERE id=@out_value;
 
 
