@@ -28,9 +28,9 @@ class TestFetchxmlParser(unittest.TestCase):
     def test_001_insert(self):
         print("================ START INSERT =================")
         sql="""
-        INSERT INTO dummy (name, port) VALUES (%s, %s);
+        INSERT INTO dummy (id, name, port) VALUES (%s, %s, %s);
         """
-        params=['test core','1234']
+        params=[999, 'test core','1234']
         print(exec_raw_sql(self.context, sql, params))
         print("================ END INSERT =================")
 

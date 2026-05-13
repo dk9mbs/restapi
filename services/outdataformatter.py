@@ -65,7 +65,7 @@ class OutDataFormatter(object):
         fetchparser=FetchXmlParser(fetch, self._context)
         rs=DatabaseServices.exec(fetchparser, self._context,run_as_system=True, fetch_mode=0)
         if rs.get_eof():
-            raise OutDataFormatterNotFound(f"OutDataFormatter not found {format_name} for type_id {self._type_id}")
+            raise OutDataFormatterNotFound(f"OutDataFormatter not found {format_name} for type_id {self._type_id} (Table: {self._table_id})")
 
         self._page_mode=rs.get_result()[0]['page_mode']
         self._file_name=rs.get_result()[0]['file_name']
