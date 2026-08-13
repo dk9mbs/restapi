@@ -1,5 +1,10 @@
 #/bin/bash
 
+#
+# Install missing packets
+#
+sudo apt install python3.11-venv
+
 . ./init.sh
 
 #

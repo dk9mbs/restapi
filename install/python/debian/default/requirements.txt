@@ -23,3 +23,4 @@ urllib3==1.25.10
 uWSGI==2.0.19.1
 Werkzeug==0.16.1
 zipp==3.1.0
+sqlglot==30.16.0

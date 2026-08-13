@@ -48,3 +48,18 @@ class WrongFetchMode(Exception):
 
 class NotAllowedDataClass(Exception):
     pass
+
+class SqlStatementFormat(Exception):
+    pass
+
+class IdentifierNotAllowedInSqlStatement(Exception):
+    pass
+
+class OperatorNotAllowedInSqlStatement(Exception):
+    pass
+
+class FunctionNotAllowedInSqlStatement(Exception):
+    pass
+
+class LiteralNotAllowedInJoinCondition(Exception):
+    pass
