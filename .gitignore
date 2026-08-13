@@ -31,3 +31,6 @@ shared/*
 !shared/__init__.py
 model/*
 
+.claude/settings.local.json
+CLAUDE.local.md
+
