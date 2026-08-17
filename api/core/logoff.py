@@ -2,7 +2,7 @@
 import uuid
 from flask import Flask,request,abort, g, session, make_response, redirect
 from flask import Blueprint
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 
 from core.appinfo import AppInfo

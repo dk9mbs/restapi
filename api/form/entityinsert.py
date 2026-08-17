@@ -2,7 +2,7 @@
 import sys
 import json
 from flask import Flask,request,abort, g, session, redirect, make_response, Blueprint
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from datetime import date, datetime
 

@@ -18,7 +18,7 @@ def build_table_fields_meta(context):
     for table in rs_tables.get_result():
         table_name=table['table_name']
         table_id=table['id']
-
+        print(f"* {table_name} ({table_id})")
         sql=f"""
         SHOW FIELDS FROM {table_name};
         """
@@ -29,6 +29,7 @@ def build_table_fields_meta(context):
         rs_fields.read()
         for field in rs_fields.get_result():
             field_name=field['Field']
+            print(f"** {field_name}")
             referenced_table_id=None
             referenced_table_name=None
             referenced_field_name=None
@@ -72,6 +73,7 @@ def build_table_fields_meta(context):
                 referenced_field_name=rs_foreign.get_result()[0]['REFERENCED_COLUMN_NAME']
                 is_lookup=-1
 
+                print(f"*** {referenced_field_name}")
 
                 sql=f"""
                 SELECT id FROM api_table WHERE table_name=%s

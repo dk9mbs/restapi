@@ -5,7 +5,7 @@ chardet==3.0.4
 click==7.1.2
 Flask==1.1.2
 Flask-MySQL==1.5.1
-flask-restplus==0.13.0
+flask-restx==0.5.1
 idna==2.10
 importlib-metadata==1.7.0
 itsdangerous==1.1.0
@@ -23,3 +23,4 @@ urllib3==1.25.10
 uWSGI==2.0.19.1
 Werkzeug==0.16.1
 zipp==3.1.0
+sqlglot==30.16.0

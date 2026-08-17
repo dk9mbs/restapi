@@ -16,6 +16,7 @@ plugins/*
 !plugins/api_imap_mail.py
 !plugins/api_create_alert.py
 !plugins/api_send_ntfy.py
+!plugins/api_action_set_record_meta.py
 3thparty
 wwwroot/*
 !wwwroot/index.htm
@@ -29,4 +30,7 @@ init.d/*
 shared/*
 !shared/__init__.py
 model/*
+
+.claude/settings.local.json
+CLAUDE.local.md
 

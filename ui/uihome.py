@@ -7,7 +7,7 @@ import os
 import urllib
 from flask import Flask, g, session, redirect, abort,request,Blueprint
 from flask import make_response, send_file
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 
 from services.fetchxml import build_fetchxml_by_alias

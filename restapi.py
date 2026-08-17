@@ -3,7 +3,7 @@ import importlib
 
 from flask import Flask, g, session, request, abort, make_response, redirect
 from flask import Blueprint
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from config import CONFIG
 from core.appinfo import AppInfo
