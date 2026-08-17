@@ -1,7 +1,7 @@
 import json
 import pymysql.cursors
 from flask import Flask, Blueprint
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
 import uuid

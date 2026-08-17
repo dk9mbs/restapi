@@ -1,7 +1,7 @@
 import json
 import pymysql.cursors
 from flask import Flask, Blueprint
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
 import uuid
@@ -99,7 +99,7 @@ class AppInfo:
             cnn=pymysql.connect(host=cls._app.config['MYSQL_DATABASE_HOST'],
                         user=cls._app.config['MYSQL_DATABASE_USER'],
                         password=cls._app.config['MYSQL_DATABASE_PASSWORD'],
-                        db=cls._app.config['MYSQL_DATABASE_DB'],
+                        database=cls._app.config['MYSQL_DATABASE_DB'],
                         charset='utf8mb4',cursorclass=pymysql.cursors.DictCursor)
         return cnn
 

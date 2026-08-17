@@ -3,7 +3,7 @@ import json
 import decimal
 from flask import Flask,request,abort,g ,session
 from flask import Blueprint
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from datetime import date, datetime, time, timedelta
 
@@ -11,6 +11,7 @@ from core.appinfo import AppInfo
 from services.fetchxml import build_fetchxml_by_alias
 from services.database import DatabaseServices
 from core.fetchxmlparser import FetchXmlParser
+from core.fetchsqlparser import FetchSqlParser
 from core.jsontools import json_serial
 from core.exceptions import RestApiNotAllowed
 from core import log
@@ -33,9 +34,15 @@ class EntityListFilter(Resource):
 
             page=int(context.get_arg("page",0))
             page_size=int(context.get_arg("page_size", 5000))
+            query_lang=context.get_arg("query_lang", "xml")
 
-            fetch=request.data
-            fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
+            if query_lang=="xml":
+                fetch=request.data
+                fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
+            elif query_lang=="sql":
+                fetch=request.data.decode('UTF-8')
+                fetchparser=FetchSqlParser(fetch, context, page=page, page_size=page_size)
+
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)
             return rs.get_result()
         except RestApiNotAllowed as err:

@@ -5,7 +5,7 @@ import jinja2
 import os
 from flask import Flask,request,abort,g ,session, make_response, redirect
 from flask import Blueprint
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 from datetime import date, datetime, time, timedelta
 

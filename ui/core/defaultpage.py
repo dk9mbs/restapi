@@ -3,7 +3,7 @@
 import sys
 from flask import Flask, g, session, redirect, abort,request,Blueprint
 from flask import make_response
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 from core.appinfo import AppInfo
 from core import log
 

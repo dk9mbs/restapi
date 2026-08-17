@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A metadata-driven REST API framework (Flask + flask-restplus + MySQL/PyMySQL). Almost nothing about the data model is hardcoded in Python: tables, fields, views, permissions, formatters and lookups are all rows in `api_table*` / `api_group_permission` / `api_table_view` tables, read at request time via `core/meta.py`. Application-specific behavior (bank imports, IoT/MQTT devices, APRS, ham-radio ADIF logging, etc.) lives entirely in `plugins/`, which are ordinary Python modules registered in the `api_event_handler` DB table and invoked by publisher/trigger name — there is no static registry of plugins in code.
+A metadata-driven REST API framework (Flask + flask-restx + MySQL/PyMySQL). Almost nothing about the data model is hardcoded in Python: tables, fields, views, permissions, formatters and lookups are all rows in `api_table*` / `api_group_permission` / `api_table_view` tables, read at request time via `core/meta.py`. Application-specific behavior (bank imports, IoT/MQTT devices, APRS, ham-radio ADIF logging, etc.) lives entirely in `plugins/`, which are ordinary Python modules registered in the `api_event_handler` DB table and invoked by publisher/trigger name — there is no static registry of plugins in code.
 
 ## Running the app
 
@@ -33,7 +33,7 @@ python -m unittest test.test_database_crud.TestDatabaseCrud.test_insert -v  # si
 ## Architecture
 
 ### Request lifecycle
-`restapi.py` builds the Flask app via `AppInfo.init()` (in `core/appinfo.py`, which owns the Flask app, the three `flask_restplus.Api` blueprints — `api`, `ui`, `portal` — and the raw MySQL connection pool), then imports each `api.*`/`ui.*` endpoint module and wires it to a URL with `AppInfo.get_api().add_resource(...)`. Endpoint modules follow one pattern: a `flask_restplus.Resource` subclass with `get`/`post`/`put`/`delete`, and a module-level `get_endpoint()` returning the class.
+`restapi.py` builds the Flask app via `AppInfo.init()` (in `core/appinfo.py`, which owns the Flask app, the three `flask_restx.Api` blueprints — `api`, `ui`, `portal` — and the raw MySQL connection pool), then imports each `api.*`/`ui.*` endpoint module and wires it to a URL with `AppInfo.get_api().add_resource(...)`. Endpoint modules follow one pattern: a `flask_restx.Resource` subclass with `get`/`post`/`put`/`delete`, and a module-level `get_endpoint()` returning the class.
 
 `before_request` in `restapi.py` resolves auth for every request (session cookie → `restapi-username`/`restapi-password` headers → `username`/`password` headers or query args → `apikey` → anonymous guest login with `auto_logoff`), builds a `Context` via `AppInfo.create_context(session_id)`, and stores it on `g.context`. `teardown_request` commits/closes or logs off that context depending on `auto_logoff`.
 

@@ -4,7 +4,7 @@ import sys
 import json
 from flask import Flask, g, session, make_response
 from flask import request, redirect, abort
-from flask_restplus import Resource, Api, reqparse
+from flask_restx import Resource, Api, reqparse
 
 from core.appinfo import AppInfo
 from services.fetchxml import build_fetchxml_by_alias
