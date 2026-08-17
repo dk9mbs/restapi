@@ -497,6 +497,11 @@ call api_proc_create_table_field_instance(10,800, 'enable_audit_log','Audit Log'
 call api_proc_create_table_field_instance(10,900, 'enable_record_permission','Datensatzsicherheit','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(10,950, 'enable_dms','Dokumenten anhängen','int',19,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(10,1000, 'solution_id','Lösung','int',2,'{"disabled": false}', @out_value);
+/* 
+nur bei der Tabelle 10 muss die sys_row_id einmalig angelegt werden. 
+Ansonsten werfen die meta tools einen Fehler. Die sys_row_id Felder für die übrigen Tabellen werden automatisch erzeugt 
+*/
+call api_proc_create_table_field_instance(10,1100, 'sys_row_id','Row ID','string',1,'{"disabled": true}', @out_value);
 
 
 
