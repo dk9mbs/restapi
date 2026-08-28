@@ -237,7 +237,6 @@ class FetchXmlParser(BaseParser):
             sql.append(f" LIMIT {self._limit_offset}, {self._limit} ")
 
         sql.append(f"{self._sql_comment}")
-        print((''.join(sql)))
         return (''.join(sql),params)
 
     def get_insert(self):
