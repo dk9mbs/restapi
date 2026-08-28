@@ -124,7 +124,7 @@ class EntitySet(Resource):
 
                 fetch=fetch.replace("$$query$$", query)
                 fetch=fetch.replace("$$operator$$", operator)
-                print(fetch)
+                #print(fetch)
                 fetchparser=FetchXmlParser(fetch, context, page=page, page_size=page_size)
 
             rs=DatabaseServices.exec(fetchparser,context,fetch_mode=0)

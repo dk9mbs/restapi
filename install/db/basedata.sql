@@ -254,6 +254,12 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (51,'HTTP Header','api_http_header','api_http_header','id','int','name',0);
 
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (52,'Datensatz Meta Typen','api_record_meta_type','api_record_meta_type','id','int','name',0);
+
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (53,'Datensatz Meta Daten','api_record_meta','api_record_meta','id','int','foreign_sys_row_id',0);
+
 
 
 /* Bugfixing */

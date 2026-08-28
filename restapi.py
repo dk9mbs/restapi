@@ -75,8 +75,13 @@ def before_request():
             auto_logoff=False
             username=""
             password=""
+            token=""
 
-            if 'restapi_username' in request.headers:
+            if 'Authorization' in request.headers:
+                #Todo implement a Bearer auth
+                token=request.headers['Authorization']
+                token = token.split(" ")[1]
+            elif 'restapi_username' in request.headers:
                 username=request.headers['restapi-username']
                 password=request.headers['restapi-password']
             elif 'username' in request.headers:
@@ -89,8 +94,16 @@ def before_request():
                 user=AppInfo.user_credentials_by_apikey( request.args['apikey'])
                 username=user['username']
                 password=user['password']
+            elif 'api_key' in request.args:
+                user=AppInfo.user_credentials_by_apikey( request.args['api_key'])
+                username=user['username']
+                password=user['password']
             elif 'apikey' in request.headers:
                 user=AppInfo.user_credentials_by_apikey( request.headers['apikey'])
+                username=user['username']
+                password=user['password']
+            elif 'api_key' in request.headers:
+                user=AppInfo.user_credentials_by_apikey( request.headers['api_key'])
                 username=user['username']
                 password=user['password']
             else:

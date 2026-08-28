@@ -54,6 +54,10 @@ class EntityAdd(Resource):
                             else:
                                 request.json[field['field_name']]=self._value(None, field['default_value'])
 
+            # do not use the uuid() function as an string default value
+            if 'sys_row_id' in request.json:
+                del request.json['sys_row_id']
+
             fetch=build_fetchxml_by_alias(context,table,None, request.json, type="insert")
             fetchparser=FetchXmlParser(fetch, context)
             rs=DatabaseServices.exec(fetchparser,context, fetch_mode=0)
