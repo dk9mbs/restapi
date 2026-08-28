@@ -42,6 +42,7 @@ class FetchXmlParser(BaseParser):
         self._limit_offset=page*page_size
         self._reference_record_filter_mode=0 #1=to, 2=by
         self._reference_record_filter_table_id=0
+        self._only_unreaded=False
         self.parse()
 
     def _init_properties(self):
@@ -64,6 +65,7 @@ class FetchXmlParser(BaseParser):
         self._sql_parameters_groupby=[]
         self._table_aliases={}
         self._columns_desc=[]
+        self._only_unreaded=True
 
     def get_page_size(self):
         return self._limit
@@ -209,6 +211,20 @@ class FetchXmlParser(BaseParser):
             sql.append(f" WHERE {self._sql_where}")
             params=params+self._sql_parameters_where
 
+
+        # Nur Datensätze, die noch nicht gelesen wurden
+        #19.08.2026
+        if self._only_unreaded:
+            if self._sql_where=="":
+                sql.append(" WHERE ")
+            else:
+                sql.append(" AND ")
+
+            #sql.append(f" (NOT IN (SELECT id FROM api_record_meta _xapi WHERE _xapi.foreign_sys_row_id={self._sql_table_alias}.sys_row_id AND _xapi.type_id=1) )")
+            sql.append(f" {self._sql_table_alias}.sys_row_id NOT IN (SELECT foreign_sys_row_id FROM api_record_meta _xapi WHERE ")
+            sql.append(f" _xapi.foreign_sys_row_id={self._sql_table_alias}.sys_row_id ")
+            sql.append(f" AND _xapi.meta_type_id=1001) ")
+
         if self._sql_group_by != "":
             sql.append(f" GROUP BY {self._sql_group_by}")
             params=params+self._sql_parameters_groupby
@@ -221,7 +237,7 @@ class FetchXmlParser(BaseParser):
             sql.append(f" LIMIT {self._limit_offset}, {self._limit} ")
 
         sql.append(f"{self._sql_comment}")
-
+        print((''.join(sql)))
         return (''.join(sql),params)
 
     def get_insert(self):

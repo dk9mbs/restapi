@@ -398,7 +398,8 @@ Beispielsweise wird hier gespeichert, ab ein Benutzer den Datensatz gelesen hat.
 */
 CREATE TABLE IF NOT EXISTS api_record_meta(
     id int NOT NULL AUTO_INCREMENT COMMENT 'Unique KEY',
-    sys_row_id varchar(50) NOT NULL COMMENT 'Global record id',
+    table_id int NOT NULL COMMENT 'table_id from api_table',
+    foreign_sys_row_id varchar(50) NOT NULL COMMENT 'row_id from the foreign table',
     user_id int NULL COMMENT 'user_id IS NULL: All Users; otherwise user_id',
     meta_type_id int NOT NULL COMMENT 'Dimension',
     value_int int NULL DEFAULT '0' COMMENT 'Dimension integer value',
@@ -406,10 +407,13 @@ CREATE TABLE IF NOT EXISTS api_record_meta(
     value_text text NULL COMMENT 'Dimension Big Text value',
     created_on datetime NOT NULL DEFAULT current_timestamp,
     PRIMARY KEY(id),
-    UNIQUE KEY(sys_row_id, user_id, meta_type_id),
+    KEY idx_table_foreign_user (table_id, foreign_sys_row_id, user_id),
+    UNIQUE KEY(foreign_sys_row_id, user_id, meta_type_id),
     FOREIGN KEY(meta_type_id) REFERENCES api_record_meta_type(id),
-    FOREIGN KEY(user_id) REFERENCES api_user(id)
+    FOREIGN KEY(user_id) REFERENCES api_user(id),
+    FOREIGN KEY(table_id) REFERENCES api_table(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 /* Ende Datensatzstatus */
 
 CREATE TABLE IF NOT EXISTS api_user_apikey (
