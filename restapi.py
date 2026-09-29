@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import importlib
-
+import jwt
 from flask import Flask, g, session, request, abort, make_response, redirect
 from flask import Blueprint
 from flask_restx import Resource, Api, reqparse
@@ -10,6 +10,8 @@ from core.appinfo import AppInfo
 from core import log
 import jinjainit
 from core.plugin import Plugin
+from core.jwt_token import JwtToken
+from core.setting import Setting
 from services.httprequest import HTTPRequest
 
 AppInfo.init(__name__, CONFIG['default'])
@@ -23,6 +25,7 @@ import api.data.entityadd
 import api.data.entityset
 import api.data.file
 import api.core.login
+import api.core.refresh
 import api.core.logoff
 import api.action
 import api.form.entityupdate
@@ -50,7 +53,6 @@ params={}
 handler=Plugin(context, "$app_start","execute")
 handler.execute('before', params)
 
-
 @app.before_request
 def before_request():
     g.context=None
@@ -62,14 +64,43 @@ def before_request():
     #logger.info(f"Endpoint: {request.endpoint}")
 
     if request.endpoint!='api.login' and request.endpoint!='ui.login':
+        enable_session_auth = True
+        enable_namepwd_auth = True
+        enable_apikey_auth = True
+
         login=False
-        if 'session_id' in session:
+
+        if 'Authorization' in request.headers:
+                #Todo implement a Bearer auth
+                #token=request.headers['Authorization']
+                token_auth=request.headers['Authorization'].split(" ")[0].upper()
+                token = request.headers['Authorization'].split(" ")[1]
+
+                jwt_secret = CONFIG['default']['jwt']['secret']
+                jwt_algorithm = CONFIG['default']['jwt']['algorithm']
+
+                jwt_token = JwtToken(secret=jwt_secret, algorithm=jwt_algorithm, token_use="access")
+                jwt_token.raise_error = True;
+                try:
+                    if token_auth == "BEARER" and jwt_token.decode(token):
+                        g.context=AppInfo.create_context(jwt_token.payload['sid'])
+                        login=True
+                except jwt.exceptions.DecodeError:
+                    logger.exception(f"Error decoding bearer token")
+                    return {"": "Error reading / decoding Bearer token"}, 401
+                except jwt.exceptions.ExpiredSignatureError:
+                    logger.exception(f"Error token expired")
+                    return {"message" : "Bearer token expiried"}, 401
+                except Exception as err:
+                    logger.exception(f"Error exception")
+                    return {"message": "Error reading / decoding Bearer token"}, 500
+
+        if 'session_id' in session and not login and enable_session_auth:
             try:
                 g.context=AppInfo.create_context(session['session_id'])
                 login=True
             except NameError as err:
                 logger.warning(f"Session_id found in session context: error raised: {err}")
-                #abort(400, f"Session_id found in session context: error raised: {err}")
 
         if not login:
             auto_logoff=False
@@ -77,32 +108,28 @@ def before_request():
             password=""
             token=""
 
-            if 'Authorization' in request.headers:
-                #Todo implement a Bearer auth
-                token=request.headers['Authorization']
-                token = token.split(" ")[1]
-            elif 'restapi_username' in request.headers:
+            if 'restapi_username' in request.headers and enable_namepwd_auth:
                 username=request.headers['restapi-username']
                 password=request.headers['restapi-password']
-            elif 'username' in request.headers:
+            elif 'username' in request.headers and enable_namepwd_auth:
                 username=request.headers['username']
                 password=request.headers['password']
-            elif 'username' in request.args:
+            elif 'username' in request.args and enable_namepwd_auth:
                 username=request.args['username']
                 password=request.args['password']
-            elif 'apikey' in request.args:
+            elif 'apikey' in request.args and enable_apikey_auth:
                 user=AppInfo.user_credentials_by_apikey( request.args['apikey'])
                 username=user['username']
                 password=user['password']
-            elif 'api_key' in request.args:
+            elif 'api_key' in request.args and enable_apikey_auth:
                 user=AppInfo.user_credentials_by_apikey( request.args['api_key'])
                 username=user['username']
                 password=user['password']
-            elif 'apikey' in request.headers:
+            elif 'apikey' in request.headers and enable_apikey_auth:
                 user=AppInfo.user_credentials_by_apikey( request.headers['apikey'])
                 username=user['username']
                 password=user['password']
-            elif 'api_key' in request.headers:
+            elif 'api_key' in request.headers and enable_apikey_auth:
                 user=AppInfo.user_credentials_by_apikey( request.headers['api_key'])
                 username=user['username']
                 password=user['password']
@@ -139,6 +166,7 @@ def before_request():
 
 
 AppInfo.get_api().add_resource(api.core.login.get_endpoint() , "/v1.0/core/login")
+AppInfo.get_api().add_resource(api.core.refresh.get_endpoint() , "/v1.0/core/refresh")
 AppInfo.get_api().add_resource(api.core.logoff.get_endpoint() , "/v1.0/core/logoff")
 AppInfo.get_api().add_resource(api.data.entity.get_endpoint(), "/v1.0/data/<table>/<id>", methods=['GET','PUT','DELETE'])
 AppInfo.get_api().add_resource(api.data.entity.get_endpoint(), "/v1.0/data/<table>/<id>/<field>", methods=['GET'])

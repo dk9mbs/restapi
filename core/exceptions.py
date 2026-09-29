@@ -63,3 +63,6 @@ class FunctionNotAllowedInSqlStatement(Exception):
 
 class LiteralNotAllowedInJoinCondition(Exception):
     pass
+
+class WrongJwtTokenType(Exception):
+    pass
