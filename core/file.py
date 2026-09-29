@@ -101,7 +101,6 @@ class File:
             """
             exec_raw_sql(context, sql, [reference_id, self._file_id])
 
-        print(args)
         if "from_table_alias" in args and "from_record_id" in args:
             from_table_alias=args['from_table_alias']
             from_meta=read_table_meta(context, alias=from_table_alias)

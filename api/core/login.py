@@ -6,9 +6,12 @@ from flask_restx import Resource, Api, reqparse
 from flaskext.mysql import MySQL
 
 from core.appinfo import AppInfo
-#from core.database import CommandBuilderFactory as factory
-from services.database import DatabaseServices
+from core.jwt_token import JwtToken
+from core.setting import Setting
 from core import log
+from config import CONFIG
+
+from services.database import DatabaseServices
 from services.httprequest import HTTPRequest
 
 def create_parser():
@@ -52,8 +55,20 @@ class Login(Resource):
             session['session_id']=session_id
             g.context=AppInfo.create_context(session_id)
 
+            jwt_secret = CONFIG['default']['jwt']['secret']
+            jwt_algorithm = CONFIG['default']['jwt']['algorithm']
+            jwt_access_lifetime = CONFIG['default']['jwt']['access_lifetime_min']
+            jwt_refresh_lifetime = CONFIG['default']['jwt']['refresh_lifetime_min']
+
+            jwt_access = JwtToken(secret=jwt_secret, algorithm=jwt_algorithm, token_use="access")
+            jwt_refresh = JwtToken(secret=jwt_secret, algorithm=jwt_algorithm, token_use="refresh")
+
+            jwt_access.encode(username, session_id, jwt_access_lifetime)
+            jwt_refresh.encode(username, session_id, jwt_refresh_lifetime)
+
             if next==None:
-                response = make_response({"session_id": session_id, "status":"logged_on"})
+                response = make_response({"session_id": session_id, "status":"logged_on", 
+                    "access_token": jwt_access.token, "refresh_token": jwt_refresh.token})
                 response.headers['content-type'] = 'text/json'
                 return response
             else:

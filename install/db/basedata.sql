@@ -842,6 +842,10 @@ INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('n
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.username','username','NTFY Username',1);
 INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('ntfy.password','password','NTFY Password',1);
 
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('jwt.secret','secret','Json Web Token secret',1);
+INSERT IGNORE INTO api_setting(setting,value,description,solution_id) VALUES ('jwt.algorithm','HS256','Json Web Token algorithm',1);
+
+
 /* MQTT Message Topics */
 INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias) VALUES (1, 'restapi/sys/ping', '^restapi/sys/ping$', '');
 INSERT IGNORE INTO api_mqtt_message_bus (id, topic, regex, alias, solution_id) VALUES (100020001, 'owntracks/+/+', '^owntracks/.*/.*$', '',  10002);

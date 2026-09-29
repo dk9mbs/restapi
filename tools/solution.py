@@ -37,6 +37,9 @@ source_plugin_path=f"{path}plugins/"
 target_plugin_path=f"{restapi_root}plugins/"
 source_wwwroot_path=f"{path}wwwroot/"
 target_wwwroot_path=f"{restapi_root}wwwroot/"
+source_tool_path=f"{path}tools/"
+target_tool_path=f"{restapi_root}tools/"
+
 # Database config
 db_user=CONFIG['default']['mysql']['user']
 db_pwd=CONFIG['default']['mysql']['password']
