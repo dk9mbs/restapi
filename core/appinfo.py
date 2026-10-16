@@ -219,12 +219,12 @@ class AppInfo:
 
     @classmethod
     def _get_user_credentials(cls, username):
-        sql=f"""
-        SELECT * FROM api_user WHERE username='{username}';
+        sql="""
+        SELECT * FROM api_user WHERE username=%s;
         """
         connection=cls.create_connection()
         cursor=connection.cursor()
-        cursor.execute(sql)
+        cursor.execute(sql, (username,))
         user=cursor.fetchone()
         cursor.fetchall()
         connection.close()
@@ -232,15 +232,15 @@ class AppInfo:
 
     @classmethod
     def _get_user_credentials_by_apikey(cls, apikey):
-        sql=f"""
-        SELECT u.* 
-        FROM api_user u  
+        sql="""
+        SELECT u.*
+        FROM api_user u
         INNER JOIN api_user_apikey a ON a.user_id=u.id
-        WHERE a.id='{apikey}' AND a.disabled=0;
+        WHERE a.id=%s AND a.disabled=0;
         """
         connection=cls.create_connection()
         cursor=connection.cursor()
-        cursor.execute(sql)
+        cursor.execute(sql, (apikey,))
         user=cursor.fetchone()
         cursor.fetchall()
         connection.close()
