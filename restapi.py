@@ -117,20 +117,13 @@ def before_request():
             elif 'username' in request.args and enable_namepwd_auth:
                 username=request.args['username']
                 password=request.args['password']
-            elif 'apikey' in request.args and enable_apikey_auth:
-                user=AppInfo.user_credentials_by_apikey( request.args['apikey'])
-                username=user['username']
-                password=user['password']
-            elif 'api_key' in request.args and enable_apikey_auth:
-                user=AppInfo.user_credentials_by_apikey( request.args['api_key'])
-                username=user['username']
-                password=user['password']
-            elif 'apikey' in request.headers and enable_apikey_auth:
-                user=AppInfo.user_credentials_by_apikey( request.headers['apikey'])
-                username=user['username']
-                password=user['password']
-            elif 'api_key' in request.headers and enable_apikey_auth:
-                user=AppInfo.user_credentials_by_apikey( request.headers['api_key'])
+            elif enable_apikey_auth and ('apikey' in request.args or 'api_key' in request.args
+                    or 'apikey' in request.headers or 'api_key' in request.headers):
+                apikey=(request.args.get('apikey') or request.args.get('api_key')
+                    or request.headers.get('apikey') or request.headers.get('api_key'))
+                user=AppInfo.user_credentials_by_apikey(apikey)
+                if user==None:
+                    abort(400,'Wrong apikey')
                 username=user['username']
                 password=user['password']
             else:
