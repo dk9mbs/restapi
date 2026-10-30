@@ -77,6 +77,9 @@ INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('multiline
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('boolean','Boolean',6) ON DUPLICATE KEY UPDATE control_id=6;
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('lookup','Lookup',2) ON DUPLICATE KEY UPDATE control_id=2;
 
+/* api_activity_app */
+INSERT IGNORE INTO api_activity_app (id, name) VALUES ('NEXTCLOUD', 'Nextcloud');
+
 /* currency */
 INSERT IGNORE INTO api_currency (id,iso_code,numeric_code, name, symbol, exchange_rate) 
     VALUES (1,'EUR', 978, 'Euro', '€', 1);
@@ -259,6 +262,9 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (53,'Datensatz Meta Daten','api_record_meta','api_record_meta','id','int','foreign_sys_row_id',0);
+
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (54,'Externe Aktivitäten app','api_activity_app','api_activity_app','id','string','name',0);
 
 
 

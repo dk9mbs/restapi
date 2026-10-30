@@ -992,6 +992,14 @@ CREATE TABLE IF NOT EXISTS api_activity_effort_unit(
 
 ALTER TABLE api_activity_effort_unit ADD COLUMN IF NOT EXISTS minutes decimal(15,4) NOT NULL DEFAULT '1' COMMENT '';
 
+CREATE TABLE IF NOT EXISTS api_activity_app(
+    id varchar(50) NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 CREATE TABLE IF NOT EXISTS api_activity(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
     type_id int NOT NULL DEFAULT '1' COMMENT '', 
@@ -1007,6 +1015,8 @@ CREATE TABLE IF NOT EXISTS api_activity(
     effort_unit_id varchar(10) NOT NULL DEFAULT 'day' COMMENT '',
     due_date datetime NULL COMMENT '',
     tag varchar(250) NULL COMMENT '',
+    external_note_reference int NULL COMMENT 'Nextcloud Notes ID',
+    external_app_id varchar(50) NULL COMMENT 'NEXTCLOUD',
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id, status_id),
     INDEX `index_api_activity_tag` (tag, status_id),
@@ -1014,12 +1024,16 @@ CREATE TABLE IF NOT EXISTS api_activity(
     CONSTRAINT `foreign_reference_api_activity_type_id` FOREIGN KEY(type_id) REFERENCES api_activity_type(id),
     CONSTRAINT `foreign_reference_api_activity_board_id` FOREIGN KEY(board_id) REFERENCES api_activity_board(id),
     CONSTRAINT `foreign_reference_api_activity_lane_id` FOREIGN KEY(lane_id) REFERENCES api_activity_lane(id),
-    CONSTRAINT `foreign_reference_api_activity_effort_unit_id` FOREIGN KEY(effort_unit_id) REFERENCES api_activity_effort_unit(id)
+    CONSTRAINT `foreign_reference_api_activity_effort_unit_id` FOREIGN KEY(effort_unit_id) REFERENCES api_activity_effort_unit(id),
+    CONSTRAINT `foreign_reference_api_activity_app_id` FOREIGN KEY(external_app_id) REFERENCES api_activity_app(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE api_activity ADD INDEX IF NOT EXISTS `index_api_activity_tag` (tag);
 ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS planned_effort_minutes int NOT NULL DEFAULT '0' COMMENT '' AFTER planned_effort;
 ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS actual_effort_minutes int NOT NULL DEFAULT '0' COMMENT '' AFTER actual_effort;
+ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS external_note_reference int NULL COMMENT 'Nextcloud Notes ID' AFTER tag;
+ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS external_app_id varchar(50) NULL COMMENT 'NEXTCLOUD' AFTER external_note_reference;
+ALTER TABLE api_activity ADD FOREIGN KEY IF NOT EXISTS `foreign_reference_api_activity_app_id` (external_app_id) REFERENCES api_activity_app(id);
 
 CREATE TABLE IF NOT EXISTS api_record_reference(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
