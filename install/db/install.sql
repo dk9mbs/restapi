@@ -230,6 +230,7 @@ CREATE TABLE IF NOT EXISTS api_table (
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAULT '' AFTER id;
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_record_permission smallint NOT NULL DEFAULT '0' COMMENT '' AFTER enable_audit_log;
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_dms smallint NOT NULL DEFAULT '0' COMMENT 'Activate DMS for this table' AFTER enable_record_permission;
+ALTER TABLE api_table ADD COLUMN IF NOT EXISTS description text NULL COMMENT 'Beschreibung der Tabelle (z. B. für MCP/KI)' AFTER name;
 
 /* formatter */
 CREATE TABLE IF NOT EXISTS api_data_formatter_type(
@@ -1089,5 +1090,24 @@ CREATE TABLE IF NOT EXISTS api_http_header(
     UNIQUE KEY(name, scope_id, priority)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+/* MCP Server */
+-- Vorschlag: Metadaten für MCP-Tools (nicht im Repo eingespielt)
+-- Danach Metadaten-Cache neu bauen (tools/metadata.py + post_metacache.sql).
+
+CREATE TABLE IF NOT EXISTS api_mcp_tool (
+    id int NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
+    name varchar(64) NOT NULL COMMENT 'Toolname für MCP, z. B. iot_offline_devices',
+    description varchar(1000) NOT NULL COMMENT 'Beschreibung für das Modell - wann und wofür das Tool genutzt wird',
+    action varchar(250) NOT NULL COMMENT 'Action-Name = api_event_handler.publisher (event=execute)',
+    input_schema text NULL COMMENT 'JSON-Schema der Argumente',
+    is_read_only smallint NOT NULL DEFAULT '-1' COMMENT '-1: liest nur 0: schreibt',
+    is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled',
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id),
+    PRIMARY KEY(id),
+    UNIQUE KEY(name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/* End MCP Server */
 
 call api_proc_prepare_api_tables();

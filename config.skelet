@@ -5,5 +5,7 @@ CONFIG={
         "server": {"port":5000, "host":"127.0.0.1"},
         "plugin": {"root":"/tmp"},
         "ui": {"wwwroot": "/tmp/wwwroot/"},
+        "jwt": {"secret":"change_me_min_32_chars_e.g._openssl_rand_hex_32", "algorithm":"HS256",
+            "access_lifetime_min":60, "refresh_lifetime_min":1440},
     }
 }

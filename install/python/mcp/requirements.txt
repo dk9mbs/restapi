@@ -1,0 +1,7 @@
+# MCP-Server mcpservice.py
+# Installation über install.sh (venv/mcp)   (Python >= 3.10)
+mcp>=2.3,<3          # MCP-SDK 2.x (MCPServer statt FastMCP)
+httpx>=0.28,<1       # HTTP-Client für die restapi
+jsonschema>=4.26,<5  # Validierung der Argumente gegen api_mcp_tool.input_schema
+pydantic>=2.13,<3    # Modelle (Condition)
+anyio>=4.15,<5       # Async-Start beim Laden der Plugin-Tools
