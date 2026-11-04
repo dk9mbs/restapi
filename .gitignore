@@ -17,6 +17,8 @@ plugins/*
 !plugins/api_create_alert.py
 !plugins/api_send_ntfy.py
 !plugins/api_action_set_record_meta.py
+!plugins/api_mcp_schema.py
+!plugins/api_mcp_demo.py
 3thparty
 wwwroot/*
 !wwwroot/index.htm

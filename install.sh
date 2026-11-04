@@ -202,6 +202,108 @@ NotifyAccess=all
 WantedBy=multi-user.target
 EOF
 
+# ----------------------------------------------------------------- MCP BEGIN
+#
+# Create mcp service
+# Eigenes venv, damit die Abhängigkeiten des MCP-SDK nicht mit restapi/uwsgi kollidieren
+#
+MCPVENV=$BASEDIR/venv/mcp
+MCPREQFILE=$BASEDIR/install/python/mcp/requirements.txt
+MCPENVFILE=/etc/restapi/mcp.$INSTANCE_ID.env
+
+if [ ! -f $MCPVENV/bin/activate ];
+then
+    echo "mcp virtual environment creating ($MCPVENV) ..."
+    python3 -m venv $MCPVENV/
+    echo "mcp virtual environment created!"
+fi
+echo "installing $MCPREQFILE with pip ..."
+$MCPVENV/bin/pip install --upgrade pip wheel setuptools
+$MCPVENV/bin/pip install -r $MCPREQFILE
+echo "mcp components installed!"
+
+#
+# Create mcp environment file (only once - contains the apikey!)
+#
+if [ ! -f $MCPENVFILE ];
+then
+echo "... writing $MCPENVFILE ..."
+cat << EOF | sudo tee $MCPENVFILE > /dev/null
+# Konfiguration für restapi-mcp.$INSTANCE_ID.service
+# auto created by $BASEDIR/install.sh - wird nicht überschrieben
+
+# restapi direkt über uwsgi (http-socket aus uwsgi.$INSTANCE_ID.ini)
+DK9MBS_API_BASE=http://127.0.0.1:8881/api
+# API-Key des MCP-Benutzers (id aus api_user_apikey)
+DK9MBS_API_KEY=
+
+# Schreibende Tools freigeben: 0 = ja, 1 = nur lesen
+DK9MBS_READ_ONLY=1
+# Optionale Einschränkung auf Tabellen (kommagetrennt), leer = Rechte laut api_group_permission
+DK9MBS_TABLES=
+
+# Transport hinter apache2
+MCP_TRANSPORT=streamable-http
+MCP_HOST=127.0.0.1
+MCP_PORT=8765
+MCP_PATH=/mcp
+MCP_PUBLIC_HOST=dk9mbs.de
+EOF
+sudo chmod 600 $MCPENVFILE
+else
+    echo "$MCPENVFILE exists - not changed"
+fi
+
+echo "... writing restapi-mcp.service ..."
+cat << EOF | sudo tee /etc/systemd/system/restapi-mcp.$INSTANCE_ID.service
+# do not change this file here!
+# auto created by $BASEDIR/install.sh
+[Unit]
+Description=restAPI mcp daemon
+After=syslog.target network-online.target mysqld.service restapi.$INSTANCE_ID.service
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=$BASEDIR
+EnvironmentFile=$MCPENVFILE
+ExecStart=$MCPVENV/bin/python $BASEDIR/mcpservice.py
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+Type=simple
+User=www-data
+Group=www-data
+NoNewPrivileges=yes
+PrivateTmp=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "...reloading systemctl ..."
+sudo systemctl daemon-reload
+echo "*****************************************************************"
+echo "API-Key eintragen:"
+echo "------------------"
+echo "sudo nano $MCPENVFILE"
+echo ""
+echo "start the service:"
+echo "------------------"
+echo "systemctl start restapi-mcp.$INSTANCE_ID.service"
+echo ""
+echo "autostart the service:"
+echo "----------------------"
+echo "systemctl enable restapi-mcp.$INSTANCE_ID.service"
+echo ""
+echo "logs:"
+echo "-----"
+echo "journalctl -u restapi-mcp.$INSTANCE_ID.service -f"
+echo "*****************************************************************"
+# ----------------------------------------------------------------- MCP END
+
+
 echo "...reloading systemctl ..."
 sudo systemctl daemon-reload
 echo "*****************************************************************"

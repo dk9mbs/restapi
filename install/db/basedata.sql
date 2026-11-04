@@ -77,6 +77,9 @@ INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('multiline
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('boolean','Boolean',6) ON DUPLICATE KEY UPDATE control_id=6;
 INSERT IGNORE INTO api_table_field_type(id, name, control_id) VALUES ('lookup','Lookup',2) ON DUPLICATE KEY UPDATE control_id=2;
 
+/* api_activity_app */
+INSERT IGNORE INTO api_activity_app (id, name) VALUES ('NEXTCLOUD', 'Nextcloud');
+
 /* currency */
 INSERT IGNORE INTO api_currency (id,iso_code,numeric_code, name, symbol, exchange_rate) 
     VALUES (1,'EUR', 978, 'Euro', '€', 1);
@@ -260,6 +263,35 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (53,'Datensatz Meta Daten','api_record_meta','api_record_meta','id','int','foreign_sys_row_id',0);
 
+INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (54,'Externe Aktivitäten app','api_activity_app','api_activity_app','id','string','name',0);
+
+
+-- TODO: freie table-id prüfen (basedata.sql endet bei 38, Solutions können weitere belegen)
+INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
+    VALUES (55,'MCP Tool','api_mcp_tool','api_mcp_tool','id','int','name',-1);
+
+-- Leserecht für die Gruppe des MCP-Benutzers (group_id anpassen)
+-- INSERT IGNORE INTO api_group_permission (group_id,table_id,mode_read) VALUES (<mcp_group_id>,39,-1);
+
+-- Schema-Action für list_tables/describe_table (Plugin plugins/api_mcp_schema.py).
+-- Liefert nur Tabellen, die der aufrufende Benutzer laut api_group_permission lesen darf.
+INSERT IGNORE INTO api_event_handler(plugin_module_name,publisher,event,type,solution_id)
+    VALUES ('api_mcp_schema','api_mcp_schema','execute','before',1);
+
+
+-- ------------------------------------------------------------------ Beispiel-Tool
+-- 1. Plugin als Action registrieren (wie jede andere Action unter /v1.0/action/<action>)
+INSERT IGNORE INTO api_event_handler(plugin_module_name,publisher,event,type,solution_id)
+    VALUES ('api_mcp_demo','api_mcp_demo','execute','before',1);
+
+-- 2. Als MCP-Tool veröffentlichen
+INSERT IGNORE INTO api_mcp_tool(name,description,action,input_schema,is_read_only,solution_id)
+    VALUES ('api_mcp_demo',
+    'Demo-Tool: liefert eine Begrüßung und den angemeldeten Benutzer. Nur zum Testen der MCP-Anbindung.',
+    'api_mcp_demo',
+    '{"type":"object","properties":{}}',
+    -1,1);
 
 
 /* Bugfixing */
@@ -494,6 +526,7 @@ call api_proc_create_table_field_instance(1,30, 'Port','Port','int',14,'{"disabl
 /* api_table */
 call api_proc_create_table_field_instance(10,100, 'id','ID','int',14,'{"disabled": true}', @out_value);
 call api_proc_create_table_field_instance(10,200, 'name','Bezeichnung','string',1,'{"disabled": false}', @out_value);
+call api_proc_create_table_field_instance(10,200, 'description','Beschreibung für KI','string',18,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(10,300, 'alias','API Tabellenname (Alias)','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(10,400, 'table_name','SQL Tablename','string',1,'{"disabled": false}', @out_value);
 call api_proc_create_table_field_instance(10,500, 'id_field_name','Feldname unique Key','string',1,'{"disabled": false}', @out_value);

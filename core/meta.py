@@ -115,6 +115,20 @@ def read_table_meta(context, alias=None, table_name=None, table_id=None):
 
     return meta
 
+#
+# Liefert die Metadaten aller Tabellen aus api_table (sortiert nach alias).
+#
+def read_all_table_meta(context):
+    connection=context.get_connection()
+    sql=f"""
+    SELECT * FROM api_table ORDER BY alias
+    """
+    cursor=connection.cursor()
+    cursor.execute(sql)
+    meta=cursor.fetchall()
+    cursor.close()
+    return list(meta)
+
 def create_table_relation(context, main_table_id: int, sub_table_id: int, main_record_id_int: int=0, main_record_id_str: str=None) -> dict:
     result={}
     # main = api_user (2)

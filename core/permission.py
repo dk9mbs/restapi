@@ -4,20 +4,13 @@ class Permission:
         pass
 
     def validate(self,context,mode,username,table):
-        sql="""
-        SELECT * FROM api_user WHERE username=%s AND disabled=%s AND is_admin=%s
-        """
-
         if mode.lower()=="insert": mode="create"
         if mode.lower()=="select": mode="read"
 
-        connection=context.get_connection()
-        cursor=connection.cursor()
-        cursor.execute(sql,[username,0,-1])
-        systemuser=cursor.fetchone()
-        cursor.fetchall()
-        if not systemuser==None:
+        if self.is_admin(context, username):
             return True
+
+        connection=context.get_connection()
 
         sql=f"""
         SELECT p.mode_read,p.mode_create,p.mode_update,p.mode_delete,u.is_admin,p.table_id 
@@ -40,6 +33,62 @@ class Permission:
 
         #self._add_log(connection, 'SUCCESS', table, table, username, mode)
         return True
+
+    #
+    # True, wenn der Benutzer aktiver Administrator ist (sieht und darf alles).
+    #
+    def is_admin(self, context, username):
+        sql="""
+        SELECT id FROM api_user WHERE username=%s AND disabled=%s AND is_admin=%s
+        """
+        connection=context.get_connection()
+        cursor=connection.cursor()
+        cursor.execute(sql,[username,0,-1])
+        user=cursor.fetchone()
+        cursor.fetchall()
+        cursor.close()
+        return user!=None
+
+    #
+    # Liefert die Tabellenrechte eines Benutzers als dict: table_id -> {"read":bool, "create":bool, ...}
+    # Ein Recht gilt, sobald eine Gruppe des Benutzers es hat (wie validate()).
+    # Administratoren erhalten alle Tabellen mit allen Rechten.
+    #
+    def read_table_permissions(self, context, username):
+        if self.is_admin(context, username):
+            sql="""
+            SELECT t.id AS table_id, -1 AS mode_read, -1 AS mode_create, -1 AS mode_update, -1 AS mode_delete
+            FROM api_table t
+            """
+            params=[]
+        else:
+            sql="""
+            SELECT p.table_id,
+                MIN(p.mode_read) AS mode_read, MIN(p.mode_create) AS mode_create,
+                MIN(p.mode_update) AS mode_update, MIN(p.mode_delete) AS mode_delete
+            FROM api_user u
+            INNER JOIN api_user_group ug ON ug.user_id=u.id
+            INNER JOIN api_group_permission p ON p.group_id=ug.group_id
+            WHERE u.username=%s
+            GROUP BY p.table_id
+            """
+            params=[username]
+
+        connection=context.get_connection()
+        cursor=connection.cursor()
+        cursor.execute(sql,params)
+        rows=cursor.fetchall()
+        cursor.close()
+
+        permissions={}
+        for row in rows:
+            permissions[row['table_id']]={
+                "read": row['mode_read']==-1,
+                "create": row['mode_create']==-1,
+                "update": row['mode_update']==-1,
+                "delete": row['mode_delete']==-1
+            }
+        return permissions
 
 
     def _add_log(self,connection, log_type, table_name, table_alias, username, mode):

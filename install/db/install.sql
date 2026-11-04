@@ -230,6 +230,7 @@ CREATE TABLE IF NOT EXISTS api_table (
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS name varchar(250) NOT NULL DEFAULT '' AFTER id;
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_record_permission smallint NOT NULL DEFAULT '0' COMMENT '' AFTER enable_audit_log;
 ALTER TABLE api_table ADD COLUMN IF NOT EXISTS enable_dms smallint NOT NULL DEFAULT '0' COMMENT 'Activate DMS for this table' AFTER enable_record_permission;
+ALTER TABLE api_table ADD COLUMN IF NOT EXISTS description text NULL COMMENT 'Beschreibung der Tabelle (z. B. für MCP/KI)' AFTER name;
 
 /* formatter */
 CREATE TABLE IF NOT EXISTS api_data_formatter_type(
@@ -992,6 +993,14 @@ CREATE TABLE IF NOT EXISTS api_activity_effort_unit(
 
 ALTER TABLE api_activity_effort_unit ADD COLUMN IF NOT EXISTS minutes decimal(15,4) NOT NULL DEFAULT '1' COMMENT '';
 
+CREATE TABLE IF NOT EXISTS api_activity_app(
+    id varchar(50) NOT NULL COMMENT '',
+    name varchar(50) NOT NULL COMMENT '',
+    created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 CREATE TABLE IF NOT EXISTS api_activity(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
     type_id int NOT NULL DEFAULT '1' COMMENT '', 
@@ -1007,6 +1016,8 @@ CREATE TABLE IF NOT EXISTS api_activity(
     effort_unit_id varchar(10) NOT NULL DEFAULT 'day' COMMENT '',
     due_date datetime NULL COMMENT '',
     tag varchar(250) NULL COMMENT '',
+    external_note_reference int NULL COMMENT 'Nextcloud Notes ID',
+    external_app_id varchar(50) NULL COMMENT 'NEXTCLOUD',
     created_on datetime NOT NULL DEFAULT current_timestamp COMMENT '',
     PRIMARY KEY(id, status_id),
     INDEX `index_api_activity_tag` (tag, status_id),
@@ -1014,12 +1025,16 @@ CREATE TABLE IF NOT EXISTS api_activity(
     CONSTRAINT `foreign_reference_api_activity_type_id` FOREIGN KEY(type_id) REFERENCES api_activity_type(id),
     CONSTRAINT `foreign_reference_api_activity_board_id` FOREIGN KEY(board_id) REFERENCES api_activity_board(id),
     CONSTRAINT `foreign_reference_api_activity_lane_id` FOREIGN KEY(lane_id) REFERENCES api_activity_lane(id),
-    CONSTRAINT `foreign_reference_api_activity_effort_unit_id` FOREIGN KEY(effort_unit_id) REFERENCES api_activity_effort_unit(id)
+    CONSTRAINT `foreign_reference_api_activity_effort_unit_id` FOREIGN KEY(effort_unit_id) REFERENCES api_activity_effort_unit(id),
+    CONSTRAINT `foreign_reference_api_activity_app_id` FOREIGN KEY(external_app_id) REFERENCES api_activity_app(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE api_activity ADD INDEX IF NOT EXISTS `index_api_activity_tag` (tag);
 ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS planned_effort_minutes int NOT NULL DEFAULT '0' COMMENT '' AFTER planned_effort;
 ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS actual_effort_minutes int NOT NULL DEFAULT '0' COMMENT '' AFTER actual_effort;
+ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS external_note_reference int NULL COMMENT 'Nextcloud Notes ID' AFTER tag;
+ALTER TABLE api_activity ADD COLUMN IF NOT EXISTS external_app_id varchar(50) NULL COMMENT 'NEXTCLOUD' AFTER external_note_reference;
+ALTER TABLE api_activity ADD FOREIGN KEY IF NOT EXISTS `foreign_reference_api_activity_app_id` (external_app_id) REFERENCES api_activity_app(id);
 
 CREATE TABLE IF NOT EXISTS api_record_reference(
     id int NOT NULL AUTO_INCREMENT COMMENT '',
@@ -1075,5 +1090,24 @@ CREATE TABLE IF NOT EXISTS api_http_header(
     UNIQUE KEY(name, scope_id, priority)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+/* MCP Server */
+-- Vorschlag: Metadaten für MCP-Tools (nicht im Repo eingespielt)
+-- Danach Metadaten-Cache neu bauen (tools/metadata.py + post_metacache.sql).
+
+CREATE TABLE IF NOT EXISTS api_mcp_tool (
+    id int NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
+    name varchar(64) NOT NULL COMMENT 'Toolname für MCP, z. B. iot_offline_devices',
+    description varchar(1000) NOT NULL COMMENT 'Beschreibung für das Modell - wann und wofür das Tool genutzt wird',
+    action varchar(250) NOT NULL COMMENT 'Action-Name = api_event_handler.publisher (event=execute)',
+    input_schema text NULL COMMENT 'JSON-Schema der Argumente',
+    is_read_only smallint NOT NULL DEFAULT '-1' COMMENT '-1: liest nur 0: schreibt',
+    is_enabled smallint NOT NULL DEFAULT '-1' COMMENT '-1: enabled 0=disabled',
+    solution_id int NOT NULL DEFAULT '1',
+    FOREIGN KEY(solution_id) REFERENCES api_solution(id),
+    PRIMARY KEY(id),
+    UNIQUE KEY(name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/* End MCP Server */
 
 call api_proc_prepare_api_tables();
