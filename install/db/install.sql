@@ -415,6 +415,8 @@ CREATE TABLE IF NOT EXISTS api_record_meta(
     FOREIGN KEY(table_id) REFERENCES api_table(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE api_record_meta ADD COLUMN IF NOT EXISTS foreign_sys_row_id varchar(50) NOT NULL COMMENT 'row_id from the foreign table' AFTER table_id;
+
 /* Ende Datensatzstatus */
 
 CREATE TABLE IF NOT EXISTS api_user_apikey (
