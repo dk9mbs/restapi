@@ -189,7 +189,7 @@ The tests use `unittest` and need a **live database** configured in `config.py`.
 ```bash
 . ./init.sh
 python -m unittest discover -v -s test
-python -m unittest test.test_fetchsqlparser -v
+python -m unittest discover -v -s test -p 'test_fetchsqlparser.py'   # single module
 ```
 
 ## Code style

@@ -24,8 +24,8 @@ Tests are `unittest`-based and require a **live MySQL database** — each test's
 ```bash
 . ./init.sh
 python -m unittest discover -v -s test          # all tests, from repo root
-python -m unittest test.test_database_crud -v   # single module
-python -m unittest test.test_database_crud.TestDatabaseCrud.test_insert -v  # single test
+python -m unittest discover -v -s test -p 'test_database_crud.py'   # single module
+(cd test && python -m unittest test_database_crud.TestFetchxmlParser.test_exec -v)  # single test
 ```
 
 `test/integrationtest.sh` additionally drops a throwaway plugin module into `/tmp` before running the suite — used for plugin-execution tests that `importlib.import_module` a plugin by name.

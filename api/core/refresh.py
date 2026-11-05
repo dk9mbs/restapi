@@ -42,6 +42,7 @@ class Refresh(Resource):
 
         jwt_secret = CONFIG['default']['jwt']['secret']
         jwt_algorithm = CONFIG['default']['jwt']['algorithm']
+        jwt_access_lifetime = CONFIG['default']['jwt']['access_lifetime_min']
 
         jwt_access = JwtToken(secret=jwt_secret, algorithm=jwt_algorithm, token_use="access")
         jwt_refresh = JwtToken(secret=jwt_secret, algorithm=jwt_algorithm, token_use="refresh")
@@ -56,7 +57,7 @@ class Refresh(Resource):
         except WrongJwtTokenType as e:
             abort(500, 'Wrong token_use')
 
-        jwt_access.encode(jwt_refresh.payload['sub'], jwt_refresh.payload['sid'], 60)
+        jwt_access.encode(jwt_refresh.payload['sub'], jwt_refresh.payload['sid'], jwt_access_lifetime)
 
         response = make_response({"status":"refreshed","session_id": jwt_refresh.payload['sid'],
             "access_token": jwt_access.token, "refresh_token": jwt_refresh.token})
