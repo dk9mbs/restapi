@@ -1,9 +1,29 @@
-#/bin/bash
+#!/bin/bash
+
+#
+# Stop the installation if a step failed
+# usage: <command>; check $? "<description>"
+#
+check() {
+    if [ $1 -ne 0 ]; then
+        echo "*****************************************************************"
+        echo "ERROR: $2 failed (exit code $1) - installation aborted!"
+        echo "*****************************************************************"
+        exit $1
+    fi
+}
+
+if [ -z "$1" ] || [ -z "$2" ];
+then
+    echo "usage: $0 <restapi_user> <restapi_password>"
+    exit 1
+fi
 
 #
 # Install missing packets
 #
 sudo apt install python3.11-venv
+check $? "apt install python3.11-venv"
 
 . ./init.sh
 
@@ -17,6 +37,11 @@ MYSQL_USER=$(python $BASEDIR/cfgreader.py mysql user)
 MYSQL_PASSWORD=$(python $BASEDIR/cfgreader.py mysql password)
 MYSQL_DATABASE=$(python $BASEDIR/cfgreader.py mysql database)
 MYSQL_HOST=$(python $BASEDIR/cfgreader.py mysql host)
+check $? "reading config.py"
+if [ -z "$INSTANCE_ID" ] || [ -z "$MYSQL_DATABASE" ];
+then
+    check 1 "reading instance id / mysql database from config.py"
+fi
 RESTAPI_UID=$1
 RESTAPI_PWD=$2
 
@@ -27,21 +52,26 @@ echo "mysql databse    $MYSQL_DATABASE"
 echo "mysql host       $MYSQL_HOST"
 
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST -e"CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;"
+check $? "CREATE DATABASE $MYSQL_DATABASE"
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/db/install.sql
-echo "Install Database Objects $?"
+check $? "install/db/install.sql"
+echo "Install Database Objects 0"
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/db/basedata.sql
-echo "Import Data $?"
+check $? "install/db/basedata.sql"
+echo "Import Data 0"
 
 echo "------------------------------------------------------------"
 echo "building the metadata cache ..."
 python $BASEDIR/tools/metadata.py -u$RESTAPI_UID -p$RESTAPI_PWD
+check $? "tools/metadata.py"
 echo "metadata cache builded!"
 echo "------------------------------------------------------------"
 
 # execute after meta cache building
 echo "Cleaning up the database ..."
 mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST  $MYSQL_DATABASE < ./install/db/post_metacache.sql
-echo "CleanUp Database $?"
+check $? "install/db/post_metacache.sql"
+echo "CleanUp Database 0"
 
 mkdir -p $BASEDIR/plugins
 mkdir -p $BASEDIR/formatter
@@ -215,11 +245,14 @@ if [ ! -f $MCPVENV/bin/activate ];
 then
     echo "mcp virtual environment creating ($MCPVENV) ..."
     python3 -m venv $MCPVENV/
+    check $? "creating mcp venv $MCPVENV"
     echo "mcp virtual environment created!"
 fi
 echo "installing $MCPREQFILE with pip ..."
 $MCPVENV/bin/pip install --upgrade pip wheel setuptools
+check $? "pip upgrade (mcp venv)"
 $MCPVENV/bin/pip install -r $MCPREQFILE
+check $? "pip install $MCPREQFILE"
 echo "mcp components installed!"
 
 #
@@ -230,6 +263,11 @@ then
 # API-Key des MCP-Benutzers 'mcp' (id 101, angelegt in basedata.sql)
 MCP_API_KEY=$(mysql -N -B -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE \
     -e"SELECT id FROM api_user_apikey WHERE user_id=101 AND name='mcp' AND disabled=0 LIMIT 1;")
+check $? "reading the API key of user 'mcp'"
+if [ -z "$MCP_API_KEY" ];
+then
+    echo "WARNING: no API key for user 'mcp' found - DK9MBS_API_KEY stays empty"
+fi
 echo "... writing $MCPENVFILE ..."
 cat << EOF | sudo tee $MCPENVFILE > /dev/null
 # Konfiguration für restapi-mcp.$INSTANCE_ID.service
