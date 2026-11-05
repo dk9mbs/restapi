@@ -10,6 +10,8 @@ Plugins:  fachliche Tools kommen aus dem bestehenden restapi-Pluginsystem.
 Installation:   pip install "mcp>=2" httpx pydantic jsonschema
 Start lokal:    python mcpservice.py                                   (stdio)
 Start remote:   MCP_TRANSPORT=streamable-http python mcpservice.py     (HTTP, hinter Apache + TLS)
+Neu laden:      kill -HUP <pid> bzw. systemctl reload restapi-mcp.<instance>.service
+                (liest api_mcp_tool neu, ohne Neustart)
 
 Auth: API-Key eines eigenen MCP-Benutzers (Header 'apikey'). Welche Tabellen
 lesbar/schreibbar sind, regelt die restapi selbst über api_group_permission.
@@ -207,18 +209,21 @@ class ActionTool(Tool):
         return self.fn_metadata.convert_result(result) if convert_result else result
 
 
-def _register_action_tool(row: dict[str, Any]) -> None:
+_action_tool_names: set[str] = set()   # aktuell registrierte Plugin-Tools (für das Neuladen)
+
+
+def _build_action_tool(row: dict[str, Any]) -> Tool | None:
     name = row["name"]
     action = row["action"]
     is_read_only = str(row.get("is_read_only", "0")) == "-1"
     if READ_ONLY and not is_read_only:
         log.info("Tool '%s' übersprungen (schreibend, Server ist read-only)", name)
-        return
+        return None
     try:
         schema = json.loads(row.get("input_schema") or "{}") or {"type": "object", "properties": {}}
     except ValueError:
         log.error("Tool '%s': input_schema ist kein gültiges JSON", name)
-        return
+        return None
 
     async def call_action(arguments: dict[str, Any]) -> Any:
         return await _request(f"/v1.0/action/{action}", payload=arguments)
@@ -226,34 +231,62 @@ def _register_action_tool(row: dict[str, Any]) -> None:
     base = Tool.from_function(call_action, name=name, description=row.get("description") or name)
     tool = ActionTool(**{k: getattr(base, k) for k in Tool.model_fields})
     tool.parameters = schema
-    # MCPServer.add_tool() baut das Schema aus der Funktionssignatur; für ein freies Schema
-    # wird das fertige Tool direkt eingetragen.
-    mcp._tool_manager._tools[name] = tool
-    log.info("Tool registriert: %s -> /v1.0/action/%s", name, action)
+    return tool
 
 
 async def load_action_tools() -> None:
-    """Liest alle aktiven Einträge aus api_mcp_tool und registriert sie als MCP-Tools."""
+    """Liest alle aktiven Einträge aus api_mcp_tool und registriert sie als MCP-Tools.
+    Beim erneuten Aufruf (SIGHUP) werden neue Tools ergänzt, geänderte ersetzt und
+    gelöschte bzw. deaktivierte entfernt. Generische Tools bleiben unberührt."""
     xml = _select_xml("api_mcp_tool", ["name", "description", "action", "input_schema", "is_read_only"],
                       [Condition(field="is_enabled", value="-1")])
     try:
         rows = await _post(xml)
     except Exception:
-        log.exception("api_mcp_tool konnte nicht gelesen werden – nur generische Tools verfügbar")
+        log.exception("api_mcp_tool konnte nicht gelesen werden – Plugin-Tools bleiben unverändert")
         return
+
+    tools: dict[str, Tool] = {}
     for row in rows if isinstance(rows, list) else []:
         try:
-            _register_action_tool(row)
+            tool = _build_action_tool(row)
         except Exception:
             log.exception("Tool '%s' konnte nicht registriert werden", row.get("name"))
+            continue
+        if tool is not None:
+            tools[tool.name] = tool
+
+    # MCPServer.add_tool() baut das Schema aus der Funktionssignatur; für ein freies Schema
+    # werden die fertigen Tools direkt eingetragen.
+    registry = mcp._tool_manager._tools
+    for name in _action_tool_names - tools.keys():
+        registry.pop(name, None)
+        log.info("Tool entfernt: %s", name)
+    for name, tool in tools.items():
+        registry[name] = tool
+        log.info("Tool registriert: %s", name)
+    _action_tool_names.clear()
+    _action_tool_names.update(tools.keys())
+
+
+def _reload_on_sighup(signum: int, frame: Any) -> None:
+    """SIGHUP (systemctl reload): api_mcp_tool neu laden, ohne den Server neu zu starten.
+    Läuft in einem eigenen Thread, weil der Signal-Handler nicht auf die Event-Loop warten darf."""
+    import threading
+    import anyio
+
+    log.info("SIGHUP empfangen – lade api_mcp_tool neu")
+    threading.Thread(target=anyio.run, args=(load_action_tools,), daemon=True).start()
 
 
 # --------------------------------------------------------------------------- Start
 if __name__ == "__main__":
     import anyio
+    import signal
 
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
     anyio.run(load_action_tools)
+    signal.signal(signal.SIGHUP, _reload_on_sighup)
     transport = os.getenv("MCP_TRANSPORT", "stdio")
     if transport == "stdio":
         mcp.run()

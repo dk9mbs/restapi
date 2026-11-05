@@ -176,7 +176,7 @@ Plugin parameters by trigger:
 - **Generic tools:** `list_tables`, `describe_table`, `query_records`, `get_record`, `insert_record`, `update_record`. The write tools are disabled unless `DK9MBS_READ_ONLY=0`.
 - **Custom tools:** every enabled row in `api_mcp_tool` becomes an MCP tool that calls `/v1.0/action/<action>`. To add one, write a plugin, register it as an action and insert an `api_mcp_tool` row with a JSON schema. See `api_mcp_demo` in `install/db/basedata.sql`.
 
-`install.sh` creates `venv/mcp`, the configuration file `/etc/restapi/mcp.<instance>.env` (add the API key there) and the unit `restapi-mcp.<instance>.service`. Restart the service after changing `api_mcp_tool`.
+`install.sh` creates `venv/mcp`, the configuration file `/etc/restapi/mcp.<instance>.env` (add the API key there) and the unit `restapi-mcp.<instance>.service`. After changing `api_mcp_tool`, run `systemctl reload restapi-mcp.<instance>.service`. This reloads the tools without a restart (SIGHUP).
 
 For remote access, put it behind Apache with TLS and a bearer token:
 - `examples/apache2/mcp.conf`: `Include` it in an existing `<VirtualHost *:443>` (endpoint `/mcp`)

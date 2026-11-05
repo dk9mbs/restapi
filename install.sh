@@ -308,6 +308,8 @@ Wants=network-online.target
 WorkingDirectory=$BASEDIR
 EnvironmentFile=$MCPENVFILE
 ExecStart=$MCPVENV/bin/python $BASEDIR/mcpservice.py
+# systemctl reload: api_mcp_tool neu laden ohne Neustart (SIGHUP)
+ExecReload=/bin/kill -HUP \$MAINPID
 Restart=always
 RestartSec=5
 KillSignal=SIGTERM
