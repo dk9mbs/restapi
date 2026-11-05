@@ -171,6 +171,8 @@ Plugin parameters by trigger:
 
 `mcpservice.py` is a standalone [Model Context Protocol](https://modelcontextprotocol.io) server. It talks to the running restapi over HTTP using the API key of a dedicated MCP user, so table access follows that user's `api_group_permission` rows.
 
+`basedata.sql` creates this user `mcp` (id 101, random password, API-key login only) with the group `mcp` (id 101). By default it may only read `api_table` and `api_mcp_tool`. To make data visible to MCP clients, grant read permissions to group 101.
+
 - **Generic tools:** `list_tables`, `describe_table`, `query_records`, `get_record`, `insert_record`, `update_record`. The write tools are disabled unless `DK9MBS_READ_ONLY=0`.
 - **Custom tools:** every enabled row in `api_mcp_tool` becomes an MCP tool that calls `/v1.0/action/<action>`. To add one, write a plugin, register it as an action and insert an `api_mcp_tool` row with a JSON schema. See `api_mcp_demo` in `install/db/basedata.sql`.
 

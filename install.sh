@@ -227,6 +227,9 @@ echo "mcp components installed!"
 #
 if [ ! -f $MCPENVFILE ];
 then
+# API-Key des MCP-Benutzers 'mcp' (id 101, angelegt in basedata.sql)
+MCP_API_KEY=$(mysql -N -B -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE \
+    -e"SELECT id FROM api_user_apikey WHERE user_id=101 AND name='mcp' AND disabled=0 LIMIT 1;")
 echo "... writing $MCPENVFILE ..."
 cat << EOF | sudo tee $MCPENVFILE > /dev/null
 # Konfiguration für restapi-mcp.$INSTANCE_ID.service
@@ -234,8 +237,8 @@ cat << EOF | sudo tee $MCPENVFILE > /dev/null
 
 # restapi direkt über uwsgi (http-socket aus uwsgi.$INSTANCE_ID.ini)
 DK9MBS_API_BASE=http://127.0.0.1:8881/api
-# API-Key des MCP-Benutzers (id aus api_user_apikey)
-DK9MBS_API_KEY=
+# API-Key des MCP-Benutzers 'mcp' (id aus api_user_apikey)
+DK9MBS_API_KEY=$MCP_API_KEY
 
 # Schreibende Tools freigeben: 0 = ja, 1 = nur lesen
 DK9MBS_READ_ONLY=1
@@ -285,9 +288,10 @@ EOF
 echo "...reloading systemctl ..."
 sudo systemctl daemon-reload
 echo "*****************************************************************"
-echo "API-Key eintragen:"
-echo "------------------"
+echo "MCP-Konfiguration prüfen (API-Key des Benutzers 'mcp'):"
+echo "--------------------------------------------------------"
 echo "sudo nano $MCPENVFILE"
+echo "SELECT id FROM api_user_apikey WHERE user_id=101 AND name='mcp';"
 echo ""
 echo "start the service:"
 echo "------------------"
