@@ -416,6 +416,10 @@ CREATE TABLE IF NOT EXISTS api_record_meta(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE api_record_meta ADD COLUMN IF NOT EXISTS foreign_sys_row_id varchar(50) NOT NULL COMMENT 'row_id from the foreign table' AFTER table_id;
+/* Zeilen aus der Zeit vor foreign_sys_row_id verweisen auf keinen Datensatz und würden den UNIQUE KEY verhindern */
+DELETE FROM api_record_meta WHERE foreign_sys_row_id='';
+ALTER TABLE api_record_meta ADD INDEX IF NOT EXISTS idx_table_foreign_user (table_id, foreign_sys_row_id, user_id);
+ALTER TABLE api_record_meta ADD UNIQUE INDEX IF NOT EXISTS foreign_sys_row_id (foreign_sys_row_id, user_id, meta_type_id);
 
 /* Ende Datensatzstatus */
 
