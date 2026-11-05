@@ -267,7 +267,7 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
     VALUES (54,'Externe Aktivitäten app','api_activity_app','api_activity_app','id','string','name',0);
 
 
--- TODO: freie table-id prüfen (basedata.sql endet bei 38, Solutions können weitere belegen)
+-- MCP Server: Tool-Definitionen (table-id 55)
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (55,'MCP Tool','api_mcp_tool','api_mcp_tool','id','int','name',-1);
 
