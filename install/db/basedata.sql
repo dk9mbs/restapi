@@ -271,8 +271,20 @@ INSERT IGNORE INTO api_table (id,name,alias,table_name,id_field_name,id_field_ty
 INSERT IGNORE INTO api_table(id,name,alias,table_name,id_field_name,id_field_type,desc_field_name,enable_audit_log)
     VALUES (55,'MCP Tool','api_mcp_tool','api_mcp_tool','id','int','name',-1);
 
--- Leserecht für die Gruppe des MCP-Benutzers (group_id anpassen)
--- INSERT IGNORE INTO api_group_permission (group_id,table_id,mode_read) VALUES (<mcp_group_id>,39,-1);
+-- Eigener MCP-Benutzer mit minimalen Rechten (nur lesen: api_table, api_mcp_tool).
+-- Weitere Tabellen für MCP über api_group_permission der Gruppe 'mcp' (id 101) freigeben.
+-- Das Passwort ist ein zufälliger Wert: Anmeldung nur über den API-Key.
+-- RANDOM_BYTES() benötigt MariaDB >= 10.10 bzw. MySQL >= 5.6.17.
+INSERT IGNORE INTO api_user (id,username,password,disabled,is_admin) VALUES (101,'mcp',SHA2(RANDOM_BYTES(32),256),0,0);
+INSERT IGNORE INTO api_group (id,groupname,is_admin) VALUES (101,'mcp',0);
+INSERT IGNORE INTO api_user_group (user_id,group_id) VALUES (101,101);
+INSERT IGNORE INTO api_group_permission (group_id,table_id,mode_read) VALUES (101,10,-1);
+INSERT IGNORE INTO api_group_permission (group_id,table_id,mode_read) VALUES (101,55,-1);
+
+-- API-Key einmalig erzeugen (install.sh trägt ihn in /etc/restapi/mcp.<instance>.env ein)
+INSERT INTO api_user_apikey (id,user_id,name)
+    SELECT SHA2(RANDOM_BYTES(32),256),101,'mcp' FROM DUAL
+    WHERE NOT EXISTS (SELECT 1 FROM api_user_apikey WHERE user_id=101 AND name='mcp');
 
 -- Schema-Action für list_tables/describe_table (Plugin plugins/api_mcp_schema.py).
 -- Liefert nur Tabellen, die der aufrufende Benutzer laut api_group_permission lesen darf.
