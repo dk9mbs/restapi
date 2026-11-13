@@ -8,6 +8,11 @@
 # instance.standalone=1 (development system) manages restapi-dev
 # instead of restapi, default is 0.
 #
+# Hooks: after the action the executable scripts in
+# tools/services.d/<unit>/<action>-<NN>-<name>.sh are run for every unit
+# whose action succeeded. any-<NN>-<name>.sh runs after start and restart.
+# Hooks named *.local.sh are not in git. See services.d/restapi-dev/any-90-demo.sh
+#
 
 if [ "$1" != "start" ] && [ "$1" != "stop" ] && [ "$1" != "restart" ];
 then
@@ -58,33 +63,56 @@ then
     UNITS=("${REVERSED[@]}")
 fi
 
+HOOKDIR="$BASEDIR/tools/services.d"
+
+# no colors, no carriage return and no password prompt without a terminal (cron)
+if [ -t 1 ];
+then
+    TTY=1
+    CR="\r"
+    GREEN="\e[32m"
+    RED="\e[31m"
+    RESET="\e[0m"
+else
+    TTY=0
+    CR=""
+    GREEN=""
+    RED=""
+    RESET=""
+fi
+
 SUDO=""
 if [ "$(id -u)" -ne 0 ];
 then
     SUDO="sudo"
-    # ask for the password before the animation starts
-    sudo -v || exit 1
+    if [ $TTY -eq 1 ];
+    then
+        # ask for the password before the animation starts
+        sudo -v || exit 1
+    elif ! sudo -n -v 2>/dev/null;
+    then
+        echo "ERROR: services.sh needs root or passwordless sudo when run without a terminal"
+        exit 1
+    fi
 fi
 
-GREEN="\e[32m"
-RED="\e[31m"
-RESET="\e[0m"
 SPINNER='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
 
 #
-# Runs systemctl for one unit and animates the first character of the line
-# usage: run_unit <unit>
+# Runs a command in the background and animates the first character of the line,
+# the output of the command is only shown if it fails
+# usage: run_with_spinner <text> <command> [args...]
 #
-run_unit() {
-    local unit=$1
-    local text="$ACTION $unit"
+run_with_spinner() {
+    local text=$1
+    shift
     local log
     log=$(mktemp)
 
-    $SUDO systemctl "$ACTION" "$unit" >"$log" 2>&1 &
+    "$@" </dev/null >"$log" 2>&1 &
     local pid=$!
 
-    if [ -t 1 ];
+    if [ $TTY -eq 1 ];
     then
         local i=0
         tput civis 2>/dev/null
@@ -101,14 +129,43 @@ run_unit() {
 
     if [ $rc -eq 0 ];
     then
-        printf "\r${GREEN}✔${RESET} %s\n" "$text"
+        printf "${CR}${GREEN}✔${RESET} %s\n" "$text"
     else
-        printf "\r${RED}✘${RESET} %s\n" "$text"
+        printf "${CR}${RED}✘${RESET} %s\n" "$text"
         sed 's/^/    /' "$log"
     fi
 
     rm -f "$log"
     return $rc
+}
+
+#
+# Prints the executable hooks of a unit for the current action, in execution order
+# usage: list_hooks <unit>
+#
+list_hooks() {
+    local dir="$HOOKDIR/${1%.$INSTANCE_ID.service}"
+    local prefixes=("$ACTION")
+    local prefix file
+
+    [ -d "$dir" ] || return 0
+    [ "$ACTION" != "stop" ] && prefixes+=("any")
+
+    for prefix in "${prefixes[@]}"; do
+        for file in "$dir/$prefix"-[0-9][0-9]-*.sh; do
+            [ -f "$file" ] && [ -x "$file" ] || continue
+            [[ "$(basename "$file")" == *" "* ]] && continue
+            echo "$file"
+        done
+    done
+}
+
+#
+# Runs one hook in the repo root
+# usage: exec_hook <file> <unit>
+#
+exec_hook() {
+    cd "$BASEDIR" && SERVICES_UNIT=$2 "$1" "$ACTION" "$INSTANCE_ID" "$2"
 }
 
 trap 'tput cnorm 2>/dev/null; echo; exit 130' INT TERM
@@ -121,12 +178,43 @@ then
 fi
 
 ERRORS=0
+declare -A UNIT_OK
 for unit in "${UNITS[@]}"; do
-    run_unit "$unit" || ERRORS=$((ERRORS+1))
+    if run_with_spinner "$ACTION $unit" $SUDO systemctl "$ACTION" "$unit";
+    then
+        UNIT_OK[$unit]=1
+    else
+        ERRORS=$((ERRORS+1))
+    fi
 done
 
-if [ $ERRORS -ne 0 ];
+export SERVICES_ACTION=$ACTION
+export SERVICES_INSTANCE_ID=$INSTANCE_ID
+export SERVICES_MODE=$MODE
+export SERVICES_API_UNIT=$API_UNIT
+export SERVICES_UNITS="${UNITS[*]}"
+export SERVICES_FAILED=$ERRORS
+export SERVICES_BASEDIR=$BASEDIR
+
+HOOK_ERRORS=0
+export LC_COLLATE=C
+for unit in "${UNITS[@]}"; do
+    while IFS= read -r hook; do
+        name="${unit%.$INSTANCE_ID.service}/$(basename "$hook")"
+        if [ -z "${UNIT_OK[$unit]}" ];
+        then
+            echo "- hook $name (skipped, unit failed)"
+        else
+            run_with_spinner "hook $name" exec_hook "$hook" "$unit" || HOOK_ERRORS=$((HOOK_ERRORS+1))
+        fi
+    done < <(list_hooks "$unit")
+done
+
+if [ $ERRORS -ne 0 ] || [ $HOOK_ERRORS -ne 0 ];
 then
-    echo "$ERRORS unit(s) failed"
+    SUMMARY=""
+    [ $ERRORS -ne 0 ] && SUMMARY="$ERRORS unit(s) failed"
+    [ $HOOK_ERRORS -ne 0 ] && SUMMARY="${SUMMARY:+$SUMMARY, }$HOOK_ERRORS hook(s) failed"
+    echo "$SUMMARY"
     exit 1
 fi

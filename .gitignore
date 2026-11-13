@@ -36,3 +36,5 @@ model/*
 .claude/settings.local.json
 CLAUDE.local.md
 
+
+tools/services.d/**/*.local.sh
