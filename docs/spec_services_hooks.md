@@ -76,7 +76,7 @@ Stdin ist `/dev/null`. Ein Hook kann also nicht auf eine Eingabe warten und das 
 
 ## Ausgabe und Fehlerverhalten
 
-Jeder Hook bekommt eine eigene Zeile im selben Stil wie die Units, mit `<unit>/<datei>`. Seine Ausgabe erscheint nur, wenn er fehlschlägt, dann um 4 Leerzeichen eingerückt darunter, wie bei den Units.
+Jeder Hook bekommt eine eigene Zeile im selben Stil wie die Units, mit `<unit>/<datei>`. Vor dem Status steht `↳`, damit Hook-Zeilen von Unit-Zeilen zu unterscheiden sind. Seine Ausgabe erscheint nur, wenn er fehlschlägt, dann eingerückt darunter, wie bei den Units.
 
 ```
 Instance: dev (standalone)
@@ -85,17 +85,17 @@ Instance: dev (standalone)
     Job for restapi-msg.dev.service failed …
 ✔ restart restapi-mcp.dev.service
 ✔ restart restapi-timer.dev.service
-✔ hook restapi-dev/any-90-demo.sh
-✘ hook restapi-mcp/restart-20-check.sh
-    restapi-mcp.dev.service does not answer on port 8000
-- hook restapi-msg/restart-10-flush.sh (skipped, unit failed)
+↳ ✔ hook restapi-dev/any-90-demo.sh
+↳ ✘ hook restapi-mcp/restart-20-check.sh
+      restapi-mcp.dev.service does not answer on port 8000
+↳ - hook restapi-msg/restart-10-flush.sh (skipped, unit failed)
 1 unit(s) failed, 1 hook(s) failed
 ```
 
-- Während der Hook läuft, dreht sich der Spinner vor `hook <unit>/<datei>` wie bei den Units.
+- Während der Hook läuft, dreht sich der Spinner zwischen `↳` und `hook <unit>/<datei>` wie bei den Units.
 - Die Ausgabe des Hooks (stdout und stderr) wird gesammelt und nur bei einem Exit-Code ungleich 0 angezeigt. Bei Erfolg steht nur seine Zeile da.
 - Hooks einer fehlgeschlagenen Unit erscheinen mit `-` und `(skipped, unit failed)`. Sie zählen nicht als zusätzlicher Fehler, die Unit ist schon gezählt.
-- Ein Exit-Code ungleich 0 gibt `✘ hook <unit>/<datei>` und zählt als Fehler. Die weiteren Hooks laufen trotzdem.
+- Ein Exit-Code ungleich 0 gibt `↳ ✘ hook <unit>/<datei>` und zählt als Fehler. Die weiteren Hooks laufen trotzdem.
 - Gab es einen Fehler bei einer Unit oder einem Hook, endet `services.sh` mit Exit-Code 1. Die Schlusszeile nennt beides getrennt, zum Beispiel `1 unit(s) failed, 1 hook(s) failed`.
 
 ## Betrieb ohne Terminal (Cron)
@@ -159,7 +159,7 @@ Das Skript zeigt zwei Dinge: Argumente und Umgebungsvariablen lesen und über de
 - [ ] Mit `standalone=1` laufen die Hooks unter `restapi-dev/`, nie die unter `restapi/`. Mit `standalone=0` umgekehrt.
 - [ ] Hooks einer fehlgeschlagenen Unit laufen nicht und erscheinen als `(skipped, unit failed)`.
 - [ ] Hooks für andere Aktionen, Dateien ohne Ausführungsrecht und Dateien außerhalb des Schemas laufen nicht.
-- [ ] Jeder Hook erscheint mit eigener Zeile `hook <unit>/<datei>`. Seine Ausgabe erscheint nur bei einem Exit-Code ungleich 0, eingerückt darunter.
+- [ ] Jeder Hook erscheint mit eigener Zeile `↳ ✔ hook <unit>/<datei>` bzw. `↳ ✘ …`. Seine Ausgabe erscheint nur bei einem Exit-Code ungleich 0, eingerückt darunter.
 - [ ] Ein Hook mit Exit-Code 1 ergibt `✘`, die folgenden Hooks laufen weiter, `services.sh` endet mit Exit-Code 1.
 - [ ] Ein Hook `*.local.sh` läuft wie jeder andere, und `git status` zeigt ihn nicht an.
 - [ ] Ohne `tools/services.d/` oder ohne passende Hooks ist die Ausgabe dieselbe wie vorher.

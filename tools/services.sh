@@ -101,10 +101,12 @@ SPINNER='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
 #
 # Runs a command in the background and animates the first character of the line,
 # the output of the command is only shown if it fails
-# usage: run_with_spinner <text> <command> [args...]
+# usage: [PREFIX=<prefix>] run_with_spinner <text> <command> [args...]
 #
 run_with_spinner() {
     local text=$1
+    local prefix=${PREFIX:-}
+    local indent="    ${prefix//?/ }"
     shift
     local log
     log=$(mktemp)
@@ -117,7 +119,7 @@ run_with_spinner() {
         local i=0
         tput civis 2>/dev/null
         while kill -0 $pid 2>/dev/null; do
-            printf "\r%s %s" "${SPINNER:$i:1}" "$text"
+            printf "\r%s%s %s" "$prefix" "${SPINNER:$i:1}" "$text"
             i=$(( (i+1) % ${#SPINNER} ))
             sleep 0.1
         done
@@ -129,10 +131,10 @@ run_with_spinner() {
 
     if [ $rc -eq 0 ];
     then
-        printf "${CR}${GREEN}✔${RESET} %s\n" "$text"
+        printf "${CR}%s${GREEN}✔${RESET} %s\n" "$prefix" "$text"
     else
-        printf "${CR}${RED}✘${RESET} %s\n" "$text"
-        sed 's/^/    /' "$log"
+        printf "${CR}%s${RED}✘${RESET} %s\n" "$prefix" "$text"
+        sed "s/^/$indent/" "$log"
     fi
 
     rm -f "$log"
@@ -197,15 +199,16 @@ export SERVICES_FAILED=$ERRORS
 export SERVICES_BASEDIR=$BASEDIR
 
 HOOK_ERRORS=0
+HOOK_PREFIX="↳ "
 export LC_COLLATE=C
 for unit in "${UNITS[@]}"; do
     while IFS= read -r hook; do
         name="${unit%.$INSTANCE_ID.service}/$(basename "$hook")"
         if [ -z "${UNIT_OK[$unit]}" ];
         then
-            echo "- hook $name (skipped, unit failed)"
+            echo "$HOOK_PREFIX- hook $name (skipped, unit failed)"
         else
-            run_with_spinner "hook $name" exec_hook "$hook" "$unit" || HOOK_ERRORS=$((HOOK_ERRORS+1))
+            PREFIX=$HOOK_PREFIX run_with_spinner "hook $name" exec_hook "$hook" "$unit" || HOOK_ERRORS=$((HOOK_ERRORS+1))
         fi
     done < <(list_hooks "$unit")
 done
