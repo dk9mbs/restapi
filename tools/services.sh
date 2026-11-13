@@ -2,9 +2,11 @@
 
 #
 # Start, stop or restart all systemd units of this restapi instance
-# usage: ./services.sh start|stop|restart
+# usage: tools/services.sh start|stop|restart
 #
-# The instance id (dev, test, prod ...) is read from config.py
+# The instance id (dev, test, prod ...) is read from config.py.
+# instance.standalone=1 (development system) manages restapi-dev
+# instead of restapi, default is 0.
 #
 
 if [ "$1" != "start" ] && [ "$1" != "stop" ] && [ "$1" != "restart" ];
@@ -14,7 +16,7 @@ then
 fi
 ACTION=$1
 
-BASEDIR=$(dirname "$(readlink -f "$0")")
+BASEDIR=$(dirname "$(dirname "$(readlink -f "$0")")")
 
 INSTANCE_ID=$(cd "$BASEDIR" && python3 cfgreader.py instance id)
 if [ $? -ne 0 ] || [ -z "$INSTANCE_ID" ];
@@ -23,8 +25,25 @@ then
     exit 1
 fi
 
+# standalone=1 (development system): restapi-dev (flask dev server) instead of restapi (uwsgi)
+STANDALONE=$(cd "$BASEDIR" && python3 cfgreader.py instance standalone 0)
+if [ "$STANDALONE" == "1" ];
+then
+    API_UNIT="restapi-dev.$INSTANCE_ID.service"
+    OTHER_API_UNIT="restapi.$INSTANCE_ID.service"
+    MODE="standalone"
+elif [ "$STANDALONE" == "0" ];
+then
+    API_UNIT="restapi.$INSTANCE_ID.service"
+    OTHER_API_UNIT="restapi-dev.$INSTANCE_ID.service"
+    MODE="uwsgi"
+else
+    echo "ERROR: invalid value '$STANDALONE' for instance.standalone in $BASEDIR/config.py (allowed: 0 or 1)"
+    exit 1
+fi
+
 UNITS=(
-    "restapi.$INSTANCE_ID.service"
+    "$API_UNIT"
     "restapi-msg.$INSTANCE_ID.service"
     "restapi-mcp.$INSTANCE_ID.service"
     "restapi-timer.$INSTANCE_ID.service"
@@ -94,7 +113,12 @@ run_unit() {
 
 trap 'tput cnorm 2>/dev/null; echo; exit 130' INT TERM
 
-echo "Instance: $INSTANCE_ID"
+echo "Instance: $INSTANCE_ID ($MODE)"
+
+if systemctl is-active --quiet "$OTHER_API_UNIT";
+then
+    printf "${RED}!${RESET} %s is running but not managed in %s mode\n" "$OTHER_API_UNIT" "$MODE"
+fi
 
 ERRORS=0
 for unit in "${UNITS[@]}"; do
