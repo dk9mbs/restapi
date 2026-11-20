@@ -137,45 +137,63 @@ class AppInfo:
         return cls._mysql
 
     """
-    Create a context object after start_session.
+    Return the open connection of the context or None.
     """
     @classmethod
-    def create_context(cls, session_id, auto_logoff=False, auto_commit=False):
-        connection=cls.create_connection()
+    def _open_context_connection(cls, context):
+        connection=context.get_connection()
+        if connection==None or not connection.open:
+            return None
+        return connection
 
-        sql=f"""
-        SELECT * FROM api_session WHERE id=%s AND disabled=0
-        """
-        cursor=connection.cursor()
-        cursor.execute(sql, [session_id])
-        rest_session=cursor.fetchone()
-        cursor.fetchall()
+    """
+    Create a context object after start_session.
+    connection: optional open connection (e.g. from login()). It becomes
+    the connection of the context and must not be closed by the caller.
+    """
+    @classmethod
+    def create_context(cls, session_id, auto_logoff=False, auto_commit=False, connection=None):
+        if connection==None:
+            connection=cls.create_connection()
 
-        if rest_session==None:
-            raise NameError(f'Session not exists {session_id}')
+        try:
+            sql=f"""
+            SELECT * FROM api_session WHERE id=%s AND disabled=0
+            """
+            cursor=connection.cursor()
+            cursor.execute(sql, [session_id])
+            rest_session=cursor.fetchone()
+            cursor.fetchall()
+
+            if rest_session==None:
+                raise NameError(f'Session not exists {session_id}')
 
 
-        sql=f"""
-        SELECT id, username from api_user WHERE id=%s
-        """
-        cursor.execute(sql, [rest_session['user_id']])
-        system_user=cursor.fetchone()
-        cursor.fetchall()
+            sql=f"""
+            SELECT id, username from api_user WHERE id=%s
+            """
+            cursor.execute(sql, [rest_session['user_id']])
+            system_user=cursor.fetchone()
+            cursor.fetchall()
+
+            # end the read transaction, so the request sees current data
+            connection.commit()
+        except Exception:
+            connection.close()
+            raise
 
         session_values=json.loads(rest_session['session_values'].replace("'", '"'))
         if not 'saved_args' in session_values:
             session_values['saved_args']={}
 
         ctx=Context()
-        ctx.set_connection(cls.create_connection())
+        ctx.set_connection(connection)
         ctx.set_session_values(session_values)
         ctx.set_userinfo({"user_id": system_user['id'], "username": system_user['username']})
         ctx.set_session_id(session_id)
         ctx.set_auto_logoff(auto_logoff)
         ctx.set_auto_commit(auto_commit)
 
-        connection.commit()
-        connection.close()
         return ctx
 
     """
@@ -188,11 +206,17 @@ class AppInfo:
         UPDATE api_session set session_values=%s,last_access_on=now() WHERE id=%s
         """
 
-        connection=cls.create_connection()
-        cursor=connection.cursor()
-        cursor.execute(sql, [str(context.get_session_values()), context.get_session_id()])
-        connection.commit()
-        connection.close()
+        connection=cls._open_context_connection(context)
+        if connection==None:
+            connection=cls.create_connection()
+            cursor=connection.cursor()
+            cursor.execute(sql, [str(context.get_session_values()), context.get_session_id()])
+            connection.commit()
+            connection.close()
+        else:
+            cursor=connection.cursor()
+            cursor.execute(sql, [str(context.get_session_values()), context.get_session_id()])
+            cursor.close()
 
         if close_context:
             context.close()
@@ -203,96 +227,125 @@ class AppInfo:
     Return the guest credentials
     """
     @classmethod
-    def guest_credentials(cls):
-        return cls._get_user_credentials('guest')
+    def guest_credentials(cls, connection=None):
+        return cls._get_user_credentials('guest', connection)
 
     """
     Return the system credentials
     """
     @classmethod
-    def system_credentials(cls):
-        return cls._get_user_credentials('system')
+    def system_credentials(cls, connection=None):
+        return cls._get_user_credentials('system', connection)
 
     @classmethod
-    def user_credentials_by_apikey(cls, apikey):
-        return cls._get_user_credentials_by_apikey(apikey)
+    def user_credentials_by_apikey(cls, apikey, connection=None):
+        return cls._get_user_credentials_by_apikey(apikey, connection)
 
     @classmethod
-    def _get_user_credentials(cls, username):
+    def _get_user_credentials(cls, username, connection=None):
         sql="""
         SELECT * FROM api_user WHERE username=%s;
         """
-        connection=cls.create_connection()
-        cursor=connection.cursor()
-        cursor.execute(sql, (username,))
-        user=cursor.fetchone()
-        cursor.fetchall()
-        connection.close()
-        return user
+        return cls._fetch_one(sql, (username,), connection)
 
     @classmethod
-    def _get_user_credentials_by_apikey(cls, apikey):
+    def _get_user_credentials_by_apikey(cls, apikey, connection=None):
         sql="""
         SELECT u.*
         FROM api_user u
         INNER JOIN api_user_apikey a ON a.user_id=u.id
         WHERE a.id=%s AND a.disabled=0;
         """
-        connection=cls.create_connection()
-        cursor=connection.cursor()
-        cursor.execute(sql, (apikey,))
-        user=cursor.fetchone()
-        cursor.fetchall()
-        connection.close()
-        return user
+        return cls._fetch_one(sql, (apikey,), connection)
+
+    """
+    Execute a select and return the first row.
+    Uses the given connection or opens (and closes) an own one.
+    """
+    @classmethod
+    def _fetch_one(cls, sql, params, connection=None):
+        own_connection=connection==None
+        if own_connection:
+            connection=cls.create_connection()
+
+        try:
+            cursor=connection.cursor()
+            cursor.execute(sql, params)
+            row=cursor.fetchone()
+            cursor.fetchall()
+            cursor.close()
+        finally:
+            if own_connection:
+                connection.close()
+
+        return row
 
 
     """
     Log useron and create a valid session id
     in case of wrong username or password returns None
+    connection: optional open connection. It is committed but not closed.
     """
     @classmethod
-    def login(cls, username, password):
+    def login(cls, username, password, connection=None):
         cls.__username=None
 
-        sql=f"""
-            SELECT * FROM api_user WHERE username=%s AND password=%s AND disabled=0
-        """
-        connection=cls.create_connection()
-        cursor=connection.cursor()
-        cursor.execute(sql, (username, password))
-        system_user=cursor.fetchone()
-        cursor.fetchall()
-        if system_user==None:
-            return None
+        own_connection=connection==None
+        if own_connection:
+            connection=cls.create_connection()
 
-        # create a server session
-        session_id=str(uuid.uuid4())
-        session_values={}
+        try:
+            sql=f"""
+                SELECT * FROM api_user WHERE username=%s AND password=%s AND disabled=0
+            """
+            cursor=connection.cursor()
+            cursor.execute(sql, (username, password))
+            system_user=cursor.fetchone()
+            cursor.fetchall()
+            if system_user==None:
+                return None
 
-        sql=f"""
-            INSERT INTO api_session set id=%s,session_values=%s,user_id=%s
-        """
+            # create a server session
+            session_id=str(uuid.uuid4())
+            session_values={}
 
-        cursor=connection.cursor()
-        cursor.execute(sql, [session_id, str(session_values), system_user['id']])
-        cls.__username=username
-        connection.commit()
-        connection.close()
+            sql=f"""
+                INSERT INTO api_session set id=%s,session_values=%s,user_id=%s
+            """
+
+            cursor=connection.cursor()
+            cursor.execute(sql, [session_id, str(session_values), system_user['id']])
+            cls.__username=username
+            connection.commit()
+        finally:
+            if own_connection:
+                connection.close()
 
         return session_id
 
 
+    """
+    Delete the session. Uses the connection of the context as long as it is open,
+    otherwise an own connection.
+    """
     @classmethod
     def logoff(cls, context):
         sql=f"""
         DELETE FROM api_session WHERE id=%s
         """
-        connection=cls.create_connection()
-        cursor=connection.cursor()
-        cursor.execute(sql,[context.get_session_id()])
+        connection=cls._open_context_connection(context)
+        own_connection=connection==None
+        if own_connection:
+            connection=cls.create_connection()
 
-        cls.__username=None
+        try:
+            cursor=connection.cursor()
+            cursor.execute(sql,[context.get_session_id()])
+            cursor.close()
 
-        connection.commit()
-        connection.close()
+            cls.__username=None
+
+            connection.commit()
+        finally:
+            if own_connection:
+                connection.close()

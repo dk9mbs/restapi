@@ -42,18 +42,24 @@ class Login(Resource):
             password=request.form.get("restapi_password")
 
         log.create_logger(__name__).info(f"{username} {password}")
-        session_id=AppInfo.login(username, password)
+        connection=AppInfo.create_connection()
+        try:
+            session_id=AppInfo.login(username, password, connection=connection)
+        except:
+            connection.close()
+            raise
 
         #log.create_logger(__name__).info(f"{request.accept_mimetypes}")
 
         if session_id==None:
+            connection.close()
             if next==None:
                 abort(400,'wrong username or password')
             else:
                 return redirect(f"/ui/login?redirect={next}&msg=Wrong username or password", code=302)
         else:
             session['session_id']=session_id
-            g.context=AppInfo.create_context(session_id)
+            g.context=AppInfo.create_context(session_id, connection=connection)
 
             jwt_secret = CONFIG['default']['jwt']['secret']
             jwt_algorithm = CONFIG['default']['jwt']['algorithm']

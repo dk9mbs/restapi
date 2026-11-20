@@ -108,43 +108,50 @@ def before_request():
             password=""
             token=""
 
-            if 'restapi_username' in request.headers and enable_namepwd_auth:
-                username=request.headers['restapi-username']
-                password=request.headers['restapi-password']
-            elif 'username' in request.headers and enable_namepwd_auth:
-                username=request.headers['username']
-                password=request.headers['password']
-            elif 'username' in request.args and enable_namepwd_auth:
-                username=request.args['username']
-                password=request.args['password']
-            elif enable_apikey_auth and ('apikey' in request.args or 'api_key' in request.args
-                    or 'apikey' in request.headers or 'api_key' in request.headers):
-                apikey=(request.args.get('apikey') or request.args.get('api_key')
-                    or request.headers.get('apikey') or request.headers.get('api_key'))
-                user=AppInfo.user_credentials_by_apikey(apikey)
-                if user==None:
-                    abort(400,'Wrong apikey')
-                username=user['username']
-                password=user['password']
-            else:
-                #do not set session['session_id'] because the
-                #guest session will be automaticly deactivated.
-                auto_logoff=True
-                guest=AppInfo.guest_credentials()
-                username=guest['username']
-                password=guest['password']
+            # one connection for login and the new context
+            connection=AppInfo.create_connection()
+            try:
+                if 'restapi_username' in request.headers and enable_namepwd_auth:
+                    username=request.headers['restapi-username']
+                    password=request.headers['restapi-password']
+                elif 'username' in request.headers and enable_namepwd_auth:
+                    username=request.headers['username']
+                    password=request.headers['password']
+                elif 'username' in request.args and enable_namepwd_auth:
+                    username=request.args['username']
+                    password=request.args['password']
+                elif enable_apikey_auth and ('apikey' in request.args or 'api_key' in request.args
+                        or 'apikey' in request.headers or 'api_key' in request.headers):
+                    apikey=(request.args.get('apikey') or request.args.get('api_key')
+                        or request.headers.get('apikey') or request.headers.get('api_key'))
+                    user=AppInfo.user_credentials_by_apikey(apikey, connection=connection)
+                    if user==None:
+                        abort(400,'Wrong apikey')
+                    username=user['username']
+                    password=user['password']
+                else:
+                    #do not set session['session_id'] because the
+                    #guest session will be automaticly deactivated.
+                    auto_logoff=True
+                    guest=AppInfo.guest_credentials(connection=connection)
+                    username=guest['username']
+                    password=guest['password']
 
-            session_id=AppInfo.login(username,password)
-            if session_id==None:
-                print(f"try to login with username: {username}")
-                abort(400,'Wrong username or password')
+                session_id=AppInfo.login(username,password, connection=connection)
+                if session_id==None:
+                    print(f"try to login with username: {username}")
+                    abort(400,'Wrong username or password')
+            except:
+                connection.close()
+                raise
 
             if not auto_logoff:
                 logger.info(f"save session_id {session_id}")
                 session['session_id']=session_id
 
             #g.context=AppInfo.create_context(session_id, auto_logoff=True)
-            g.context=AppInfo.create_context(session_id, auto_logoff=auto_logoff)
+            # create_context takes over the connection (and closes it on error)
+            g.context=AppInfo.create_context(session_id, auto_logoff=auto_logoff, connection=connection)
 
         token=None
         command=None
