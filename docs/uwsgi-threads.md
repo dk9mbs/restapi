@@ -85,25 +85,28 @@ Bewertung:
 
 ## Deployment auf dem Server
 
-`install.sh` richtet eine komplette Instanz ein (Datenbank, Metadaten, Units). Auf einem bestehenden Server ist es nicht nötig, das Skript nur für die `.ini` erneut laufen zu lassen. Stattdessen:
+`install.sh` ist so ausgelegt, dass es mehrfach laufen kann. Die `.ini` wird damit neu erzeugt:
 
 1. Branch auschecken:
    ```bash
    git fetch origin
    git switch features/uwsgi-threads
    ```
-2. Die alte `.ini` sichern:
+2. Die alte `.ini` für einen Rollback sichern:
    ```bash
    sudo cp /etc/restapi/uwsgi.<instance>.ini /etc/restapi/uwsgi.<instance>.ini.bak
    ```
-3. In `/etc/restapi/uwsgi.<instance>.ini` die Zeile `processes = ...` durch den Block aus dem Abschnitt „Änderungen“ ersetzen, mit den Werten statt der `$UWSGI_*`-Variablen.
-4. Optional den Abschnitt `uwsgi` in `config.py` ergänzen, damit ein späterer Lauf von `install.sh` dieselben Werte erzeugt.
-5. Dienste neu starten:
+3. Optional den Abschnitt `uwsgi` in `config.py` ergänzen, wenn andere Werte als die Vorgaben gelten sollen. Von Hand geänderte Werte in der `.ini`, zum Beispiel `processes = 50`, überschreibt `install.sh`.
+4. `install.sh` ausführen:
+   ```bash
+   ./install.sh <restapi_user> <restapi_password>
+   ```
+5. Dienste neu starten (`install.sh` lädt nur `systemctl daemon-reload`):
    ```bash
    ./services.sh restart
    ```
 6. Prüfen:
-   - `journalctl -u restapi.<instance>.service` meldet `threads support enabled` und `cores: 4` pro Worker.
+   - `journalctl -u restapi.<instance>.service` meldet `python threads support enabled` und `cores: 4` pro Worker.
    - Die IoT-Endpunkte und das UI funktionieren.
    - Kein `HARAKIRI ON WORKER` im Log. Wenn doch, ist der betroffene Request zu langsam oder `harakiri` zu klein.
 
@@ -116,7 +119,7 @@ sudo cp /etc/restapi/uwsgi.<instance>.ini.bak /etc/restapi/uwsgi.<instance>.ini
 ./services.sh restart
 ```
 
-Am Python-Code der restapi ändert sich nichts. Es bleibt deshalb egal, ob dabei `master` oder dieser Branch ausgecheckt ist.
+Am Python-Code der restapi ändert sich nichts. Es bleibt deshalb egal, ob dabei `master` oder dieser Branch ausgecheckt ist. Ein späterer Lauf von `install.sh` auf `master` erzeugt allerdings wieder die alte `.ini`.
 
 ## Hinweise
 
