@@ -1,5 +1,5 @@
 from services.jinjatemplate import JinjaTemplate
-from core.fetchxmlparser import FetchXmlParser
+from core.fetchxmlparser import FetchXmlParser, escape_xml_value
 from services.database import DatabaseServices
 from services.table_info import TableInfo
 from core.meta import read_table_meta
@@ -52,13 +52,13 @@ class OutDataFormatter(object):
                     <field name="page_mode"/>
                 </select>
             <filter type="and">
-                <condition field="name" value="{format_name}" operator="="/>
+                <condition field="name" value="{escape_xml_value(format_name)}" operator="="/>
                 <filter type="or">
-                    <condition field="table_id" value="{self._table_id}" operator="="/>
+                    <condition field="table_id" value="{escape_xml_value(self._table_id)}" operator="="/>
                     <condition field="table_id" value="0" operator="="/>
                     <condition field="table_id"  operator="null"/>
                 </filter>
-                <condition field="type_id" value="{self._type_id}" operator="="/>
+                <condition field="type_id" value="{escape_xml_value(self._type_id)}" operator="="/>
             </filter>
         </restapi>
         """

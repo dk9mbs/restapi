@@ -1,5 +1,6 @@
 from core.exceptions import TypeNotAllowedInFieldList
 from core.meta import read_table_field_meta
+from pymysql.converters import escape_string
 #from services.orm.condition import Condition
 #from services.orm.field import Field
 
@@ -20,24 +21,37 @@ class BaseParser:
         self._auto_commit=False
         self._table_aliases={}
 
+    """
+    Alias of the table the record permission is checked for (the main table)
+    """
+    def _get_record_permission_alias(self):
+        return self._main_table_alias
+
+    """
+    Append the record permission of the main table to the where clause.
+    Only once per parser, get_sql() is called more than once (count and select).
+    """
     def _get_record_permission_clause(self, where_clause: str):
-        if where_clause.find('api_fn_rec_permission')>=0:
+        if getattr(self, '_record_permission_applied', False):
             return where_clause
 
-        result=""
-        for key, value in self._table_aliases.items():
-            if result != "":
-                result=f"{result} AND "
+        self._record_permission_applied=True
 
-            if value['meta']['enable_record_permission']!=0:
-                result=f"{result} api_fn_rec_permission('"+self._context.get_username()+"','"+f"{value['name']}"+"',"+f"{value['alias']}.id"+", 'READ') "
-
-            if where_clause!="" and where_clause!=None and result!="":
-                where_clause=f"({where_clause}) AND ({result})"
-            else:
-                where_clause=f"{where_clause}{result}"                
-
+        alias=self._get_record_permission_alias()
+        if not alias in self._table_aliases:
             return where_clause
+
+        value=self._table_aliases[alias]
+        if value['meta']['enable_record_permission']==0:
+            return where_clause
+
+        username=escape_string(self._context.get_username())
+        result=f" api_fn_rec_permission('{username}','{value['name']}',{value['alias']}.id, 'READ') "
+
+        if where_clause!="" and where_clause!=None:
+            return f"({where_clause}) AND ({result})"
+
+        return result
 
 
     def get_select(self):

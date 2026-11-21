@@ -1,13 +1,35 @@
 import json
+import re
 import xml.etree.ElementTree as ET
+from xml.sax.saxutils import escape
 from core import log
 from core.exceptions import TableAliasNotFoundInFetchXml, FieldNotFoundInMetaData, MissingFieldPermisson, TableMetaDataNotFound, FetchXmlFormat
 from core.exceptions import SpecialCharsInFetchXml, MissingArgumentInFetchXml, OperatorNotAllowedInFetchXml
+from core.exceptions import IdentifierNotAllowedInFetchXml
 from core.setting import Setting
 from core.meta import read_table_meta
 from core.baseparser import BaseParser
 
 logger=log.create_logger(__name__)
+
+# names of tables, aliases and fields
+_IDENTIFIER=re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$', re.ASCII)
+# join condition: a.x=b.y [AND c.x=d.y ...]
+_JOIN_CONDITION=re.compile(r'^\s*[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*\s*=\s*[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*'
+    r'(\s+AND\s+[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*\s*=\s*[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*)*\s*$', re.ASCII|re.IGNORECASE)
+_JOIN_TYPES={"INNER", "LEFT", "RIGHT", "LEFT OUTER", "RIGHT OUTER"}
+_FILTER_TYPES={"AND", "OR"}
+_SORT_ORDERS={"ASC", "DESC"}
+_SELECT_FUNCTIONS={"COUNT", "SUM", "MIN", "MAX", "AVG", "CONCAT", "DATE_FORMAT", "UPPER", "LOWER",
+    "DATE", "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "ROUND"}
+
+"""
+Escape a value for an attribute or the text of an element in a fetchxml string.
+Use it for every value that is not a constant, e.g.:
+f'<condition field="name" value="{escape_xml_value(name)}"/>'
+"""
+def escape_xml_value(value):
+    return escape(str(value), {'"': '&quot;', "'": '&apos;'})
 
 """
 
@@ -66,6 +88,7 @@ class FetchXmlParser(BaseParser):
         self._table_aliases={}
         self._columns_desc=[]
         self._only_unreaded=True
+        self._record_permission_applied=False
 
     def get_page_size(self):
         return self._limit
@@ -115,6 +138,9 @@ class FetchXmlParser(BaseParser):
 
     def get_main_alias(self):
         return self._main_alias
+
+    def _get_record_permission_alias(self):
+        return self._sql_table_alias
 
     def get_sql(self, ignore_limit: bool=False):
         self._sql_where=self._get_record_permission_clause(self._sql_where)
@@ -314,6 +340,24 @@ class FetchXmlParser(BaseParser):
 
         return input
 
+    """
+    Raise an error if value is not a plain name (table, alias or field)
+    """
+    def _validate_identifier(self, value, scope="identifier"):
+        if value==None or not _IDENTIFIER.match(value):
+            raise IdentifierNotAllowedInFetchXml(f"{scope} not allowed: {value}")
+
+        return value
+
+    """
+    Raise an error if value (case insensitive) is not in allowed
+    """
+    def _validate_keyword(self, value, allowed, scope="keyword"):
+        if value==None or not value.strip().upper() in allowed:
+            raise IdentifierNotAllowedInFetchXml(f"{scope} not allowed: {value}")
+
+        return value.strip().upper()
+
     def _build_update_fields(self):
         sql=[]
         parameters=[]
@@ -352,16 +396,16 @@ class FetchXmlParser(BaseParser):
     def _build_order(self, node):
         sql=[]
         for item in node:
-            name=item.attrib['name']
+            name=self._validate_identifier(item.attrib['name'], "orderby field")
             alias=""
             sort="ASC"
             if 'alias' in item.attrib:
-                alias = item.attrib['alias']+"."
+                alias = self._validate_identifier(item.attrib['alias'], "orderby alias")+"."
             else:
                 alias =  f"{ self.get_alias_by_table(self._main_alias) }."
 
             if 'sort' in item.attrib:
-                sort=item.attrib['sort']
+                sort=self._validate_keyword(item.attrib['sort'], _SORT_ORDERS, "sort")
 
             if sql!=[]:
                 sql.append(",")
@@ -371,7 +415,10 @@ class FetchXmlParser(BaseParser):
 
     def _build_comment(self, node):
         if 'text' in node.attrib:
-            self._sql_comment= f" /* {self._escape_string(node.attrib['text'])} */"
+            text=self._escape_string(node.attrib['text'])
+            if text.find("/*")>-1 or text.find("*/")>-1:
+                raise SpecialCharsInFetchXml("Comment markers in comment text")
+            self._sql_comment= f" /* {text} */"
 
     """
     <joins>
@@ -391,11 +438,13 @@ class FetchXmlParser(BaseParser):
             table,_=self._validate_table_alias(self._context,table)
 
             if 'type' in join.attrib:
-                join_type=self._escape_string(join.attrib['type'])
+                join_type=self._validate_keyword(join.attrib['type'], _JOIN_TYPES, "join type").lower()
             if 'alias' in join.attrib:
-                alias=self._escape_string(join.attrib['alias'])
+                alias=self._validate_identifier(join.attrib['alias'], "join alias")
 
-            condition=self._escape_string(join.attrib['condition'])
+            condition=join.attrib['condition']
+            if not _JOIN_CONDITION.match(condition):
+                raise IdentifierNotAllowedInFetchXml(f"join condition not allowed: {condition}")
             sql.append(f"{join_type} join {table} {alias} ON ({condition}) ")
             self._tables.append(table)
 
@@ -409,7 +458,7 @@ class FetchXmlParser(BaseParser):
         self._main_alias=alias # ... use the sql table name
 
         if 'alias' in node.attrib:
-            alias=node.attrib['alias']
+            alias=self._validate_identifier(node.attrib['alias'], "table alias")
 
         self._sql_table=table
         self._sql_table_alias=alias
@@ -436,16 +485,16 @@ class FetchXmlParser(BaseParser):
             func=""
             locale_parameters=[]
 
-            name=f"{self._escape_string(field.attrib['name'])}"
+            name=self._validate_identifier(field.attrib['name'], "select field")
 
             if 'func' in field.attrib:
-                func=self._escape_string(field.attrib['func']).upper()
+                func=self._validate_keyword(field.attrib['func'], _SELECT_FUNCTIONS, "function")
 
             if 'alias' in field.attrib:
-                alias=self._escape_string(f"{field.attrib['alias']}")
+                alias=self._validate_identifier(field.attrib['alias'], "select alias")
 
             if 'table_alias' in field.attrib:
-                table_alias=self._escape_string(f"{field.attrib['table_alias']}")
+                table_alias=self._validate_identifier(field.attrib['table_alias'], "select table_alias")
 
             name_complete=f"{table_alias}.{name}"
 
@@ -459,14 +508,14 @@ class FetchXmlParser(BaseParser):
             if 'if_condition_field' in field.attrib and 'if_condition_value' in field.attrib:
                 if_condition_table_alias=self._sql_table_alias
                 if_condition_func=""
-                if_condition_field=self._escape_string(field.attrib['if_condition_field'])
-                if_condition_value=self._escape_string(field.attrib['if_condition_value'])
+                if_condition_field=self._validate_identifier(field.attrib['if_condition_field'], "if_condition_field")
+                if_condition_value=field.attrib['if_condition_value']
 
                 if 'if_condition_func' in field.attrib:
-                    if_condition_func=self._excape_string(field.attrib['if_condition_func'])
+                    if_condition_func=self._validate_keyword(field.attrib['if_condition_func'], _SELECT_FUNCTIONS, "if_condition_func")
 
                 if 'if_condition_table_alias' in field.attrib:
-                    if_condition_table_alias=self._escape_string(f"{field.attrib['if_condition_table_alias']}")
+                    if_condition_table_alias=self._validate_identifier(field.attrib['if_condition_table_alias'], "if_condition_table_alias")
 
                 # check if access allow or denied
                 if not self._validate_field_permission(self._context, self._sql_type, if_condition_table_alias, if_condition_field):
@@ -578,7 +627,7 @@ class FetchXmlParser(BaseParser):
             #    value=None
             value=self._nz(value)
 
-            name=self._escape_string(field.attrib['name'],"fieldname")
+            name=self._validate_identifier(field.attrib['name'], "field")
 
             fields[name]={"value": value, "old_value":None}
 
@@ -588,9 +637,9 @@ class FetchXmlParser(BaseParser):
         # node ist ein Filter Element
         sql=""
 
-        op=" AND "
+        op="AND"
         if 'type' in node.attrib:
-            op=node.attrib['type']
+            op=self._validate_keyword(node.attrib['type'], _FILTER_TYPES, "filter type")
 
         if parent_op==None:
             parent_op=op
@@ -610,11 +659,11 @@ class FetchXmlParser(BaseParser):
                 #if 'type' in item.attrib:
                 #    op=self._escape_string(item.attrib['type'],"operator")
 
-                field=self._escape_string(item.attrib['field'],"fieldname")
+                field=self._validate_identifier(item.attrib['field'], "condition field")
                 if 'alias' in item.attrib:
-                    field="%s.%s" % ( self._escape_string(item.attrib['alias'],"alias"), field)
+                    field="%s.%s" % ( self._validate_identifier(item.attrib['alias'], "condition alias"), field)
                 else:
-                    field=f"{ self.get_alias_by_table(self._main_alias) }.{ self._escape_string(item.attrib['field'],'fieldname') }"
+                    field=f"{ self.get_alias_by_table(self._main_alias) }.{ field }"
 
                 if 'operator' in item.attrib:
                     operator=item.attrib['operator'].strip()
@@ -689,7 +738,7 @@ class FetchXmlParser(BaseParser):
             if item.tag=="filter":
                 # in case of sub filter condition
                 if 'type' in item.attrib:
-                    op=self._escape_string(item.attrib['type'],"operator")
+                    op=self._validate_keyword(item.attrib['type'], _FILTER_TYPES, "filter type")
                 else:
                     op="AND"
 
