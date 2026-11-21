@@ -92,6 +92,18 @@ sudo mkdir -p /etc/restapi
 #sudo chown -R www-data:www-data /etc/restapi
 
 echo "... writing uwsgi.ini ..."
+#
+# uwsgi worker settings, optional section "uwsgi" in config.py
+#
+UWSGI_PROCESSES=$(python $BASEDIR/cfgreader.py uwsgi processes 4)
+UWSGI_THREADS=$(python $BASEDIR/cfgreader.py uwsgi threads 4)
+UWSGI_HARAKIRI=$(python $BASEDIR/cfgreader.py uwsgi harakiri 60)
+UWSGI_MAX_REQUESTS=$(python $BASEDIR/cfgreader.py uwsgi max_requests 2000)
+UWSGI_RELOAD_ON_RSS=$(python $BASEDIR/cfgreader.py uwsgi reload_on_rss 300)
+UWSGI_LISTEN=$(python $BASEDIR/cfgreader.py uwsgi listen 1024)
+check $? "reading uwsgi section from config.py"
+echo "uwsgi processes  $UWSGI_PROCESSES"
+echo "uwsgi threads    $UWSGI_THREADS"
 cat << EOF | sudo tee /etc/restapi/uwsgi.$INSTANCE_ID.ini
 # do not change this file here!
 # auto created by $BASEDIR/install.sh
@@ -106,7 +118,24 @@ chdir = $BASEDIR
 home = $VENV
 
 master = true
-processes = 10
+processes = $UWSGI_PROCESSES
+threads = $UWSGI_THREADS
+# needed for threads and for plugins with run_async=1
+enable-threads = true
+thunder-lock = true
+# load the app in every worker (not in the master before fork):
+# no inherited db sockets, \$app_start runs once per worker
+lazy-apps = true
+
+# kill requests running longer than harakiri seconds
+# (keep it below the timeout of the apache ProxyPass)
+harakiri = $UWSGI_HARAKIRI
+harakiri-verbose = true
+max-requests = $UWSGI_MAX_REQUESTS
+# MB per worker
+reload-on-rss = $UWSGI_RELOAD_ON_RSS
+listen = $UWSGI_LISTEN
+
 #socket = 127.0.0.1:5000
 #protocol = http
 

@@ -50,11 +50,25 @@ CONFIG={
         "ui": {"wwwroot": "/tmp/wwwroot/"},
         "jwt": {"secret":"change_me_min_32_chars_e.g._openssl_rand_hex_32", "algorithm":"HS256",
             "access_lifetime_min":60, "refresh_lifetime_min":1440},
+        "uwsgi": {"processes":4, "threads":4, "harakiri":60, "max_requests":2000, "reload_on_rss":300, "listen":1024},
     }
 }
 ```
 
 The `jwt` section is required. Use a random secret with at least 32 bytes for HS256, e.g. from `openssl rand -hex 32`.
+
+The `uwsgi` section is optional. `install.sh` reads it when it writes `/etc/restapi/uwsgi.<instance>.ini`. A missing section or key uses the default shown above.
+
+| Key | uwsgi option | Meaning |
+|---|---|---|
+| `processes` | `processes` | Worker processes, about the number of CPU cores |
+| `threads` | `threads` | Threads per process. `processes × threads` is the maximum number of parallel requests (and DB connections) |
+| `harakiri` | `harakiri` | Seconds after which a hanging request is killed and the worker restarted. Keep the Apache `ProxyPass` `timeout=` a bit higher |
+| `max_requests` | `max-requests` | Restart a worker after this many requests |
+| `reload_on_rss` | `reload-on-rss` | Restart a worker above this memory usage (MB) |
+| `listen` | `listen` | Length of the queue for new connections |
+
+The generated ini also sets `enable-threads`, `thunder-lock` and `lazy-apps`. With `lazy-apps` every worker loads the app itself, so `$app_start` plugins run once per worker (and again after a worker restart). See `docs/uwsgi-threads.md`.
 
 ## Running
 
@@ -63,7 +77,7 @@ The `jwt` section is required. Use a random secret with at least 32 bytes for HS
 python restapi.py    # development server, uses CONFIG['default']
 ```
 
-In production the app runs under uwsgi/systemd. Apache examples are in `examples/apache2/`.
+In production the app runs under uwsgi/systemd. `install.sh` writes the uwsgi ini and the units and can be run again, e.g. after changing the `uwsgi` section. Restart the units afterwards with `./services.sh restart`. Apache examples are in `examples/apache2/`.
 
 ## API overview
 
