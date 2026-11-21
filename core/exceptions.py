@@ -66,3 +66,6 @@ class LiteralNotAllowedInJoinCondition(Exception):
 
 class WrongJwtTokenType(Exception):
     pass
+
+class IdentifierNotAllowedInFetchXml(Exception):
+    pass

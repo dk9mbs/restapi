@@ -1,5 +1,5 @@
 from services.database import DatabaseServices
-from core.fetchxmlparser import FetchXmlParser
+from core.fetchxmlparser import FetchXmlParser, escape_xml_value as x
 from core.meta import read_table_meta, read_table_field_meta
 
 """
@@ -54,14 +54,14 @@ def _build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,
         raise NameError("%s not exists in api_table (%s)" %  (alias,id))
 
     tmp=[]
-    tmp.append(f"<restapi type=\"{type}\">\n")
+    tmp.append(f"<restapi type=\"{x(type)}\">\n")
     #tmp.append(f"<table name=\"{meta['table_name']}\"/>\n") # don't use the table name here!!!
-    tmp.append(f"""<table name="{meta['alias']}" alias="q"/>\n""") #use alwasy the alias!!!
+    tmp.append(f"""<table name="{x(meta['alias'])}" alias="q"/>\n""") #use alwasy the alias!!!
 
     if fields_select!=None and fields_select!=[]:
         tmp.append("<select>")
         for field in fields_select:
-            tmp.append(f"""<field name="{ field }" table_alias="q"/>""")
+            tmp.append(f"""<field name="{ x(field) }" table_alias="q"/>""")
         tmp.append("</select>")
 
     # show only referenced records
@@ -73,31 +73,31 @@ def _build_fetchxml_by(context,alias,table_name,table_id=None,id=None,data=None,
         tmp.append("""</joins>\n""")
 
         tmp.append("<filter type=\"and\">\n")
-        tmp.append(f"""<condition field="record_id" value="{related_record_id}" operator="=" alias="xyz"/>\n""")
-        tmp.append(f"""<condition field="table_id" value="{related_meta['id']}" operator="=" alias="xyz"/>\n""")
-        tmp.append(f"""<condition field="ref_table_id" value="{meta['id']}" operator="=" alias="xyz"/>\n""")
+        tmp.append(f"""<condition field="record_id" value="{x(related_record_id)}" operator="=" alias="xyz"/>\n""")
+        tmp.append(f"""<condition field="table_id" value="{x(related_meta['id'])}" operator="=" alias="xyz"/>\n""")
+        tmp.append(f"""<condition field="ref_table_id" value="{x(meta['id'])}" operator="=" alias="xyz"/>\n""")
         tmp.append("</filter>\n")
     # end show only referenced records
 
     if filter_field_name!=None:
         tmp.append("<filter type=\"and\">\n")
-        tmp.append(f"""<condition field="{filter_field_name}" value="{filter_value}" operator="=" alias="q"/>\n""")
+        tmp.append(f"""<condition field="{x(filter_field_name)}" value="{x(filter_value)}" operator="=" alias="q"/>\n""")
         tmp.append("</filter>\n")
 
     if id!=None:
         tmp.append("<filter type=\"and\">\n")
-        tmp.append(f"""<condition field="{meta['id_field_name']}" value="{id}" operator="=" alias="q"/>\n""")
+        tmp.append(f"""<condition field="{x(meta['id_field_name'])}" value="{x(id)}" operator="=" alias="q"/>\n""")
         tmp.append("</filter>\n")
 
     if data!=None:
         tmp.append("<fields>\n")
         for k,v in data.items():
             if v==None:
-                tmp.append(f"""<field name="{k}"/>\n""")
+                tmp.append(f"""<field name="{x(k)}"/>\n""")
             else:
                 #tmp.append(f"""<field name="{k}" value="{v}"/>\n""")
-                tmp.append(f"""<field name="{k}">\n""")
-                tmp.append(f"""<value><![CDATA[{v}]]></value>\n""")
+                tmp.append(f"""<field name="{x(k)}">\n""")
+                tmp.append(f"""<value>{x(v)}</value>\n""")
                 tmp.append(f"""</field>\n""")
 
         tmp.append("</fields>\n")

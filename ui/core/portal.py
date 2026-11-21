@@ -18,7 +18,7 @@ from services.filesystemtools import FileSystemTools
 from services.jinjatemplate import JinjaTemplate
 
 from core.appinfo import AppInfo
-from core.fetchxmlparser import FetchXmlParser
+from core.fetchxmlparser import FetchXmlParser, escape_xml_value
 from core.jsontools import json_serial
 from core import log
 from core.exceptions import RestApiNotAllowed, ConfigNotValid
@@ -145,7 +145,7 @@ class Portal(Resource):
         <restapi type="select">
         <table name="api_portal_host" alias="ph"/>
         <filter type="and">
-            <condition field="host" value="{o.hostname}" operator="="/>
+            <condition field="host" value="{escape_xml_value(o.hostname)}" operator="="/>
         </filter>
         </restapi>
         """
@@ -163,10 +163,10 @@ class Portal(Resource):
         <table name="api_portal_content"/>
         <filter type="and">
             <filter type="or">
-                <condition field="portal_id" value="{portal_id}" operator="="/>
+                <condition field="portal_id" value="{escape_xml_value(portal_id)}" operator="="/>
                 <condition field="portal_id" value="default" operator="="/>
             </filter>
-            <condition field="name" value="{content_name}" operator="="/>
+            <condition field="name" value="{escape_xml_value(content_name)}" operator="="/>
         </filter>
         </restapi>
         """

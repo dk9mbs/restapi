@@ -28,6 +28,8 @@ curl -X POST "https://<host>/api/v1.0/data" \
 
 ## Aufbau
 
+Namen von Tabellen, Aliasen und Feldern müssen einfache Bezeichner sein: Buchstaben, Ziffern und `_`, nicht mit einer Ziffer beginnend (`^[A-Za-z_][A-Za-z0-9_]*$`). Schlüsselwörter wie `type`, `sort` und `func` werden gegen feste Listen geprüft. Groß- und Kleinschreibung ist dabei egal. Andere Werte lehnt der Parser mit `IdentifierNotAllowedInFetchXml` ab.
+
 ```xml
 <restapi type="select" limit="10" offset="0">
     <table name="dummy" alias="d"/>
@@ -50,7 +52,7 @@ curl -X POST "https://<host>/api/v1.0/data" \
 | `<fields>` | Werte für `insert` und `update` |
 | `<filter>` | `WHERE`-Bedingung |
 | `<orderby>` | Sortierung |
-| `<comment text>` | Wird als `/* ... */` an das SQL angehängt, nützlich im Slow-Query-Log |
+| `<comment text>` | Wird als `/* ... */` an das SQL angehängt, nützlich im Slow-Query-Log. `/*` und `*/` sind im Text nicht erlaubt |
 
 ## Lesen (`select`)
 
@@ -111,7 +113,7 @@ Attribute von `<select><field .../>`:
 | `name` | Pflicht: Feldname. Muss in `api_table_field` existieren, sonst Fehler `Table: dummy on field: ...` |
 | `alias` | Name der Spalte im Ergebnis |
 | `table_alias` | Tabelle des Feldes (SQL-Alias aus `<table>` oder `<join>`), Vorgabe ist die Haupttabelle |
-| `func` | SQL-Funktion um das Feld, z. B. `count`, `sum`, `min`, `max`, `avg`, `upper` |
+| `func` | SQL-Funktion um das Feld: `count`, `sum`, `min`, `max`, `avg`, `concat`, `date_format`, `upper`, `lower`, `date`, `year`, `month`, `day`, `hour`, `minute`, `round` |
 | `format` | Bei `func="date_format"` Pflicht, z. B. `format="%d.%m.%Y"` |
 | `string_before`, `string_after` | Bei `func="concat"`: Text vor bzw. nach dem Feld |
 | `grouping` | Wenn vorhanden (beliebiger Wert), wird das Feld in `GROUP BY` aufgenommen |
@@ -155,8 +157,8 @@ Attribute von `<select><field .../>`:
 |---|---|
 | `table` | Pflicht: Alias aus `api_table.alias` |
 | `alias` | SQL-Alias |
-| `type` | `inner` (Vorgabe), `left`, `right` |
-| `condition` | Pflicht: die `ON`-Bedingung als SQL-Text |
+| `type` | `inner` (Vorgabe), `left`, `right`, `left outer`, `right outer` |
+| `condition` | Pflicht: `alias.feld=alias.feld`, mehrere Paare mit `AND` verknüpft, z. B. `a.x=b.y AND a.z=b.w` |
 
 Das Leserecht wird für jede verknüpfte Tabelle geprüft.
 
@@ -306,13 +308,28 @@ def execute(context, plugin_context, params):
 
 - **`fetch_mode=0`:** liest alle Treffer in `rs.get_result()`.
 - **`run_as_system=True`:** überspringt die Prüfung der Tabellenrechte (siehe `plugins/api_clear_session.py`).
-- **Werte aus Variablen nicht ungeprüft in das XML einsetzen:** Ein `"` oder `<` im Wert zerstört das XML. Escape solche Werte, z. B. mit `xml.sax.saxutils.quoteattr()`, oder baue die FetchXML mit `ElementTree` auf (wie `mcpservice.py`).
+- **Werte aus Variablen immer escapen:** Ein `"` oder `<` im Wert verändert sonst das XML. Dafür gibt es `escape_xml_value()`:
+
+  ```python
+  from core.fetchxmlparser import FetchXmlParser, escape_xml_value
+
+  xml=f"""
+  <restapi type="select">
+      <table name="dummy"/>
+      <filter>
+          <condition field="name" value="{escape_xml_value(name)}"/>
+      </filter>
+  </restapi>
+  """
+  ```
+
+  Alternativ baust du die FetchXML mit `ElementTree` auf (wie `mcpservice.py`).
 - **Transaktion:** Änderungen werden nicht sofort committet. Commit (oder Rollback) erfolgt über den Context, bei HTTP-Requests am Ende des Requests (`teardown_request`).
 
 ## Rechte und automatische Bedingungen
 
 - **Tabellenrechte:** Vor der Ausführung prüft `Permission.validate` für jede Tabelle (Haupttabelle und Joins) das passende Recht aus `api_group_permission`: `mode_read`, `mode_create`, `mode_update` oder `mode_delete`. Fehlt es, kommt HTTP 400 mit `no permission (...) for <user> on <table>`.
-- **Datensatzrechte:** Ist für die Tabelle `enable_record_permission` aktiv, wird die Bedingung `api_fn_rec_permission(...)` automatisch an `WHERE` angehängt.
+- **Datensatzrechte:** Ist für die Haupttabelle (`<table>`) `enable_record_permission` aktiv, wird die Bedingung `api_fn_rec_permission(...)` automatisch an `WHERE` angehängt.
 - **Gelesen-Markierung:** Jedes `select` blendet Datensätze aus, die in `api_record_meta` mit `meta_type_id=1001` markiert sind (`sys_row_id NOT IN (...)`).
 - **Plugins:** Vor und nach der Ausführung laufen die Plugins aus `api_event_handler` mit `publisher=<table-alias>` und `event=<type>` (`before`/`after`).
 
@@ -325,7 +342,9 @@ def execute(context, plugin_context, params):
 | `Table not found for alias: ...` | `<table name>` oder `<join table>` steht nicht in `api_table.alias` |
 | `Table: ... on field: ...` | Feld in `<select>` fehlt in `api_table_field` |
 | `in` (nur der Operatorname) | Operator nicht erlaubt |
-| `Special Chars in String: ;` | `;`, `--`, Tabulator oder Zeilenumbruch in Feldname, Alias, Join-Bedingung oder Kommentar |
+| `... not allowed: ...` | Name ist kein einfacher Bezeichner, Schlüsselwort (`type`, `sort`, `func`) nicht erlaubt oder Join-Bedingung nicht in der Form `a.x=b.y` |
+| `Special Chars in String: ;` | `;`, `--`, Tabulator oder Zeilenumbruch im Kommentar |
+| `Comment markers in comment text` | `/*` oder `*/` im Kommentar |
 | `No Type in xml ...` | `type` fehlt |
 | `unknown type in fetchxml: ...` | `type` ist ungültig |
 | `(1064, "You have an error in your SQL syntax ...")` | z. B. `update` oder `delete` ohne Filter |
@@ -333,6 +352,5 @@ def execute(context, plugin_context, params):
 ## Hinweise
 
 - **`type`:** `read` wird wie `select` und `create` wie `insert` ausgeführt. Plugins werden aber mit dem Wert aus dem XML ausgelöst. Ein Plugin für `insert` reagiert also nicht auf `type="create"`. Verwende deshalb immer `select`, `insert`, `update` und `delete`.
-- **Feldnamen:** In `<filter>` und `<fields>` werden Feldnamen nicht gegen die Metadaten geprüft, nur auf Sonderzeichen. Ein falscher Name fällt erst als SQL-Fehler auf.
+- **Feldnamen:** In `<filter>`, `<orderby>` und `<fields>` werden Feldnamen nur als Bezeichner geprüft, nicht gegen die Metadaten. Ein falscher Name fällt erst als SQL-Fehler auf.
 - **XML-Sonderzeichen:** `&`, `<` und `"` in Werten müssen XML-escaped werden (`&amp;`, `&lt;`, `&quot;`).
-- **`if_condition_func`:** In `<select>` nicht verwenden. Der Code ruft eine Methode `_excape_string` auf, die es nicht gibt, deshalb bricht die Abfrage mit einem Fehler ab. `if_condition_field` und `if_condition_value` ohne `if_condition_func` funktionieren.
