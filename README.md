@@ -189,8 +189,11 @@ Plugin parameters by trigger:
 
 - **Generic tools:** `list_tables`, `describe_table`, `query_records`, `get_record`, `insert_record`, `update_record`. The write tools are disabled unless `DK9MBS_READ_ONLY=0`.
 - **Custom tools:** every enabled row in `api_mcp_tool` becomes an MCP tool that calls `/v1.0/action/<action>`. To add one, write a plugin, register it as an action and insert an `api_mcp_tool` row with a JSON schema. See `api_mcp_demo` in `install/db/basedata.sql`.
+- **Developer documentation:** the tool `get_doc` returns `docs/index.md` without a parameter and a document from the index with `name` (e.g. `get_doc("fetchxml.md")`). The same files are available as resources `docs://<name>` (e.g. `@restapi:docs://plugins.md` in Claude Code). Only `index.md` and the files linked in it are served. Names must be plain file names (`[a-z0-9_-]+.md`), symlinks and other file types are rejected. The files are read from `docs/` next to `mcpservice.py` (`DK9MBS_DOCS_DIR` to change it) on every call, the list of resources is reloaded with SIGHUP.
 
-`install.sh` creates `venv/mcp`, the configuration file `/etc/restapi/mcp.<instance>.env` (add the API key there) and the unit `restapi-mcp.<instance>.service`. After changing `api_mcp_tool`, run `systemctl reload restapi-mcp.<instance>.service`. This reloads the tools without a restart (SIGHUP).
+`install.sh` creates `venv/mcp`, the configuration file `/etc/restapi/mcp.<instance>.env` (add the API key there) and the unit `restapi-mcp.<instance>.service`. After changing `api_mcp_tool` or `docs/index.md`, run `systemctl reload restapi-mcp.<instance>.service`. This reloads the tools and the documentation resources without a restart (SIGHUP).
+
+The unit runs in a systemd sandbox: of the restapi directory the service only sees `mcpservice.py`, `docs/` and `venv/mcp`, read only. `config.py`, the restapi code and `/etc/restapi` do not exist for the process (`TemporaryFileSystem=`, `BindReadOnlyPaths=`, `InaccessiblePaths=`, `ProtectSystem=strict`).
 
 For remote access, put it behind Apache with TLS and a bearer token:
 - `examples/apache2/mcp.conf`: `Include` it in an existing `<VirtualHost *:443>` (endpoint `/mcp`)
