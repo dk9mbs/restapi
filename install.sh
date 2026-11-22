@@ -131,6 +131,8 @@ lazy-apps = true
 # (keep it below the timeout of the apache ProxyPass)
 harakiri = $UWSGI_HARAKIRI
 harakiri-verbose = true
+# read the request body before the app (and the harakiri timer) starts
+post-buffering = 8192
 max-requests = $UWSGI_MAX_REQUESTS
 # MB per worker
 reload-on-rss = $UWSGI_RELOAD_ON_RSS

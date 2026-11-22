@@ -68,7 +68,7 @@ The `uwsgi` section is optional. `install.sh` reads it when it writes `/etc/rest
 | `reload_on_rss` | `reload-on-rss` | Restart a worker above this memory usage (MB) |
 | `listen` | `listen` | Length of the queue for new connections |
 
-The generated ini also sets `enable-threads`, `thunder-lock` and `lazy-apps`. With `lazy-apps` every worker loads the app itself, so `$app_start` plugins run once per worker (and again after a worker restart). See `docs/uwsgi-threads.md`.
+The generated ini also sets `enable-threads`, `thunder-lock`, `lazy-apps` and `post-buffering`. With `lazy-apps` every worker loads the app itself, so `$app_start` plugins run once per worker (and again after a worker restart). See `docs/uwsgi-threads.md`.
 
 ## Running
 

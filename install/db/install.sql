@@ -575,7 +575,8 @@ ALTER TABLE api_event_handler ADD COLUMN IF NOT EXISTS is_single_instance smalli
 ALTER TABLE api_event_handler ADD CONSTRAINT `event_handler_event_handler_status` FOREIGN KEY IF NOT EXISTS (status_id) REFERENCES api_event_handler_status(id);
 
 
-DROP TABLE IF EXISTS api_table_action;
+-- disabled: install.sh can run more than once, the drop deleted all rows on every run
+-- DROP TABLE IF EXISTS api_table_action;
 CREATE TABLE IF NOT EXISTS api_table_action(
     id int NOT NULL AUTO_INCREMENT,
     table_id INT NOT NULL,
@@ -593,7 +594,9 @@ CREATE TABLE IF NOT EXISTS api_process_log_status(
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS api_process_log;
+-- disabled: install.sh can run more than once, the drop deleted the process log on every run
+-- (and requests running at the same time failed with "table doesn't exist")
+-- DROP TABLE IF EXISTS api_process_log;
 
 CREATE TABLE IF NOT EXISTS api_process_log (
     id varchar(36) NOT NULL,

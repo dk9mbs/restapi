@@ -28,6 +28,7 @@ lazy-apps = true
 
 harakiri = $UWSGI_HARAKIRI          # Vorgabe 60
 harakiri-verbose = true
+post-buffering = 8192
 max-requests = $UWSGI_MAX_REQUESTS  # Vorgabe 2000
 reload-on-rss = $UWSGI_RELOAD_ON_RSS  # Vorgabe 300 (MB)
 listen = $UWSGI_LISTEN              # Vorgabe 1024
@@ -123,5 +124,5 @@ Am Python-Code der restapi ändert sich nichts. Es bleibt deshalb egal, ob dabei
 
 ## Hinweise
 
-- **Hinweis von uWSGI beim Start:** `you have enabled harakiri without post buffering`. Das betrifft nur sehr langsame Uploads, die dadurch abgebrochen werden können. Bei Bedarf hilft `post-buffering = 8192`.
+- **`post-buffering = 8192`:** uWSGI liest den Request-Body vollständig ein, bevor die App und damit der `harakiri`-Timer startet. Langsame Uploads werden so nicht abgebrochen, und die Warnung `you have enabled harakiri without post buffering` beim Start der Worker entfällt.
 - **`$app_start`:** Kommt später ein Handler mit Nebenwirkungen dazu (DB schreiben, MQTT verbinden, Threads starten), läuft dieser einmal pro Worker und bei jedem Worker-Neustart erneut.
