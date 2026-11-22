@@ -37,6 +37,7 @@ Registriert wird ein Plugin über eine Zeile in `api_event_handler`:
 | `sorting` | Reihenfolge, wenn mehrere Plugins auf dasselbe Ereignis reagieren |
 | `is_enabled` | `-1` aktiv, `0` aus |
 | `config` | JSON, das im Plugin als `plugin_context['config']` ankommt |
+| `inline_code` | Python-Code für das Plugin `api_exec_inline_code` (siehe [Inline-Code](#inline-code)) |
 
 Präfixe im Dateinamen zeigen die Zugehörigkeit (`api_*`, `iot_*`, `tuxlog_*`, `bank_*`, ...). Wähle eindeutige Modulnamen, denn alle Plugin-Verzeichnisse liegen im selben `PYTHONPATH`.
 
@@ -140,6 +141,26 @@ Die restapi läuft unter uWSGI mit mehreren Prozessen und Threads (`lazy-apps`).
 - **Kein `flask.g` oder `request`:** Verwende die DB-Verbindung immer über den übergebenen `context`, nie über `flask.g` oder `flask.request`. Asynchrone Plugins und Timer laufen außerhalb eines HTTP-Requests.
 - **`$app_start`-Plugins** laufen in jedem Worker. Sie sollen nur registrieren (Endpunkte, Jinja-Funktionen) und müssen mehrfaches Ausführen vertragen. Sie müssen synchron laufen (`run_async=0`), damit die Endpunkte vor dem ersten Request bereitstehen.
 
+## Inline-Code
+
+Kleine Logik kann direkt in `api_event_handler.inline_code` stehen, ohne eigenes Modul. Dafür trägst du als `plugin_module_name` das Plugin `api_exec_inline_code` ein. Es führt den Code aus `inline_code` aus. Alle anderen Spalten (`publisher`, `event`, `type`, `run_async`, ...) gelten wie bei jedem Plugin. Im UI hat das Feld einen Python-Editor.
+
+Im Code verfügbar sind `params`, `context`, `plugin_context`, `print` und `dir`.
+
+Beispiel für `publisher=<tabelle>`, `event=insert`, `type=before`, das ein Rufzeichen vor dem Speichern in Großbuchstaben umwandelt:
+
+```python
+if 'call' in params['data'] and params['data']['call']['value']:
+    params['data']['call']['value']=params['data']['call']['value'].strip().upper()
+```
+
+- **Funktionen:** Eine im Inline-Code definierte Funktion sieht `context` und `plugin_context` nicht. Übergib sie als Parameter, z. B. `def check(context, data): ...` und `check(context, params['data'])`.
+- **Fehler:** `api_exec_inline_code` hat `raise_exception: True`. Ein Fehler im Code bricht den auslösenden Vorgang ab, z. B. das Speichern des Datensatzes.
+- **Ausgaben:** `print()` schreibt in das Log des Dienstes (`journalctl -u restapi.<instance>.service`).
+- **Gleiche Regeln:** Für Inline-Code gilt alles aus diesem Leitfaden, auch kein direktes SQL und das Escapen von Werten in FetchXML.
+- **Wann ein Modul besser ist:** Sobald der Code länger als ein paar Zeilen ist, getestet werden soll oder zu einer Lösung gehört. Ein Modul liegt in Git und lässt sich mit der Lösung ausrollen, Inline-Code nur als Datensatz.
+- **Rechte:** Inline-Code läuft wie Plugin-Code im Serverprozess. Schreibrecht auf `api_event_handler` gehört deshalb nur Administratoren.
+
 ## Eigene Endpunkte
 
 Ein `$app_start`-Plugin kann eigene Endpunkte registrieren (`AppInfo.get_api("solution").add_resource(...)`). Für diese Endpunkte gilt alles oben Gesagte. Zusätzlich:
@@ -165,4 +186,5 @@ Wie Plugins zusammen mit Tabellen, Metadaten und Templates als eigene Lösung (z
 - [ ] Synchron deutlich unter dem `harakiri`-Limit, sonst asynchron
 - [ ] Kein Code mit Nebenwirkungen auf Modulebene, kein globaler veränderlicher Zustand
 - [ ] `raise_exception` bewusst gesetzt
+- [ ] Inline-Code nur für kurze Logik, Schreibrecht auf `api_event_handler` nur für Administratoren
 - [ ] Bei einer eigenen Lösung: die Checkliste in [solutions.md](solutions.md)
