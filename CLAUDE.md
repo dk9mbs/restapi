@@ -76,3 +76,6 @@ All three parsers (`FetchXmlParser`, `FetchSqlParser`, `OrmParser`) ultimately p
 
 ### Naming conventions in this codebase
 Existing code does not follow PEP 8: no spaces around `=` in assignments/kwargs (`x=1`, `foo(a=1)`), and this style is deliberate/consistent across the whole repo (see the PEP8/naming-convention links left in `README.md` — the author is aware and has chosen otherwise). Match the surrounding style rather than reformatting.
+
+## Documentation (`docs/`)
+Longer documentation lives as Markdown files in `docs/` (written in German), e.g. `fetchxml.md`, `plugins.md`, `solutions.md`. `docs/index.md` lists every committed `.md` file in `docs/` with a one-line summary, grouped by topic. **Keep `docs/index.md` up to date:** whenever a `.md` file in `docs/` is added, renamed, removed or its scope changes, update the index in the same commit. Files that are not committed (excluded via `.git/info/exclude`) are not listed. The repository is public: describe how things work, never open security weaknesses.
