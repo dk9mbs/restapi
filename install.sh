@@ -349,6 +349,19 @@ User=www-data
 Group=www-data
 NoNewPrivileges=yes
 PrivateTmp=yes
+# Sandbox: the service only sees mcpservice.py, docs/ and venv/mcp of the restapi directory
+# (read only). config.py, the restapi code and /etc/restapi do not exist for the process.
+# The EnvironmentFile is read by systemd before the sandbox is set up.
+ProtectSystem=strict
+ProtectHome=tmpfs
+TemporaryFileSystem=$BASEDIR:ro
+BindReadOnlyPaths=$BASEDIR/mcpservice.py -$BASEDIR/docs $MCPVENV
+InaccessiblePaths=-/etc/restapi
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
 StandardOutput=journal
 StandardError=journal
 

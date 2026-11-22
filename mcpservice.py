@@ -15,10 +15,15 @@ Neu laden:      kill -HUP <pid> bzw. systemctl reload restapi-mcp.<instance>.ser
 
 Auth: API-Key eines eigenen MCP-Benutzers (Header 'apikey'). Welche Tabellen
 lesbar/schreibbar sind, regelt die restapi selbst über api_group_permission.
+
+Doku:     get_doc und die Resources docs://... liefern die Markdown-Dateien aus
+          docs/ (nur index.md und die Dateien, die dort verlinkt sind).
 """
 import json
 import logging
 import os
+import re
+import stat
 import sys
 import xml.etree.ElementTree as ET
 from typing import Any
@@ -27,6 +32,7 @@ import httpx
 import jsonschema
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
+from mcp.server.mcpserver.resources import FunctionResource
 from mcp.server.mcpserver.tools import Tool
 from pydantic import BaseModel, Field
 
@@ -43,6 +49,10 @@ OPERATORS = {
     "lastXminutes", "lastXhours", "lastXdays", "lastXmonth", "lastXyears",
     "olderThenXMinutes", "olderThenXHours",
 }
+# Entwickler-Doku: Verzeichnis mit index.md und den verlinkten Markdown-Dateien
+DOCS_DIR = os.getenv("DK9MBS_DOCS_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs"))
+DOCS_INDEX = "index.md"
+DOCS_MAX_SIZE = 1024 * 1024
 
 log = logging.getLogger("dk9mbs-mcp")   # niemals print(): stdout gehört bei stdio dem MCP-Protokoll
 mcp = MCPServer(
@@ -53,7 +63,9 @@ mcp = MCPServer(
         "2) describe_table für die passende Tabelle aufrufen, um Feldnamen, Typen und Verweise zu kennen. "
         "3) Erst dann query_records/get_record mit exakt diesen Feldnamen verwenden. "
         "Felder mit 'references' verweisen auf eine andere Tabelle; deren Klartext steht im Ergebnis als "
-        "__<feld>@name. Keine Tabellen- oder Feldnamen raten."
+        "__<feld>@name. Keine Tabellen- oder Feldnamen raten. "
+        "Für Fragen zur Entwicklung mit der restapi (FetchXML, Plugins, eigene Lösungen, Betrieb) zuerst "
+        "get_doc ohne Parameter aufrufen und dann das passende Dokument mit get_doc(name) lesen."
     ),
 )
 
@@ -195,6 +207,95 @@ async def update_record(table: str, record_id: str, values: dict[str, str]) -> A
     return await _post(_to_xml(root))
 
 
+# --------------------------------------------------------------------------- Entwickler-Doku
+# Harte Grenzen beim Lesen:
+#  1. Name: nur ein einfacher Dateiname "<a-z0-9_->.md" (kein /, \, .., NUL)
+#  2. Whitelist: nur index.md und die Dateien, die index.md verlinkt
+#  3. Öffnen relativ zum geöffneten docs-Verzeichnis (dir_fd) ohne Symlinks (O_NOFOLLOW)
+#  4. Nur normale Dateien, höchstens DOCS_MAX_SIZE Bytes
+# Zusätzlich sieht der Dienst unter systemd nur docs/, mcpservice.py und venv/mcp (siehe install.sh).
+_DOC_NAME = re.compile(r"[a-z0-9][a-z0-9_-]*\.md")
+
+
+def _open_doc(name: str) -> str:
+    """Liest eine Datei direkt aus DOCS_DIR, ohne die Whitelist zu prüfen (nur für index.md und _read_doc)."""
+    if not isinstance(name, str) or not _DOC_NAME.fullmatch(name):
+        raise ToolError(f"unknown document: {name!r}")
+    try:
+        dir_fd = os.open(DOCS_DIR, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=dir_fd)
+        finally:
+            os.close(dir_fd)
+        with os.fdopen(fd, "rb") as f:
+            if not stat.S_ISREG(os.fstat(f.fileno()).st_mode):
+                raise OSError("not a regular file")
+            data = f.read(DOCS_MAX_SIZE + 1)
+    except OSError:
+        raise ToolError(f"unknown document: {name!r}") from None
+    if len(data) > DOCS_MAX_SIZE:
+        raise ToolError(f"document too large: {name!r}")
+    return data.decode("utf-8", errors="replace")
+
+
+def _indexed_docs() -> dict[str, str]:
+    """Dateiname -> Linktext aller Dokumente, die index.md verlinkt (in der Reihenfolge des Index)."""
+    index = _open_doc(DOCS_INDEX)
+    docs: dict[str, str] = {}
+    for m in re.finditer(r"\[([^\]]*)\]\(([a-z0-9][a-z0-9_-]*\.md)\)", index):
+        if m.group(2) != DOCS_INDEX:
+            docs.setdefault(m.group(2), m.group(1))
+    return docs
+
+
+def _read_doc(name: str | None = None) -> str:
+    """index.md (ohne name) oder ein im Index verlinktes Dokument."""
+    if name is None or name == "" or name == DOCS_INDEX:
+        return _open_doc(DOCS_INDEX)
+    if not isinstance(name, str) or not _DOC_NAME.fullmatch(name) or name not in _indexed_docs():
+        raise ToolError(f"unknown document: {name!r}")
+    return _open_doc(name)
+
+
+@mcp.tool()
+async def get_doc(name: str | None = None) -> str:
+    """Entwickler-Dokumentation der restapi als Markdown (FetchXML, Plugins, eigene Lösungen, Betrieb).
+    Ohne name: liefert den Index (index.md) mit allen Dokumenten und einer kurzen Beschreibung.
+    Mit name (Dateiname aus dem Index, z. B. 'fetchxml.md'): liefert dieses Dokument."""
+    return _read_doc(name)
+
+
+@mcp.resource("docs://{name}", name="restapi-doc", description="Ein Dokument aus docs/index.md, z. B. docs://fetchxml.md",
+              mime_type="text/markdown")
+def doc_resource(name: str) -> str:
+    return _read_doc(name)
+
+
+_doc_resource_uris: set[str] = set()   # aktuell registrierte Doku-Resources (für das Neuladen)
+
+
+def load_doc_resources() -> None:
+    """Registriert index.md und jedes verlinkte Dokument als eigene Resource (docs://<name>),
+    damit Clients sie auflisten können. Beim erneuten Aufruf (SIGHUP) werden entfernte Dokumente
+    abgemeldet. Gelesen wird bei jedem Zugriff frisch über _read_doc()."""
+    try:
+        docs = {DOCS_INDEX: "Index der Entwickler-Dokumentation", **_indexed_docs()}
+    except ToolError:
+        log.warning("Doku nicht verfügbar (%s) – keine Doku-Resources registriert", DOCS_DIR)
+        docs = {}
+
+    registry = mcp._resource_manager._resources
+    uris = {f"docs://{name}": (name, title) for name, title in docs.items()}
+    for uri in _doc_resource_uris - uris.keys():
+        registry.pop(uri, None)
+    for uri, (name, title) in uris.items():
+        registry[uri] = FunctionResource.from_function(lambda n=name: _read_doc(n), uri=uri, name=name,
+                                                       title=title, mime_type="text/markdown")
+    _doc_resource_uris.clear()
+    _doc_resource_uris.update(uris.keys())
+    log.info("Doku-Resources registriert: %s", ", ".join(sorted(docs)) or "-")
+
+
 # --------------------------------------------------------------------------- Plugin-Tools (Actions)
 class ActionTool(Tool):
     """MCP-Tool mit frei definiertem JSON-Schema aus api_mcp_tool.input_schema.
@@ -275,7 +376,8 @@ def _reload_on_sighup(signum: int, frame: Any) -> None:
     import threading
     import anyio
 
-    log.info("SIGHUP empfangen – lade api_mcp_tool neu")
+    log.info("SIGHUP empfangen – lade api_mcp_tool und die Doku-Resources neu")
+    load_doc_resources()
     threading.Thread(target=anyio.run, args=(load_action_tools,), daemon=True).start()
 
 
@@ -286,6 +388,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
     anyio.run(load_action_tools)
+    load_doc_resources()
     signal.signal(signal.SIGHUP, _reload_on_sighup)
     transport = os.getenv("MCP_TRANSPORT", "stdio")
     if transport == "stdio":
