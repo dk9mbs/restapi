@@ -21,7 +21,7 @@ def execute(context, plugin_context, params):
 | Parameter | Inhalt |
 |---|---|
 | `context` | `Context` mit DB-Verbindung, Benutzer, Session und Request-Argumenten |
-| `plugin_context` | Infos zum Aufruf: `publisher`, `trigger`, `type`, `process_id`, `config` (JSON aus `api_event_handler.config`) und `response` |
+| `plugin_context` | Infos zum Aufruf: `publisher`, `trigger`, `type`, `process_id`, `config` (JSON aus `api_event_handler.config`), `cancel` (siehe [Änderungen verwerfen](#änderungen-verwerfen)) und `response` |
 | `params` | Die Daten des Ereignisses (siehe unten) |
 
 Registriert wird ein Plugin über eine Zeile in `api_event_handler`:
@@ -52,8 +52,65 @@ Präfixe im Dateinamen zeigen die Zugehörigkeit (`api_*`, `iot_*`, `tuxlog_*`, 
 | MQTT-Nachricht | Topic-Publisher / `mqtt_message` | `{"data": <Payload>, "topic": "<topic>"}` |
 | Start der App | `$app_start` / `execute` | leer |
 
-- **Bei Tabellenänderungen mit `before`:** Das Plugin kann Werte in `params['data']` ändern, bevor sie gespeichert werden.
+- **Bei Tabellenänderungen mit `before`:** Das Plugin kann Werte in `params['data']` ändern, bevor sie gespeichert werden, oder die Änderung still verwerfen (siehe [Änderungen verwerfen](#änderungen-verwerfen)).
+- **Bei Tabellenänderungen mit `after`:** Das Plugin läuft nur, wenn die Anweisung ohne Fehler ausgeführt wurde. `params` ist dasselbe Objekt wie im `before`-Lauf (siehe [Von `before` an `after` weitergeben](#von-before-an-after-weitergeben)).
 - **Bei `select` mit `after`:** Das Plugin kann die gelesenen Datensätze ändern oder ergänzen.
+
+### Änderungen verwerfen
+
+Ein `before`-Plugin kann ein `insert`, `update` oder `delete` verhindern, ohne dass der Aufrufer einen Fehler bekommt. Dazu setzt es `plugin_context['cancel']=True`:
+
+```python
+def execute(context, plugin_context, params):
+    if not _must_store(context, params):
+        plugin_context['cancel']=True
+```
+
+Was dann passiert:
+
+- **Die Anweisung entfällt:** Das SQL wird nicht ausgeführt.
+- **Alle `before`-Plugins laufen zu Ende:** Ausgewertet wird `cancel` erst, wenn alle `before`-Plugins des Ereignisses gelaufen sind. Auch Plugins mit größerem `sorting` laufen also noch, zum Beispiel ein Plugin für den „letzten Wert“. Das verwerfende Plugin sollte trotzdem ein großes `sorting` bekommen, damit es die Werte sieht, die vorherige Plugins in `params['data']` geändert haben.
+- **Die `after`-Plugins entfallen.** Das betrifft auch Weiterleitungen wie `api_mqtt_endpoint`.
+- **Antwort an den Aufrufer:** HTTP 200 mit einem leeren Ergebnis, z. B. `{"rows_affected": 0, "inserted_id": null}` bei `POST /api/v1.0/data/<table>` oder `[]` bei `POST /api/v1.0/data`. Im Code liefert `DatabaseServices.exec()` ein `CancelledRecordset` (`get_inserted_id()` ist `None`, `rowcount` 0).
+- **Eigene Änderungen bleiben:** Was `before`-Plugins bis dahin selbst geschrieben haben, bleibt erhalten und wird wie sonst committet.
+
+Grenzen:
+
+- **Nur synchrone Plugins** (`run_async=0`) können verwerfen. Bei asynchronen Plugins und Plugins in der Warteschlange hat `cancel` keine Wirkung.
+- **Eine Exception verwirft nicht.** Endet das Plugin mit einer Exception, wird `cancel` ignoriert. Mit `raise_exception: False` läuft die Anweisung dann normal weiter, ein Fehler im Plugin führt also nicht dazu, dass Daten verloren gehen. Wer bei einem Fehler abbrechen will, nimmt `raise_exception: True` (siehe [Fehlerbehandlung](#fehlerbehandlung-und-transaktionen)).
+- **Bei `select`** hat `cancel` keine Wirkung.
+- **Gleichwertig** ist `plugin_context['response']['cancel']=True`.
+- **Audit-Log:** Bei `update` wird das Audit-Log vor den `before`-Plugins geschrieben. Ein verworfenes `update` hinterlässt dort trotzdem Einträge.
+
+Für Core-Code: `Plugin.execute(type, params)` gibt `True` zurück, wenn ein synchrones Plugin dieses Typs verworfen hat, sonst `False`.
+
+### Von `before` an `after` weitergeben
+
+`before`- und `after`-Plugins einer Tabellenänderung bekommen dasselbe `params`-Objekt. Ein `before`-Plugin kann darin Werte für den `after`-Lauf ablegen. Das ist nützlich, wenn etwas nur geschrieben werden darf, wenn die eigentliche Anweisung auch geklappt hat: `after` läuft nur nach einer erfolgreich ausgeführten Anweisung, nicht nach einem Fehler und nicht nach `cancel`.
+
+Beispiel `iot_sensor_throttle` (IoTSensorNet): `before` entscheidet, ob ein Messwert gespeichert wird. `after` merkt sich den gespeicherten Wert erst, wenn das `insert` durchgelaufen ist. Beide Handler zeigen auf dasselbe Modul, `execute()` unterscheidet nach `plugin_context['type']`:
+
+```python
+PARAMS_KEY="iot_sensor_throttle"
+
+def execute(context, plugin_context, params):
+    if plugin_context['type']=='after':
+        stored=params.get(PARAMS_KEY, None)
+        if stored!=None:
+            _write_last_stored(context, stored['sensor_id'], stored['value'])
+        return
+
+    if not _must_store(context, params):
+        plugin_context['cancel']=True
+        return
+
+    params[PARAMS_KEY]={"sensor_id": ..., "value": ...}
+```
+
+- **Eigener Schlüssel auf oberster Ebene:** Lege Werte unter einem eindeutigen Schlüssel direkt in `params` ab, am besten mit dem Modulnamen. **Nicht in `params['data']`**: Daraus wird das SQL gebaut.
+- **Nur JSON-fähige Werte** (Zahlen, Texte, Datum): `params` wird bei jedem Plugin-Lauf in `api_process_log` gespeichert. Aus demselben Grund keine Geheimnisse.
+- **Nur synchron:** Ein asynchrones `after`-Plugin läuft in einem eigenen Thread und kann später laufen. Für dieses Muster `run_async=0` verwenden.
+- **Kein Ersatz für globalen Zustand:** `params` gilt nur für diese eine Anweisung. Was über Requests hinweg gelten soll, gehört in die Datenbank.
 
 ## Daten lesen und schreiben
 
@@ -121,6 +178,7 @@ Alles in `params` kommt potenziell von außen: HTTP-Body, Query-Parameter, Gerä
 
 - **Fehler werden protokolliert:** Eine Exception im Plugin wird geloggt und in `api_process_log` mit `status_id=20` und `error_text` gespeichert.
 - **Fehler weitergeben:** Mit `config()` → `{"raise_exception": True}` wird die Exception zusätzlich weitergereicht. Bei synchronen Plugins bricht der Request dann ab. So verhindert zum Beispiel ein `before`-Plugin ein ungültiges `insert`.
+- **Verwerfen statt Fehler:** Soll ein `insert`, `update` oder `delete` nur nicht ausgeführt werden, ohne dass der Aufrufer einen Fehler bekommt, setze `plugin_context['cancel']=True` (siehe [Änderungen verwerfen](#änderungen-verwerfen)).
 - **Status melden:** Setze `plugin_context['response']['status_code']`, `payload` und `error_text`, wenn das Plugin einen eigenen Status melden soll. Ein `status_code` außer `0` und `200` gilt als Fehler.
 - **Kein automatischer Rollback:** Gehe nicht davon aus, dass Änderungen bei einem Fehler zurückgerollt werden. Das Protokoll eines Plugin-Laufs wird sofort committet, und dabei auch alles, was bis dahin auf derselben Verbindung geschrieben wurde. Prüfe deshalb zuerst und schreibe erst danach. Halte Änderungen, die zusammengehören, möglichst in einer Anweisung zusammen.
 - **Kein eigener Commit:** Rufe `context.commit()` nicht selbst auf. Das übernehmen der Request (`teardown_request`) bzw. der asynchrone Wrapper.
@@ -186,5 +244,7 @@ Wie Plugins zusammen mit Tabellen, Metadaten und Templates als eigene Lösung (z
 - [ ] Synchron deutlich unter dem `harakiri`-Limit, sonst asynchron
 - [ ] Kein Code mit Nebenwirkungen auf Modulebene, kein globaler veränderlicher Zustand
 - [ ] `raise_exception` bewusst gesetzt
+- [ ] `cancel` nur in synchronen `before`-Plugins, `sorting` nach den Plugins, die `params['data']` ändern
+- [ ] Werte für den `after`-Lauf unter einem eigenen Schlüssel in `params`, nicht in `params['data']`
 - [ ] Inline-Code nur für kurze Logik, Schreibrecht auf `api_event_handler` nur für Administratoren
 - [ ] Bei einer eigenen Lösung: die Checkliste in [solutions.md](solutions.md)

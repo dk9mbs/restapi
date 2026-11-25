@@ -7,7 +7,7 @@
 | Dokument | Inhalt |
 |---|---|
 | [fetchxml.md](fetchxml.md) | Datenzugriff mit FetchXML: Endpunkte, Aufbau, Lesen, Filter, Anlegen, Ändern, Löschen, Verwendung in Python, Rechte und Fehler |
-| [plugins.md](plugins.md) | Plugins schreiben: Aufbau und Registrierung, Ereignisse und `params`, Datenzugriff, Rechte, Eingaben, Zugangsdaten, Fehler, Laufzeit, Threads, Inline-Code, eigene Endpunkte, Checkliste |
+| [plugins.md](plugins.md) | Plugins schreiben: Aufbau und Registrierung, Ereignisse und `params`, Änderungen verwerfen (`cancel`), Werte von `before` an `after` weitergeben, Datenzugriff, Rechte, Eingaben, Zugangsdaten, Fehler, Laufzeit, Threads, Inline-Code, eigene Endpunkte, Checkliste |
 | [solutions.md](solutions.md) | Eigene Lösungen (Zusatzmodule) mit `tools/solution.py` importieren: Aufbau des Lösungsordners, Regeln für `install.sql` und `plugins/`, Checkliste |
 | [mcp-docs.md](mcp-docs.md) | Diese Doku in Claude nutzen: MCP-Server einrichten, Tool `get_doc`, Resources `docs://` anhängen, Beispiel-Prompts |
 

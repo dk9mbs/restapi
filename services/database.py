@@ -2,7 +2,7 @@ from flaskext.mysql import MySQL
 import pymysql.cursors
 
 from config import CONFIG
-from core.database import Recordset
+from core.database import Recordset, CancelledRecordset
 from core import log
 from core.plugin import Plugin
 from core.permission import Permission
@@ -55,7 +55,22 @@ class DatabaseServices:
 
         params={"data": command_builder.get_sql_fields()}
         handler=Plugin(context, command_builder.get_main_alias(),command_builder.get_sql_type())
-        handler.execute('before', params)
+        cancelled=handler.execute('before', params)
+
+        # a sync before plugin can drop insert, update and delete silently
+        if cancelled and command_builder.get_sql_type().upper() in ('INSERT','UPDATE','DELETE'):
+            logger.debug(f"{command_builder.get_sql_type()} on {command_builder.get_main_table()} cancelled by plugin")
+
+            if command_builder.get_auto_commit()==1 or command_builder.get_auto_commit()==True:
+                context.commit()
+            elif  context.get_auto_commit()==1 or context.get_auto_commit()==True:
+                context.commit()
+
+            rs=CancelledRecordset()
+            if fetch_mode != -1:
+                rs.read(fetch_mode)
+
+            return rs
 
         sql, paras =command_builder.get_sql()
 

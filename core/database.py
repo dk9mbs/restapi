@@ -156,6 +156,34 @@ class Recordset:
                 self._replace_none(data_dict[key],v,rv)
 
 """
+Cursor without a statement. Used for statements cancelled by a plugin.
+"""
+class EmptyCursor:
+    rowcount=0
+    lastrowid=None
+    description=None
+
+    def fetchall(self):
+        return ()
+
+    def fetchone(self):
+        return None
+
+    def close(self):
+        pass
+
+"""
+Result of an insert, update or delete cancelled by a before plugin
+"""
+class CancelledRecordset(Recordset):
+    def __init__(self):
+        super().__init__(EmptyCursor())
+        self._inserted_id=None
+
+    def get_inserted_id(self):
+        return None
+
+"""
 Base Commandbuilder Class
 """
 class CommandBuilder:

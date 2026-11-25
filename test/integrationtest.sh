@@ -12,7 +12,6 @@ def execute(context, plugin_context, params):
     print(f"type......: {plugin_context['type']}")
     print(f"cancel....: {plugin_context['cancel']}")
     params['name']="GD77"
-    plugin_context['cancel']=True
     print("===== END OF PLUGIN =====")
 EOF
 

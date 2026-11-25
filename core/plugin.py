@@ -43,6 +43,19 @@ class SyncWrapper(object):
 
         ProcessTools.set_process_status(self._context,self._plugin_context,status_id)
 
+        return status_id
+
+    #
+    # True if the plugin asked to cancel the statement.
+    # A plugin that failed with an exception cannot cancel.
+    #
+    @staticmethod
+    def is_cancelled(plugin_context, status_id):
+        if status_id!=10:
+            return False
+
+        return plugin_context.get('cancel', False)==True or plugin_context['response'].get('cancel', False)==True
+
 
 class AsyncWrapper(threading.Thread):
     def __init__(self,fn, context, plugin_context, params, config):
@@ -137,8 +150,15 @@ class Plugin:
         plugins=cursor.fetchall()
         self._plugins=plugins
 
+    #
+    # Returns True if a sync plugin of this type set plugin_context['cancel']
+    # (or plugin_context['response']['cancel']). All plugins run to the end first.
+    # Async and queued plugins cannot cancel.
+    #
     def execute(self, type, params):
         #logger.info(f"Execute plugin: {self._publisher} {self._trigger} {type}")
+        cancelled=False
+
         for p in self._plugins:
 
             if p['type']==type:
@@ -155,12 +175,17 @@ class Plugin:
                 if p['run_async']==0:
                     task=SyncWrapper(mod.execute, self._context, plugin_context, params, config)
                     task.setDaemon(False)
-                    task.start()
+                    status_id=task.start()
+
+                    if SyncWrapper.is_cancelled(plugin_context, status_id):
+                        cancelled=True
                 else:
                     if p['run_queue']==0:
                         task=AsyncWrapper(mod.execute, self._context, plugin_context, params, config)
                         task.setDaemon(False)
                         task.start()
+
+        return cancelled
 
 
 
